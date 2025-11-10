@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard">
+    <h2>Панель управления</h2>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Всего проектов</h3>
+            <p class="stat-number">{{ stats.total_projects }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Активных проектов</h3>
+            <p class="stat-number">{{ stats.active_projects }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Всего задач</h3>
+            <p class="stat-number">{{ stats.total_tasks }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Активных задач</h3>
+            <p class="stat-number">{{ stats.active_tasks }}</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="actions-bar">
+            {% if current_user.role in ['admin', 'manager'] %}
+                <a href="{{ url_for('create_project') }}" class="btn">+ Создать проект</a>
+            {% endif %}
+        </div>
+
+        <h3>Ваши проекты</h3>
+        {% if projects %}
+            <div class="projects-list">
+                {% for project in projects %}
+                <div class="project-card {% if project.get('status', '') == 'в работе' %}status-active{% elif project.get('status', '') == 'завершен' %}status-completed{% else %}status-paused{% endif %}">
+                    <h4>{{ project.get('name', 'Без названия') }}</h4>
+                    <p><strong>Направление:</strong> {{ project.get('direction', 'Не указано') }}</p>
+                    <p><strong>Статус:</strong> {{ project.get('status', 'Не указан') }}</p>
+                    <p><strong>Дедлайн:</strong> {{ project.get('end_date', 'Не указан') }}</p>
+                    <p><strong>Последняя активность:</strong> {{ project.get('last_activity', 'Не указана') }}</p>
+                    <!-- Исправленный вариант с безопасным доступом к id -->
+                    <a href="{{ url_for('project_detail', project_id=project.get('id', '')) }}" class="btn">Подробнее</a>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>У вас нет доступных проектов</p>
+        {% endif %}
+    </div>
+    
+    <div class="section">
+        <h3>Ваши задачи</h3>
+        {% if tasks %}
+            <div class="tasks-list">
+                {% for task in tasks %}
+                <div class="task-card {% if task.status == 'активна' %}status-active{% elif task.status == 'завершена' %}status-completed{% else %}status-paused{% endif %}">
+                    <h4>{{ task.title }}</h4>
+                    <p><strong>Проект:</strong> {{ task.project_name }}</p>
+                    <p><strong>Дедлайн:</strong> {{ task.deadline }}</p>
+                    <p><strong>Статус:</strong> {{ task.status }}</p>
+                    <a href="{{ url_for('project_detail', project_id=task.project_id) }}" class="btn">К проекту</a>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>У вас нет активных задач</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

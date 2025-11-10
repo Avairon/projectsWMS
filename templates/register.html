@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="register-form">
+    <h2>Регистрация нового пользователя</h2>
+    
+    {% if not current_user.is_authenticated %}
+    <div class="info-box">
+        <p>Обратите внимание: регистрация новых пользователей доступна только администратору системы. Если вы не являетесь администратором, пожалуйста, обратитесь к руководителю для создания учетной записи.</p>
+    </div>
+    {% endif %}
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="username">Имя пользователя:</label>
+            <input type="text" id="username" name="username" required>
+            <small>Используйте только буквы, цифры и символы подчеркивания</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" name="password" required>
+            <small>Пароль должен содержать не менее 6 символов</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="name">ФИО:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="role">Роль:</label>
+            <select id="role" name="role" required>
+                {% for role in roles %}
+                    <option value="{{ role.id }}">{{ role.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button type="submit" class="btn">Зарегистрировать</button>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('login') }}" class="btn cancel-btn">Вход в систему</a>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}

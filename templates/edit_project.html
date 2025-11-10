@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="create-project">
+    <h2>Редактирование проекта "{{ project.name }}"</h2>
+    
+    <form method="POST">
+        <!-- Поля формы будут идентичны create_project.html, но с предзаполненными значениями -->
+        <div class="form-group">
+            <label for="name">Название проекта:</label>
+            <input type="text" id="name" name="name" value="{{ project.name }}" required>
+        </div>
+        
+        <!-- ... остальные поля формы ... -->
+        
+        <div class="form-group">
+            <label for="status">Статус:</label>
+            <select id="status" name="status">
+                <option value="в работе" {% if project.status == 'в работе' %}selected{% endif %}>В работе</option>
+                <option value="завершен" {% if project.status == 'завершен' %}selected{% endif %}>Завершен</option>
+                <option value="отложен" {% if project.status == 'отложен' %}selected{% endif %}>Отложен</option>
+            </select>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn">Сохранить изменения</button>
+            <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn cancel-btn">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

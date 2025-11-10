@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="edit-user-form">
+    <h2>Редактирование пользователя</h2>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="username">Имя пользователя:</label>
+            <input type="text" id="username" name="username" value="{{ user.username }}" disabled>
+            <small>Имя пользователя нельзя изменить</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="name">ФИО:</label>
+            <input type="text" id="name" name="name" value="{{ user.name }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="role">Роль:</label>
+            <select id="role" name="role" required>
+                {% for role in roles %}
+                    <option value="{{ role.id }}" {% if role.id == user.role %}selected{% endif %}>
+                        {{ role.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Новый пароль:</label>
+            <input type="password" id="password" name="password">
+            <small>Оставьте поле пустым, чтобы не изменять пароль</small>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn">Сохранить изменения</button>
+            <a href="{{ url_for('admin_users') }}" class="btn cancel-btn">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
