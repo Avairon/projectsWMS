@@ -5,13 +5,33 @@
     <h2>Редактирование проекта "{{ project.name }}"</h2>
     
     <form method="POST">
-        <!-- Поля формы будут идентичны create_project.html, но с предзаполненными значениями -->
         <div class="form-group">
             <label for="name">Название проекта:</label>
             <input type="text" id="name" name="name" value="{{ project.name }}" required>
         </div>
         
-        <!-- ... остальные поля формы ... -->
+        <div class="form-group">
+            <label for="description">Описание проекта:</label>
+            <textarea id="description" name="description" rows="4" required>{{ project.description }}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="direction">Направление проектной работы:</label>
+            <select id="direction" name="direction" required>
+                <option value="Образовательные программы" {% if project.direction == 'Образовательные программы' %}selected{% endif %}>Образовательные программы</option>
+                <option value="Цифровая среда" {% if project.direction == 'Цифровая среда' %}selected{% endif %}>Цифровая среда</option>
+                <option value="Проект ПромТаланты" {% if project.direction == 'Проект ПромТаланты' %}selected{% endif %}>Проект ПромТаланты</option>
+                <option value="Международное сотрудничество" {% if project.direction == 'Международное сотрудничество' %}selected{% endif %}>Международное сотрудничество</option>
+                <option value="Обучение преподавателей/руководителей" {% if project.direction == 'Обучение преподавателей/руководителей' %}selected{% endif %}>Обучение преподавателей/руководителей</option>
+                <option value="Структурирование проектной деятельности" {% if project.direction == 'Структурирование проектной деятельности' %}selected{% endif %}>Структурирование проектной деятельности</option>
+                <option value="Другое" {% if project.direction == 'Другое' %}selected{% endif %}>Другое</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="expected_result">Ожидаемый результат:</label>
+            <textarea id="expected_result" name="expected_result" rows="3" required>{{ project.expected_result }}</textarea>
+        </div>
         
         <div class="form-group">
             <label for="status">Статус:</label>
