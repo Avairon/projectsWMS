@@ -61,4 +61,7 @@ htmlcov/
 *.Z
 *.lz
 *.lzo
+
+# Other ignores
+database/
 ```

@@ -60,5 +60,21 @@
     "team": [
       "cf650e5b"
     ]
+  },
+  {
+    "id": "f0ef0d69",
+    "name": "asdasd",
+    "description": "asdasd",
+    "direction": "Цифровая среда",
+    "expected_result": "asdasd",
+    "start_date": "0233-12-31",
+    "end_date": "0333-12-31",
+    "last_activity": "02.12.2025",
+    "status": "в работе",
+    "supervisor_id": "14a6dfea",
+    "manager_id": "1",
+    "team": [
+      "b80bd68f"
+    ]
   }
 ]

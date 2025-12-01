@@ -39,5 +39,21 @@
     "name": "ausdyyukasgd",
     "role": "manager",
     "projects": []
+  },
+  {
+    "id": "14a6dfea",
+    "username": "ruk",
+    "password": "scrypt:32768:8:1$rcbarC0IoS6DHcgh$fa576738682790151b12bb65d5107fcdef31c2008c18fcc36a3d79acfabbc76d779de3695689f059c8dd83314dc64147ed7792a96109754a30cfb779e52efef8",
+    "name": "Ruk Rokovod",
+    "role": "manager",
+    "projects": []
+  },
+  {
+    "id": "b80bd68f",
+    "username": "balbes",
+    "password": "scrypt:32768:8:1$A7qpiyBYfLYTModP$9524dc7fc4cf5446a6182c607689805aacd7e0e842021398e0d959b02ff6e1117ef1b8fe604936159c7ce2901d8eaa8b05052865e9ee08bbd61fa58e5bc41d84",
+    "name": "balse",
+    "role": "worker",
+    "projects": []
   }
 ]
