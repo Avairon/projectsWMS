@@ -33,6 +33,7 @@
                     {% if current_user.role == 'admin' %}
                     <option value="admin">Администратор</option>
                     <option value="manager">Руководитель проекта</option>
+                    <option value="supervisor">Куратор</option>
                     {% endif %}
                     <option value="worker">Исполнитель</option>
                 </select>
@@ -152,7 +153,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Инициализируем состояние при загрузке страницы 
         if (roleSelect.value !== 'worker') {
             projectSelect.style.display = 'none';
         } else {

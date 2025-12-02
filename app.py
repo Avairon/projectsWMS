@@ -45,6 +45,7 @@ def init_database(force_recreate=False):
                 "password": generate_password_hash("admin", method='pbkdf2:sha256', salt_length=8),
                 "name": "Администратор системы",
                 "role": "admin",
+                "token": "ADMIN001",
                 "projects": []
             }
         ]
@@ -123,11 +124,12 @@ def can_access_task(task_id):
 
 # Класс пользователя для Flask-Login
 class User(UserMixin):
-    def __init__(self, id, username, name, role):
+    def __init__(self, id, username, name, role, token=None):
         self.id = id
         self.username = username
         self.name = name
         self.role = role
+        self.token = token
         
     def get_projects(self):
         users = load_data(app.config['USERS_DB'])
@@ -142,7 +144,7 @@ def load_user(user_id):
     users = load_data(app.config['USERS_DB'])
     user = next((u for u in users if u['id'] == user_id), None)
     if user:
-        return User(user['id'], user['username'], user['name'], user['role'])
+        return User(user['id'], user['username'], user['name'], user['role'], user.get('token'))
     return None
 
 # Функция для проверки доступа к проекту
@@ -157,8 +159,12 @@ def can_access_project(project_id):
     if not project:
         return False
     
-    # Проверяем, является ли пользователь руководителем или куратором проекта
+    # Проверяем, является ли пользователь руководителем проекта
     if current_user.role == 'manager' and (project.get('manager_id', '') == current_user.id or project.get('supervisor_id', '') == current_user.id):
+        return True
+    
+    # Проверяем, является ли пользователь куратором проекта
+    if current_user.role == 'supervisor' and project.get('supervisor_id', '') == current_user.id:
         return True
     
     # Проверяем, входит ли пользователь в команду проекта
@@ -193,13 +199,15 @@ def register():
             flash('Пользователь с таким именем уже существует')
             return render_template('register.html', roles=get_available_roles())
         
-        # Создание нового пользователя
+        # Создание нового пользователя с токеном для отображения
+        display_token = str(uuid.uuid4())[:8].upper()
         new_user = {
             "id": str(uuid.uuid4())[:8],
             "username": username,
             "password": generate_password_hash(password),
             "name": name,
             "role": token_info['role'],
+            "token": display_token,
             "projects": []
         }
         
@@ -238,6 +246,7 @@ def get_available_roles():
     return [
         {'id': 'admin', 'name': 'Администратор'},
         {'id': 'manager', 'name': 'Руководитель проекта'},
+        {'id': 'supervisor', 'name': 'Куратор'},
         {'id': 'worker', 'name': 'Исполнитель'}
     ]
 
@@ -304,7 +313,7 @@ def generate_token_route():
     project_id = request.form.get('project_id')
     
     # Проверяем, что роль допустима
-    if role not in ['admin', 'manager', 'worker']:
+    if role not in ['admin', 'manager', 'supervisor', 'worker']:
         flash('Недопустимая роль для токена')
         return redirect(url_for('dashboard'))
     
@@ -380,8 +389,9 @@ def login():
             username = user.get('username', 'unknown')
             name = user.get('name', username)
             role = user.get('role', 'user')
+            token = user.get('token')
             
-            user_obj = User(user_id, username, name, role)
+            user_obj = User(user_id, username, name, role, token)
             login_user(user_obj)
             flash(f'Добро пожаловать, {name}!')
             return redirect(url_for('dashboard'))
@@ -417,6 +427,9 @@ def dashboard():
     elif current_user.role == 'manager':
         # Руководитель видит только свои проекты (где он руководитель или куратор)
         visible_projects = [p for p in projects if p.get('manager_id', '') == current_user.id or p.get('supervisor_id', '') == current_user.id]
+    elif current_user.role == 'supervisor':
+        # Куратор видит проекты, где он назначен куратором
+        visible_projects = [p for p in projects if p.get('supervisor_id', '') == current_user.id]
     else:  # worker
         # Работник видит проекты, в которых он состоит в команде
         visible_projects = [p for p in projects if current_user.id in p.get('team', [])]
@@ -425,8 +438,8 @@ def dashboard():
     user_tasks = []
     if current_user.role == 'admin':
         user_tasks = tasks
-    elif current_user.role == 'manager':
-        # Руководитель видит задачи своих проектов
+    elif current_user.role in ['manager', 'supervisor']:
+        # Руководитель и куратор видят задачи своих проектов
         project_ids = [p['id'] for p in visible_projects]
         user_tasks = [t for t in tasks if t['project_id'] in project_ids]
     else:  # worker
@@ -780,4 +793,4 @@ def edit_project(project_id):
 
 if __name__ == '__main__':
     init_database()
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
