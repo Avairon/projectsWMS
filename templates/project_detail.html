@@ -37,11 +37,21 @@
                 </div>
                 <div class="info-item">
                     <strong>Куратор:</strong>
-                    <p>{{ supervisor.name if supervisor else 'Не назначен' }}</p>
+                    <div class="info-with-button">
+                        <p>{{ supervisor.name if supervisor else 'Не назначен' }}</p>
+                        {% if current_user.role == 'admin' or current_user.id == project.manager_id %}
+                        <button class="btn small-btn" onclick="openChangeCuratorModal()">Изменить</button>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="info-item">
                     <strong>Руководитель:</strong>
-                    <p>{{ manager.name if manager else 'Не назначен' }}</p>
+                    <div class="info-with-button">
+                        <p>{{ manager.name if manager else 'Не назначен' }}</p>
+                        {% if current_user.role == 'admin' %}
+                        <button class="btn small-btn" onclick="openChangeManagerModal()">Изменить</button>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -271,6 +281,62 @@
         </div>
     </div>
 </div>
+
+{% if current_user.role == 'admin' or current_user.id == project.manager_id %}
+<div class="modal" id="change-curator-modal">
+    <div class="modal-overlay" onclick="closeChangeCuratorModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Изменить куратора проекта</h3>
+            <button class="modal-close" onclick="closeChangeCuratorModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="new-curator">Выберите нового куратора:</label>
+                <select id="new-curator">
+                    {% for user in users %}
+                        {% if user.role == 'supervisor' %}
+                        <option value="{{ user.id }}" {% if user.id == project.supervisor_id %}selected{% endif %}>{{ user.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="changeCurator()">Сохранить</button>
+            <button class="btn cancel-btn" onclick="closeChangeCuratorModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if current_user.role == 'admin' %}
+<div class="modal" id="change-manager-modal">
+    <div class="modal-overlay" onclick="closeChangeManagerModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Изменить менеджера проекта</h3>
+            <button class="modal-close" onclick="closeChangeManagerModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="new-manager">Выберите нового менеджера:</label>
+                <select id="new-manager">
+                    {% for user in users %}
+                        {% if user.role == 'manager' %}
+                        <option value="{{ user.id }}" {% if user.id == project.manager_id %}selected{% endif %}>{{ user.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="changeManager()">Сохранить</button>
+            <button class="btn cancel-btn" onclick="closeChangeManagerModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <div class="tooltip" id="gantt-tooltip"></div>
 

@@ -541,15 +541,31 @@ function addMemberByToken() {
 
     console.log('Adding member by token:', token, 'to project:', projectId);
 
-    // TODO: Backend - Реализовать API endpoint для добавления участника в команду
-    // POST /api/projects/<project_id>/team
-    // Body: { token: string } или { user_id: string }
-    // Ожидаемый ответ: { success: boolean, member: { id, name, token, role } }
-    // Права доступа: куратор или руководитель проекта
-
-    showNotification('Участник добавлен (требуется backend)', 'success');
-    closeAddMemberModal();
+     // Отправляем запрос на сервер
+    fetch(`/project/${projectId}/add_member_by_token`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `token=${encodeURIComponent(token)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            closeAddMemberModal();
+            // Перезагружаем страницу для обновления списка участников
+            location.reload();
+        } else {
+            showNotification(data.error || 'Ошибка при добавлении участника', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Ошибка при добавлении участника', 'error');
+    });
 }
+
 
 function removeMember(memberId) {
     if (!confirm('Вы уверены, что хотите удалить этого участника из команды?')) {

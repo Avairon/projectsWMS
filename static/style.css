@@ -1471,3 +1471,16 @@ small {
         transition-duration: 0.01ms !important;
     }
 }
+
+.info-with-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.info-with-button p {
+    margin: 0;
+    flex: 1;
+    min-width: 150px;
+}

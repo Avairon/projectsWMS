@@ -1395,6 +1395,204 @@ def remove_project_member(project_id, user_id):
         return jsonify({'error': 'Пользователь не является участником проекта'}), 400
 
 
+@app.route('/project/<project_id>/add_member_by_token', methods=['POST'])
+@login_required
+def add_project_member_by_token(project_id):
+    """Добавить участника проекта по токену (доступно куратору/менеджеру)"""
+    if not can_access_project(project_id):
+        return jsonify({'error': 'У вас нет доступа к этому проекту'}), 403
+
+    # Проверяем права - только администратор, менеджер или куратор могут добавлять участников
+    projects = load_data(app.config['PROJECTS_DB'])
+    project = next((p for p in projects if p['id'] == project_id), None)
+    if not project:
+        return jsonify({'error': 'Проект не найден'}), 404
+
+    if current_user.role not in ['admin', 'manager', 'curator']:
+        return jsonify({'error': 'У вас нет прав для добавления участников в проект'}), 403
+
+    # Дополнительная проверка: куратор должен быть куратором этого проекта
+    if current_user.role == 'curator' and project.get('supervisor_id') != current_user.id:
+        return jsonify({'error': 'Вы не являетесь куратором этого проекта'}), 403
+
+    token = request.form.get('token')
+    if not token:
+        return jsonify({'error': 'Не указан токен пользователя'}), 400
+
+    # Проверяем токен
+    token_info = validate_token(token)
+    if not token_info:
+        return jsonify({'error': 'Неверный или использованный токен'}), 400
+
+    # Проверяем, что токен предназначен для исполнителя
+    if token_info['role'] != 'worker':
+        return jsonify({'error': 'Токен должен быть для исполнителя'}), 400
+
+    # Проверяем, что токен предназначен для этого проекта
+    if token_info['project_id'] != project_id:
+        return jsonify({'error': 'Токен не относится к этому проекту'}), 400
+
+    # Находим пользователя по токену
+    users = load_data(app.config['USERS_DB'])
+    user = next((u for u in users if u.get('token') == token), None)
+    if not user:
+        return jsonify({'error': 'Пользователь с таким токеном не найден'}), 404
+
+    # Добавляем пользователя в команду проекта, если его там еще нет
+    team = project.get('team', [])
+    if user['id'] not in team:
+        team.append(user['id'])
+        project['team'] = team
+
+        # Сохраняем изменения
+        for i, p in enumerate(projects):
+            if p['id'] == project_id:
+                projects[i] = project
+                break
+        save_data(app.config['PROJECTS_DB'], projects)
+
+        # Отмечаем токен как использованный
+        mark_token_as_used(token)
+
+        return jsonify({'success': True, 'message': 'Участник успешно добавлен в проект'})
+    else:
+        return jsonify({'error': 'Пользователь уже является участником проекта'}), 400
+
+
+@app.route('/project/<project_id>/update_curator', methods=['POST'])
+@login_required
+def update_project_curator(project_id):
+    """Изменить куратора проекта (доступно админу и менеджеру проекта)"""
+    if not can_access_project(project_id):
+        return jsonify({'error': 'У вас нет доступа к этому проекту'}), 403
+
+    projects = load_data(app.config['PROJECTS_DB'])
+    project = next((p for p in projects if p['id'] == project_id), None)
+    if not project:
+        return jsonify({'error': 'Проект не найден'}), 404
+
+    # Проверяем права: только админ или менеджер проекта могут изменить куратора
+    if current_user.role != 'admin' and current_user.id != project.get('manager_id'):
+        return jsonify({'error': 'У вас нет прав для изменения куратора проекта'}), 403
+
+    new_curator_id = request.form.get('curator_id')
+    if not new_curator_id:
+        return jsonify({'error': 'Не указан ID нового куратора'}), 400
+
+    # Проверяем, что новый куратор существует
+    users = load_data(app.config['USERS_DB'])
+    user = next((u for u in users if u['id'] == new_curator_id), None)
+    if not user:
+        return jsonify({'error': 'Пользователь не найден'}), 404
+
+    # Проверяем, что пользователь имеет роль куратора
+    if user['role'] != 'supervisor':
+        return jsonify({'error': 'Пользователь не является куратором'}), 400
+
+    # Обновляем куратора проекта
+    old_curator_id = project.get('supervisor_id')
+    project['supervisor_id'] = new_curator_id
+
+    # Сохраняем изменения
+    for i, p in enumerate(projects):
+        if p['id'] == project_id:
+            projects[i] = project
+            break
+    save_data(app.config['PROJECTS_DB'], projects)
+
+    # Если старый куратор был в команде, удаляем его оттуда
+    if old_curator_id and old_curator_id in project.get('team', []):
+        team = project.get('team', [])
+        if old_curator_id in team:
+            team.remove(old_curator_id)
+        project['team'] = team
+        # Обновляем проект в списке
+        for i, p in enumerate(projects):
+            if p['id'] == project_id:
+                projects[i] = project
+                break
+        save_data(app.config['PROJECTS_DB'], projects)
+
+    # Добавляем нового куратора в команду, если его там еще нет
+    team = project.get('team', [])
+    if new_curator_id not in team:
+        team.append(new_curator_id)
+        project['team'] = team
+        # Обновляем проект в списке
+        for i, p in enumerate(projects):
+            if p['id'] == project_id:
+                projects[i] = project
+                break
+        save_data(app.config['PROJECTS_DB'], projects)
+
+    return jsonify({'success': True, 'message': 'Куратор проекта успешно изменен'})
+
+
+@app.route('/project/<project_id>/update_manager', methods=['POST'])
+@login_required
+def update_project_manager(project_id):
+    """Изменить менеджера проекта (доступно только админу)"""
+    if current_user.role != 'admin':
+        return jsonify({'error': 'У вас нет прав для изменения менеджера проекта'}), 403
+
+    projects = load_data(app.config['PROJECTS_DB'])
+    project = next((p for p in projects if p['id'] == project_id), None)
+    if not project:
+        return jsonify({'error': 'Проект не найден'}), 404
+
+    new_manager_id = request.form.get('manager_id')
+    if not new_manager_id:
+        return jsonify({'error': 'Не указан ID нового менеджера'}), 400
+
+    # Проверяем, что новый менеджер существует
+    users = load_data(app.config['USERS_DB'])
+    user = next((u for u in users if u['id'] == new_manager_id), None)
+    if not user:
+        return jsonify({'error': 'Пользователь не найден'}), 404
+
+    # Проверяем, что пользователь имеет роль менеджера
+    if user['role'] != 'manager':
+        return jsonify({'error': 'Пользователь не является менеджером'}), 400
+
+    # Обновляем менеджера проекта
+    old_manager_id = project.get('manager_id')
+    project['manager_id'] = new_manager_id
+
+    # Сохраняем изменения
+    for i, p in enumerate(projects):
+        if p['id'] == project_id:
+            projects[i] = project
+            break
+    save_data(app.config['PROJECTS_DB'], projects)
+
+    # Если старый менеджер был в команде, удаляем его оттуда
+    if old_manager_id and old_manager_id in project.get('team', []):
+        team = project.get('team', [])
+        if old_manager_id in team:
+            team.remove(old_manager_id)
+        project['team'] = team
+        # Обновляем проект в списке
+        for i, p in enumerate(projects):
+            if p['id'] == project_id:
+                projects[i] = project
+                break
+        save_data(app.config['PROJECTS_DB'], projects)
+
+    # Добавляем нового менеджера в команду, если его там еще нет
+    team = project.get('team', [])
+    if new_manager_id not in team:
+        team.append(new_manager_id)
+        project['team'] = team
+        # Обновляем проект в списке
+        for i, p in enumerate(projects):
+            if p['id'] == project_id:
+                projects[i] = project
+                break
+        save_data(app.config['PROJECTS_DB'], projects)
+
+    return jsonify({'success': True, 'message': 'Менеджер проекта успешно изменен'})
+
+
 if __name__ == '__main__':
     init_database()
     app.run(host='0.0.0.0', port=5000, debug=True)
