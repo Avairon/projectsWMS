@@ -303,6 +303,47 @@ def mark_token_as_used(token_id):
     save_tokens(tokens)
 
 
+def get_user_token(user_id, project_id=None):
+    """Получение или создание токена для пользователя в проекте"""
+    tokens = load_tokens()
+    # Ищем существующий токен для пользователя в проекте
+    existing_token = next((t for t in tokens if t.get('user_id') == user_id and t.get('project_id') == project_id and not t['used']), None)
+    
+    if existing_token:
+        return existing_token['id']
+    
+    # Создаем новый токен
+    token = {
+        'id': str(uuid.uuid4()),
+        'user_id': user_id,
+        'project_id': project_id,
+        'created_at': datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+        'used': False
+    }
+    tokens.append(token)
+    save_tokens(tokens)
+    return token['id']
+
+
+def add_task_history(task, action, user_id, users):
+    """Добавление записи в историю изменений задачи"""
+    # Получаем имя пользователя
+    user = next((u for u in users if u['id'] == user_id), None)
+    user_name = user.get('name', user.get('username', 'Неизвестный')) if user else 'Неизвестный'
+    
+    if 'history' not in task:
+        task['history'] = []
+    
+    history_entry = {
+        'action': action,
+        'date': datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+        'user_id': user_id,
+        'user_name': user_name
+    }
+    
+    task['history'].append(history_entry)
+
+
 def allowed_file(filename):
     """Проверка разрешенного расширения файла"""
     return '.' in filename and \
@@ -661,6 +702,21 @@ def create_task(project_id):
         eligible_users = [u for u in users if u['id'] in team_member_ids]
     
     if request.method == 'POST':
+        # Validate that start_date <= deadline
+        start_date = request.form.get('start_date', datetime.now().strftime("%d.%m.%Y"))
+        deadline = request.form['deadline']
+        
+        if start_date and deadline:
+            try:
+                start_dt = parse_date(start_date)
+                deadline_dt = parse_date(deadline)
+                if start_dt > deadline_dt:
+                    flash('Дата начала не может быть позже даты дедлайна')
+                    return render_template('create_task.html', project=project, users=eligible_users)
+            except:
+                flash('Некорректный формат даты')
+                return render_template('create_task.html', project=project, users=eligible_users)
+        
         task = {
             "id": str(uuid.uuid4())[:8],
             "project_id": project_id,
@@ -669,6 +725,7 @@ def create_task(project_id):
             "assignee_id": request.form['assignee_id'],
             "created_by": current_user.id,
             "created_at": datetime.now().strftime("%d.%m.%Y"),
+            "start_date": start_date,
             "deadline": request.form['deadline'],
             "status": "активна",
             "completion_date": ""
@@ -710,8 +767,12 @@ def api_get_tasks_by_project(project_id):
     for task in project_tasks:
         assignee = user_map.get(task.get('assignee_id'))
         if assignee:
+            # Вместо ФИО возвращаем токен пользователя в проекте
+            token = get_user_token(task.get('assignee_id'), project_id)
+            task['assignee_token'] = token
             task['assignee_name'] = assignee.get('name', assignee.get('username', ''))
         else:
+            task['assignee_token'] = None
             task['assignee_name'] = 'Не назначен'
     
     return jsonify(project_tasks)
@@ -760,6 +821,19 @@ def api_create_task(project_id):
         else:
             return jsonify({'error': 'Необходимо указать исполнителя'}), 400
     
+    # Validate that start_date <= deadline
+    start_date = request.form.get('start_date', datetime.now().strftime("%d.%m.%Y"))
+    deadline = request.form.get('deadline')
+    
+    if start_date and deadline:
+        try:
+            start_dt = parse_date(start_date)
+            deadline_dt = parse_date(deadline)
+            if start_dt > deadline_dt:
+                return jsonify({'error': 'Дата начала не может быть позже даты дедлайна'}), 400
+        except:
+            return jsonify({'error': 'Некорректный формат даты'}), 400
+    
     # Проверка дат: deadline не может быть раньше текущей даты
     if deadline:
         try:
@@ -779,6 +853,7 @@ def api_create_task(project_id):
         "assignee_id": assignee_id,
         "created_by": current_user.id,
         "created_at": datetime.now().strftime("%d.%m.%Y"),
+        "start_date": start_date,
         "deadline": deadline or "",
         "status": "активна",
         "completion_date": ""
@@ -882,22 +957,23 @@ def update_task(task_id):
     new_assignee_id = request.form.get('assignee_id')
     new_title = request.form.get('title')
     new_description = request.form.get('description')
+    new_start_date = request.form.get('start_date')
     new_deadline = request.form.get('deadline')
     
-    # Проверка дат: start_date <= end_date (в задаче есть created_at как начало, deadline как конец)
-    # Но в текущей структуре задачи нет отдельного поля start_date, есть только created_at
-    # Валидируем, что deadline не раньше даты создания задачи
-    if new_deadline:
+    # Проверка дат: start_date <= deadline
+    if new_start_date and new_deadline:
         try:
+            start_dt = parse_date(new_start_date)
             deadline_dt = parse_date(new_deadline)
-            created_dt = parse_date(task.get('created_at', datetime.now().strftime("%d.%m.%Y")))
-            if deadline_dt < created_dt:
-                return jsonify({'error': 'Дата дедлайна не может быть раньше даты создания задачи'}), 400
+            if start_dt > deadline_dt:
+                return jsonify({'error': 'Дата начала не может быть позже даты дедлайна'}), 400
         except:
             return jsonify({'error': 'Некорректный формат даты'}), 400
     
     # Обновляем поля задачи
-    if new_assignee_id:
+    original_task = task.copy()  # Сохраняем оригинальное состояние для сравнения
+    
+    if new_assignee_id and new_assignee_id != task.get('assignee_id'):
         # Проверяем, что новый ответственный существует и является участником проекта
         users = load_data(app.config['USERS_DB'])
         user = next((u for u in users if u['id'] == new_assignee_id), None)
@@ -911,15 +987,44 @@ def update_task(task_id):
             return jsonify({'error': 'Назначаемый пользователь не является участником проекта'}), 400
         
         task['assignee_id'] = new_assignee_id
+        # Добавляем запись в историю
+        add_task_history(task, f'Изменен ответственный с {original_task.get("assignee_id", "не назначен")} на {new_assignee_id}', current_user.id, users)
     
-    if new_title:
+    if new_title and new_title != task.get('title'):
+        old_title = task.get('title', '')
         task['title'] = new_title.strip()
+        # Добавляем запись в историю
+        users = load_data(app.config['USERS_DB'])
+        add_task_history(task, f'Изменено название с "{old_title}" на "{new_title}"', current_user.id, users)
     
-    if new_description:
+    if new_description and new_description != task.get('description'):
+        old_description = task.get('description', '')
         task['description'] = new_description.strip()
+        # Добавляем запись в историю
+        users = load_data(app.config['USERS_DB'])
+        add_task_history(task, f'Изменено описание', current_user.id, users)
     
-    if new_deadline:
+    if new_start_date and new_start_date != task.get('start_date'):
+        old_start_date = task.get('start_date', '')
+        task['start_date'] = new_start_date
+        # Добавляем запись в историю
+        users = load_data(app.config['USERS_DB'])
+        add_task_history(task, f'Изменена дата начала с "{old_start_date}" на "{new_start_date}"', current_user.id, users)
+    
+    if new_deadline and new_deadline != task.get('deadline'):
+        old_deadline = task.get('deadline', '')
         task['deadline'] = new_deadline
+        # Добавляем запись в историю
+        users = load_data(app.config['USERS_DB'])
+        add_task_history(task, f'Изменен дедлайн с "{old_deadline}" на "{new_deadline}"', current_user.id, users)
+    
+    if 'status' in request.form and request.form['status'] != task.get('status'):
+        old_status = task.get('status', '')
+        new_status = request.form['status']
+        task['status'] = new_status
+        # Добавляем запись в историю
+        users = load_data(app.config['USERS_DB'])
+        add_task_history(task, f'Изменен статус с "{old_status}" на "{new_status}"', current_user.id, users)
     
     # Сохраняем изменения
     for i, t in enumerate(tasks):
@@ -1018,6 +1123,82 @@ def upload_task_file(task_id):
         return jsonify({'error': 'Недопустимый тип файла'}), 400
 
 
+# Страница и API для деталей задачи
+@app.route('/task/<task_id>')
+@login_required
+def task_detail(task_id):
+    """Страница деталей задачи"""
+    if not can_access_task(task_id):
+        flash('У вас нет доступа к этой задаче')
+        return redirect(url_for('dashboard'))
+    
+    tasks = load_data(app.config['TASKS_DB'])
+    users = load_data(app.config['USERS_DB'])
+    
+    task = next((t for t in tasks if t.get('id') == task_id), None)
+    if not task:
+        flash('Задача не найдена')
+        return redirect(url_for('dashboard'))
+    
+    # Получаем информацию о пользователе-исполнителе
+    assignee = next((u for u in users if u['id'] == task.get('assignee_id')), None) if task.get('assignee_id') else None
+    
+    # Получаем информацию о пользователе-создателе
+    creator = next((u for u in users if u['id'] == task.get('created_by')), None) if task.get('created_by') else None
+    
+    return render_template('task_detail.html', task=task, assignee=assignee, creator=creator)
+
+
+@app.route('/api/task/<task_id>')
+@login_required
+def api_task_detail(task_id):
+    """API для полных данных задачи: описание, дата, ответственный, файлы, история изменений"""
+    if not can_access_task(task_id):
+        return jsonify({'error': 'У вас нет доступа к этой задаче'}), 403
+    
+    tasks = load_data(app.config['TASKS_DB'])
+    users = load_data(app.config['USERS_DB'])
+    
+    task = next((t for t in tasks if t.get('id') == task_id), None)
+    if not task:
+        return jsonify({'error': 'Задача не найдена'}), 404
+    
+    # Получаем информацию о пользователе-исполнителе
+    assignee = next((u for u in users if u['id'] == task.get('assignee_id')), None) if task.get('assignee_id') else None
+    if assignee:
+        # Вместо ФИО возвращаем токен пользователя в проекте
+        token = get_user_token(task.get('assignee_id'), task.get('project_id'))
+        task['assignee_token'] = token
+        task['assignee_name'] = assignee.get('name', assignee.get('username', ''))
+    else:
+        task['assignee_token'] = None
+        task['assignee_name'] = 'Не назначен'
+    
+    # Получаем информацию о пользователе-создателе
+    creator = next((u for u in users if u['id'] == task.get('created_by')), None) if task.get('created_by') else None
+    if creator:
+        task['creator_name'] = creator.get('name', creator.get('username', ''))
+    else:
+        task['creator_name'] = 'Неизвестно'
+    
+    # Добавляем историю изменений (пока просто базовая информация)
+    # В реальной системе это может быть отдельный журнал изменений
+    task['history'] = [
+        {
+            'action': 'Создание задачи',
+            'date': task.get('created_at', ''),
+            'user_id': task.get('created_by'),
+            'user_name': task.get('creator_name', 'Неизвестно')
+        }
+    ]
+    
+    # Если у задачи есть файлы, возвращаем их
+    if 'files' not in task:
+        task['files'] = []
+    
+    return jsonify(task)
+
+
 # Редактирование проекта
 @app.route('/project/<project_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -1071,6 +1252,40 @@ def edit_project(project_id):
 
 
 # API для управления командой проекта
+@app.route('/api/project/<project_id>/team', methods=['GET'])
+@login_required
+def api_get_project_team(project_id):
+    """API списка участников проекта с токенами вместо ФИО"""
+    if not can_access_project(project_id):
+        return jsonify({'error': 'У вас нет доступа к этому проекту'}), 403
+    
+    projects = load_data(app.config['PROJECTS_DB'])
+    users = load_data(app.config['USERS_DB'])
+    
+    project = next((p for p in projects if p['id'] == project_id), None)
+    if not project:
+        return jsonify({'error': 'Проект не найден'}), 404
+    
+    # Получаем участников команды проекта
+    team_member_ids = project.get('team', [])
+    team_members = []
+    
+    for user_id in team_member_ids:
+        user = next((u for u in users if u['id'] == user_id), None)
+        if user:
+            # Получаем токен для пользователя в проекте
+            token = get_user_token(user_id, project_id)
+            team_member = {
+                'id': user['id'],
+                'token': token,  # Вместо ФИО возвращаем токен
+                'role': user.get('role', ''),
+                'name': user.get('name', '')  # Оставляем имя для внутреннего использования
+            }
+            team_members.append(team_member)
+    
+    return jsonify(team_members)
+
+
 @app.route('/project/<project_id>/add_member', methods=['POST'])
 @login_required
 def add_project_member(project_id):
