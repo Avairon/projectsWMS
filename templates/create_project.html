@@ -45,18 +45,18 @@
         </div>
         
         <div class="form-group">
-            <label for="supervisor_id">Куратор проекта:</label>
-            <select id="supervisor_id" name="supervisor_id" required>
+            <label for="manager_id">Руководитель проекта (ответственный):</label>
+            <select id="manager_id" name="manager_id" required>
                 {% for user in managers %}
                     <option value="{{ user.id }}">{{ user.name }}</option>
                 {% endfor %}
             </select>
         </div>
-        
+
         <div class="form-group">
-            <label for="manager_id">Руководитель проекта (ответственный):</label>
-            <select id="manager_id" name="manager_id" required>
-                {% for user in managers %}
+            <label for="supervisor_id">Куратор проекта:</label>
+            <select id="supervisor_id" name="supervisor_id" required>
+                {% for user in curators %}
                     <option value="{{ user.id }}">{{ user.name }}</option>
                 {% endfor %}
             </select>
@@ -77,4 +77,25 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startDate = document.getElementById('start_date');
+    const endDate = document.getElementById('end_date');
+    
+    startDate.addEventListener('change', function() {
+        endDate.min = this.value;
+        if (endDate.value && endDate.value < this.value) {
+            endDate.value = this.value;
+        }
+    });
+    
+    endDate.addEventListener('change', function() {
+        if (startDate.value && this.value < startDate.value) {
+            alert('Дата завершения не может быть раньше даты начала');
+            this.value = startDate.value;
+        }
+    });
+});
+</script>
 {% endblock %}
