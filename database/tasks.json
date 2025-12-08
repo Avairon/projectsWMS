@@ -1,0 +1,26 @@
+[
+  {
+    "id": "097d0a21",
+    "project_id": "378ab489",
+    "title": "asdasd",
+    "description": "asdasdasd",
+    "assignee_id": "1",
+    "created_by": "1",
+    "created_at": "08.12.2025",
+    "deadline": "2025-12-30",
+    "status": "активна",
+    "completion_date": ""
+  },
+  {
+    "id": "875178ec",
+    "project_id": "a5226d8c",
+    "title": "фывфыв",
+    "description": "фывфывв",
+    "assignee_id": "b394c21e",
+    "created_by": "b394c21e",
+    "created_at": "08.12.2025",
+    "deadline": "2025-12-25",
+    "status": "завершена",
+    "completion_date": ""
+  }
+]

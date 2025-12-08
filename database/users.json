@@ -1,0 +1,18 @@
+[
+  {
+    "id": "1",
+    "username": "admin",
+    "password": "pbkdf2:sha256:1000000$cyjk9miK$c03fa4af3dcf4518aa6e9174d2d53b1b73e7db186a921ecc947bf7621db697f9",
+    "name": "Администратор системы",
+    "role": "admin",
+    "projects": []
+  },
+  {
+    "id": "b394c21e",
+    "username": "rukovod",
+    "password": "scrypt:32768:8:1$jwU1ew7dPRzceRqL$cafcbdb46de96fc6c6ee1769eb53e969c1314eaa99b7a1c1d813d5fdb6ff7e821b96e41655df704615553ecbd3c09146332703e26dafb97bff3658853444563f",
+    "name": "rukovod",
+    "role": "manager",
+    "projects": []
+  }
+]

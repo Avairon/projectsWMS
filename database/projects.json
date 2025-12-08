@@ -1,0 +1,30 @@
+[
+  {
+    "id": "378ab489",
+    "name": "asd",
+    "description": "asdasda",
+    "direction": "Проект ПромТаланты",
+    "expected_result": "asdasd",
+    "start_date": "2025-12-01",
+    "end_date": "2025-12-31",
+    "last_activity": "08.12.2025",
+    "status": "в работе",
+    "supervisor_id": "1",
+    "manager_id": "1",
+    "team": []
+  },
+  {
+    "id": "a5226d8c",
+    "name": "фывфыв",
+    "description": "фывфыв",
+    "direction": "Образовательные программы",
+    "expected_result": "фывфывфыв",
+    "start_date": "2025-12-09",
+    "end_date": "2025-12-31",
+    "last_activity": "08.12.2025",
+    "status": "в работе",
+    "supervisor_id": "b394c21e",
+    "manager_id": "b394c21e",
+    "team": []
+  }
+]
