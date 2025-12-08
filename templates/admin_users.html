@@ -28,6 +28,7 @@
                     <span class="role-badge role-{{ user.role }}">
                         {% if user.role == 'admin' %}Администратор
                         {% elif user.role == 'manager' %}Руководитель
+                        {% elif user.role == 'supervisor' %}Куратор
                         {% elif user.role == 'worker' %}Исполнитель
                         {% else %}{{ user.role }}
                         {% endif %}

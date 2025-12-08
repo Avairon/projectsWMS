@@ -24,9 +24,15 @@
             </select>
         </div>
         
-        <div class="form-group">
-            <label for="deadline">Срок выполнения:</label>
-            <input type="date" id="deadline" name="deadline" required>
+        <div class="form-row">
+            <div class="form-group half-width">
+                <label for="start_date">Дата начала:</label>
+                <input type="date" id="start_date" name="start_date" required>
+            </div>
+            <div class="form-group half-width">
+                <label for="deadline">Срок выполнения:</label>
+                <input type="date" id="deadline" name="deadline" required>
+            </div>
         </div>
         
         <div class="form-actions">
@@ -35,4 +41,25 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startDate = document.getElementById('start_date');
+    const deadline = document.getElementById('deadline');
+    
+    startDate.addEventListener('change', function() {
+        deadline.min = this.value;
+        if (deadline.value && deadline.value < this.value) {
+            deadline.value = this.value;
+        }
+    });
+    
+    deadline.addEventListener('change', function() {
+        if (startDate.value && this.value < startDate.value) {
+            alert('Срок выполнения не может быть раньше даты начала');
+            this.value = startDate.value;
+        }
+    });
+});
+</script>
 {% endblock %}
