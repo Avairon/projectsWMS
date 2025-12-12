@@ -1,183 +1,126 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block title %}Панель управления - НХТК{% endblock %}
 
 {% block content %}
 <div class="dashboard">
     <h2>Панель управления</h2>
     
-    <!-- Отображение токена пользователя -->
+    {% if user_token %}
     <div class="user-token-info">
-        <h3>Ваш токен:</h3>
-        <p class="token-display">{{ user_token if user_token else 'Токен не назначен' }}</p>
+        <h3>Ваш токен</h3>
+        <div class="token-display">{{ user_token }}</div>
         <p class="token-role">Роль: 
-            {% if current_user.role == 'admin' %}
-                Администратор
-            {% elif current_user.role == 'manager' %}
-                Руководитель
-            {% elif current_user.role == 'supervisor' %}
-                Куратор
-            {% elif current_user.role == 'worker' %}
-                Исполнитель
-            {% else %}
-                Неизвестная роль
+            {% if current_user.role == 'admin' %}Администратор
+            {% elif current_user.role == 'manager' %}Руководитель проекта
+            {% elif current_user.role == 'supervisor' %}Куратор
+            {% else %}Исполнитель
             {% endif %}
         </p>
     </div>
-    
+    {% endif %}
+
     <div class="stats-grid">
         <div class="stat-card">
             <h3>Всего проектов</h3>
-            <p class="stat-number">{{ stats.total_projects }}</p>
+            <div class="stat-number">{{ stats.total_projects }}</div>
         </div>
         <div class="stat-card">
             <h3>Активных проектов</h3>
-            <p class="stat-number">{{ stats.active_projects }}</p>
+            <div class="stat-number">{{ stats.active_projects }}</div>
         </div>
         <div class="stat-card">
             <h3>Всего задач</h3>
-            <p class="stat-number">{{ stats.total_tasks }}</p>
+            <div class="stat-number">{{ stats.total_tasks }}</div>
         </div>
         <div class="stat-card">
             <h3>Активных задач</h3>
-            <p class="stat-number">{{ stats.active_tasks }}</p>
+            <div class="stat-number">{{ stats.active_tasks }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Завершенных задач</h3>
+            <div class="stat-number">{{ stats.completed_tasks }}</div>
         </div>
     </div>
 
+    {% if current_user.role in ['admin', 'manager'] %}
     <div class="section">
-        <h3>Генерация токенов для регистрации</h3>
-        {% if current_user.role in ['admin', 'manager'] %}
-        <form method="POST" action="{{ url_for('generate_token_route') }}" class="token-form">
-            <div class="form-group">
-                <label for="role">Роль пользователя:</label>
-                <select id="role" name="role" required>
-                    {% if current_user.role == 'admin' %}
-                    <option value="admin">Администратор</option>
-                    <option value="manager">Руководитель проекта</option>
-                    <option value="supervisor">Куратор</option>
-                    {% endif %}
-                    <option value="worker">Исполнитель</option>
-                </select>
+        <div class="section-header">
+            <h3>Генерация токенов</h3>
+        </div>
+        <form action="{{ url_for('generate_token_route') }}" method="POST" class="info-box">
+            <div class="form-row">
+                <div class="half-width">
+                    <label for="role">Роль для токена:</label>
+                    <select name="role" id="role" required>
+                        {% if current_user.role == 'admin' %}
+                        <option value="admin">Администратор</option>
+                        <option value="manager">Руководитель проекта</option>
+                        {% endif %}
+                        <option value="supervisor">Куратор</option>
+                        <option value="worker">Исполнитель</option>
+                    </select>
+                </div>
+                <div class="half-width">
+                    <label for="project_id">Проект (для исполнителя):</label>
+                    <select name="project_id" id="project_id">
+                        <option value="">-- Не выбрано --</option>
+                        {% for project in projects %}
+                        <option value="{{ project.id }}">{{ project.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
-            
-            <div class="form-group" id="project-select" style="display: none;">
-                <label for="project_id">Проект (для исполнителя):</label>
-                <select id="project_id" name="project_id">
-                    <option value="">Выберите проект</option>
-                    {% for project in projects %}
-                    <option value="{{ project.id }}">{{ project.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <button type="submit" class="btn">Сгенерировать токен</button>
+            <button type="submit">Сгенерировать токен</button>
         </form>
-        {% else %}
-        <p>Только администраторы и руководители могут генерировать токены</p>
-        {% endif %}
     </div>
+    {% endif %}
 
     <div class="section">
-        <div class="actions-bar">
+        <div class="section-header">
+            <h3>Проекты</h3>
             {% if current_user.role in ['admin', 'manager'] %}
-                <a href="{{ url_for('create_project') }}" class="btn">+ Создать проект</a>
+            <a href="{{ url_for('projects.create_project') }}" class="btn">Создать проект</a>
             {% endif %}
         </div>
-
-        <h3>Ваши проекты</h3>
+        
         {% if projects %}
-            {% if current_user.role == 'admin' %}
-                <div class="projects-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Название</th>
-                                <th>Направление</th>
-                                <th>Статус</th>
-                                <th>Дата начала</th>
-                                <th>Дата завершения</th>
-                                <th>Последняя активность</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for project in projects %}
-                            <tr>
-                                <td><strong>{{ project.get('name', 'Без названия') }}</strong></td>
-                                <td>{{ project.get('direction', 'Не указано') }}</td>
-                                <td>
-                                    <span class="status-badge {% if project.get('status', '') == 'в работе' %}status-active{% elif project.get('status', '') == 'завершен' %}status-completed{% else %}status-paused{% endif %}">
-                                        {{ project.get('status', 'Не указан') }}
-                                    </span>
-                                </td>
-                                <td>{{ project.get('start_date', 'Не указана') }}</td>
-                                <td>{{ project.get('end_date', 'Не указана') }}</td>
-                                <td>{{ project.get('last_activity', 'Не указана') }}</td>
-                                <td>
-                                    <a href="{{ url_for('project_detail', project_id=project.get('id', '')) }}" class="btn small-btn">Подробнее</a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="projects-list">
-                    {% for project in projects %}
-                    <div class="project-card {% if project.get('status', '') == 'в работе' %}status-active{% elif project.get('status', '') == 'завершен' %}status-completed{% else %}status-paused{% endif %}">
-                        <h4>{{ project.get('name', 'Без названия') }}</h4>
-                        <p><strong>Направление:</strong> {{ project.get('direction', 'Не указано') }}</p>
-                        <p><strong>Статус:</strong> {{ project.get('status', 'Не указан') }}</p>
-                        <p><strong>Дедлайн:</strong> {{ project.get('end_date', 'Не указан') }}</p>
-                        <p><strong>Последняя активность:</strong> {{ project.get('last_activity', 'Не указана') }}</p>
-                        <a href="{{ url_for('project_detail', project_id=project.get('id', '')) }}" class="btn">Подробнее</a>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+        <div class="projects-list">
+            {% for project in projects %}
+            <div class="project-card {% if project.status == 'в работе' %}status-active{% elif project.status == 'завершен' %}status-completed{% else %}status-paused{% endif %}">
+                <h4>{{ project.name }}</h4>
+                <p><strong>Направление:</strong> {{ project.direction }}</p>
+                <p><strong>Статус:</strong> {{ project.status }}</p>
+                <p><strong>Сроки:</strong> {{ project.start_date }} - {{ project.end_date }}</p>
+                <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn">Подробнее</a>
+            </div>
+            {% endfor %}
+        </div>
         {% else %}
-            <p>У вас нет доступных проектов</p>
+        <p class="no-data">Нет доступных проектов</p>
         {% endif %}
     </div>
-    
+
+    {% if tasks %}
     <div class="section">
         <h3>Ваши задачи</h3>
-        {% if tasks %}
-            <div class="tasks-list">
-                {% for task in tasks %}
-                <div class="task-card {% if task.status == 'активна' %}status-active{% elif task.status == 'завершена' %}status-completed{% else %}status-paused{% endif %}">
-                    <h4>{{ task.title }}</h4>
-                    <p><strong>Проект:</strong> {{ task.project_name }}</p>
-                    <p><strong>Дедлайн:</strong> {{ task.deadline }}</p>
-                    <p><strong>Статус:</strong> {{ task.status }}</p>
-                    <a href="{{ url_for('project_detail', project_id=task.project_id) }}" class="btn">К проекту</a>
-                </div>
-                {% endfor %}
+        <div class="tasks-list">
+            {% for task in tasks %}
+            <div class="task-card {% if task.status == 'активна' %}status-active{% elif task.status == 'завершена' %}status-completed{% else %}status-paused{% endif %}">
+                <h4>{{ task.title }}</h4>
+                <p><strong>Дедлайн:</strong> {{ task.deadline }}</p>
+                <p><strong>Статус:</strong> {{ task.status }}</p>
+                <form action="{{ url_for('tasks.update_task_status', task_id=task.id) }}" method="POST" class="status-form">
+                    <select name="status" class="status-select" onchange="this.form.submit()">
+                        <option value="активна" {% if task.status == 'активна' %}selected{% endif %}>Активна</option>
+                        <option value="завершена" {% if task.status == 'завершена' %}selected{% endif %}>Завершена</option>
+                        <option value="отложена" {% if task.status == 'отложена' %}selected{% endif %}>Отложена</option>
+                    </select>
+                </form>
             </div>
-        {% else %}
-            <p>У вас нет активных задач</p>
-        {% endif %}
+            {% endfor %}
+        </div>
     </div>
+    {% endif %}
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const roleSelect = document.getElementById('role');
-    const projectSelect = document.getElementById('project-select');
-    
-    if (roleSelect && projectSelect) {
-        roleSelect.addEventListener('change', function() {
-            if (this.value === 'worker') {
-                projectSelect.style.display = 'block';
-            } else {
-                projectSelect.style.display = 'none';
-            }
-        });
-        
-        if (roleSelect.value !== 'worker') {
-            projectSelect.style.display = 'none';
-        } else {
-            projectSelect.style.display = 'block';
-        }
-    }
-});
-</script>
 {% endblock %}

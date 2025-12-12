@@ -5,7 +5,6 @@ from config import Config
 
 app_config = Config()
 
-# Загрузка данных из JSON файлов
 def load_data(file_path):
     if not os.path.exists(file_path):
         return []
@@ -16,7 +15,6 @@ def save_data(file_path, data):
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-# Класс пользователя для Flask-Login
 class User(UserMixin):
     def __init__(self, id, username, name, role, token=None):
         self.id = id

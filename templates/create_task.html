@@ -1,65 +1,52 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block title %}Создание задачи - НХТК{% endblock %}
 
 {% block content %}
 <div class="create-task">
-    <h2>Создание задачи для проекта "{{ project.name }}"</h2>
+    <h2>Создание задачи</h2>
+    <p><strong>Проект:</strong> {{ project.name }}</p>
     
     <form method="POST">
         <div class="form-group">
-            <label for="title">Название задачи:</label>
+            <label for="title">Название задачи</label>
             <input type="text" id="title" name="title" required>
         </div>
-        
+
         <div class="form-group">
-            <label for="description">Описание задачи:</label>
-            <textarea id="description" name="description" rows="4" required></textarea>
+            <label for="description">Описание</label>
+            <textarea id="description" name="description" rows="4"></textarea>
         </div>
-        
+
         <div class="form-group">
-            <label for="assignee_id">Исполнитель:</label>
+            <label for="assignee_id">Исполнитель</label>
             <select id="assignee_id" name="assignee_id" required>
+                <option value="">-- Выберите исполнителя --</option>
                 {% for user in users %}
-                    <option value="{{ user.id }}">{{ user.name }} ({{ user.role }})</option>
+                <option value="{{ user.id }}">{{ user.name }}</option>
                 {% endfor %}
             </select>
         </div>
-        
+
         <div class="form-row">
-            <div class="form-group half-width">
-                <label for="start_date">Дата начала:</label>
-                <input type="date" id="start_date" name="start_date" required>
+            <div class="half-width">
+                <div class="form-group">
+                    <label for="start_date">Дата начала</label>
+                    <input type="date" id="start_date" name="start_date">
+                </div>
             </div>
-            <div class="form-group half-width">
-                <label for="deadline">Срок выполнения:</label>
-                <input type="date" id="deadline" name="deadline" required>
+            <div class="half-width">
+                <div class="form-group">
+                    <label for="deadline">Дедлайн</label>
+                    <input type="date" id="deadline" name="deadline" required>
+                </div>
             </div>
         </div>
-        
+
         <div class="form-actions">
-            <button type="submit" class="btn">Создать задачу</button>
-            <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn cancel-btn">Отмена</a>
+            <button type="submit">Создать задачу</button>
+            <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn cancel-btn">Отмена</a>
         </div>
     </form>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const startDate = document.getElementById('start_date');
-    const deadline = document.getElementById('deadline');
-    
-    startDate.addEventListener('change', function() {
-        deadline.min = this.value;
-        if (deadline.value && deadline.value < this.value) {
-            deadline.value = this.value;
-        }
-    });
-    
-    deadline.addEventListener('change', function() {
-        if (startDate.value && this.value < startDate.value) {
-            alert('Срок выполнения не может быть раньше даты начала');
-            this.value = startDate.value;
-        }
-    });
-});
-</script>
 {% endblock %}

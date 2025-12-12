@@ -10,11 +10,7 @@ from flask_login import current_user
 
 app_config = Config()
 
-# Инициализация JSON файлов с данными, если их нет
 def init_database(force_recreate=False):
-    """Инициализация базы данных. Если force_recreate=True, пересоздает файлы даже если они существуют"""
-    
-    # Если нужно принудительно пересоздать базу данных
     if force_recreate:
         print("Принудительное пересоздание базы данных...")
         if os.path.exists(app_config.USERS_DB):
@@ -23,8 +19,9 @@ def init_database(force_recreate=False):
             os.remove(app_config.PROJECTS_DB)
         if os.path.exists(app_config.TASKS_DB):
             os.remove(app_config.TASKS_DB)
+        if os.path.exists(app_config.TOKENS_DB):
+            os.remove(app_config.TOKENS_DB)
 
-    # Инициализация users.json
     if not os.path.exists(app_config.USERS_DB):
         print("Создание файла пользователей...")
         users = [
@@ -42,30 +39,13 @@ def init_database(force_recreate=False):
             json.dump(users, f, ensure_ascii=False, indent=2)
         print("Файл пользователей создан успешно")
     
-    # Инициализация projects.json
     if not os.path.exists(app_config.PROJECTS_DB):
         print("Создание файла проектов...")
-        projects = [
-            # {
-            #     "id": "1",
-            #     "name": "Открытие 2х новых образовательных программ.",
-            #     "status": "в работе",
-            #     "start_date": datetime.now().strftime("%d.%m.%Y"),
-            #     "end_date": (datetime.now().replace(year=datetime.now().year + 1)).strftime("%d.%m.%Y"),
-            #     "last_activity": datetime.now().strftime("%d.%m.%Y"),
-            #     "direction": "Образовательные программы",
-            #     "description": "Открытие 2х специальностей по направлению ИТ",
-            #     "expected_result": "Подготовлены учебные документы",
-            #     "supervisor_id": "2",
-            #     "manager_id": "2",
-            #     "team": []
-            # }
-        ]
+        projects = []
         with open(app_config.PROJECTS_DB, 'w', encoding='utf-8') as f:
             json.dump(projects, f, ensure_ascii=False, indent=2)
         print("Файл проектов создан успешно")
     
-    # Инициализация tasks.json
     if not os.path.exists(app_config.TASKS_DB):
         print("Создание файла задач...")
         tasks = []
@@ -73,7 +53,6 @@ def init_database(force_recreate=False):
             json.dump(tasks, f, ensure_ascii=False, indent=2)
         print("Файл задач создан успешно")
     
-    # Инициализация tokens.json
     if not os.path.exists(app_config.TOKENS_DB):
         print("Создание файла токенов...")
         tokens = []
@@ -95,7 +74,6 @@ def save_data(file_path, data):
 
 
 def can_access_task(task_id):
-    """Проверка прав доступа к задаче"""
     if current_user.role == 'admin':
         return True
     
@@ -105,11 +83,9 @@ def can_access_task(task_id):
     if not task:
         return False
     
-    # Если пользователь - исполнитель задачи
     if task.get('assignee_id') == current_user.id:
         return True
     
-    # Проверяем доступ к проекту, к которому относится задача
     return can_access_project(task.get('project_id', ''))
 
 
@@ -117,22 +93,18 @@ def can_access_project(project_id):
     if current_user.role == 'admin':
         return True
     
-    # Загружаем проект
     projects = load_data(app_config.PROJECTS_DB)
     project = next((p for p in projects if p.get('id') == project_id), None)
     
     if not project:
         return False
     
-    # Проверяем, является ли пользователь руководителем проекта
     if current_user.role == 'manager' and (project.get('manager_id', '') == current_user.id or project.get('supervisor_id', '') == current_user.id):
         return True
     
-    # Проверяем, является ли пользователь куратором проекта
     if current_user.role == 'supervisor' and project.get('supervisor_id', '') == current_user.id:
         return True
     
-    # Проверяем, входит ли пользователь в команду проекта
     if current_user.role == 'worker' and current_user.id in project.get('team', []):
         return True
     
@@ -140,7 +112,6 @@ def can_access_project(project_id):
 
 
 def get_available_roles():
-    """Возвращает список доступных ролей для выбора при регистрации"""
     return [
         {'id': 'admin', 'name': 'Администратор'},
         {'id': 'manager', 'name': 'Руководитель проекта'},
@@ -149,9 +120,7 @@ def get_available_roles():
     ]
 
 
-# Функции для работы с токенами
 def load_tokens():
-    """Загрузка токенов из файла"""
     if not os.path.exists(app_config.TOKENS_DB):
         return []
     with open(app_config.TOKENS_DB, 'r', encoding='utf-8') as f:
@@ -159,13 +128,11 @@ def load_tokens():
 
 
 def save_tokens(tokens):
-    """Сохранение токенов в файл"""
     with open(app_config.TOKENS_DB, 'w', encoding='utf-8') as f:
         json.dump(tokens, f, ensure_ascii=False, indent=2)
 
 
 def generate_token(role, project_id=None):
-    """Генерация нового токена"""
     token = {
         'id': str(uuid.uuid4()),
         'role': role,
@@ -180,7 +147,6 @@ def generate_token(role, project_id=None):
 
 
 def validate_token(token_id):
-    """Проверка валидности токена"""
     tokens = load_tokens()
     token = next((t for t in tokens if t['id'] == token_id), None)
     if token and not token['used']:
@@ -189,7 +155,6 @@ def validate_token(token_id):
 
 
 def mark_token_as_used(token_id):
-    """Отметка токена как использованного"""
     tokens = load_tokens()
     for token in tokens:
         if token['id'] == token_id:
@@ -199,15 +164,12 @@ def mark_token_as_used(token_id):
 
 
 def get_user_token(user_id, project_id=None):
-    """Получение или создание токена для пользователя в проекте"""
     tokens = load_tokens()
-    # Ищем существующий токен для пользователя в проекте
     existing_token = next((t for t in tokens if t.get('user_id') == user_id and t.get('project_id') == project_id and not t['used']), None)
     
     if existing_token:
         return existing_token['id']
     
-    # Создаем новый токен
     token = {
         'id': str(uuid.uuid4()),
         'user_id': user_id,
@@ -221,8 +183,6 @@ def get_user_token(user_id, project_id=None):
 
 
 def add_task_history(task, action, user_id, users):
-    """Добавление записи в историю изменений задачи"""
-    # Получаем имя пользователя
     user = next((u for u in users if u['id'] == user_id), None)
     user_name = user.get('name', user.get('username', 'Неизвестный')) if user else 'Неизвестный'
     
@@ -240,7 +200,6 @@ def add_task_history(task, action, user_id, users):
 
 
 def allowed_file(filename):
-    """Проверка разрешенного расширения файла"""
     ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'xls', 'xlsx'}
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

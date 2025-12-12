@@ -1,126 +1,70 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ task.title }} - Детали задачи</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    {% include 'base.html' %}
-    
-    <div class="container mt-4">
-        <h1>{{ task.title }}</h1>
-        
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Информация о задаче</h5>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Описание:</strong> {{ task.description or 'Не указано' }}</p>
-                        <p><strong>Статус:</strong> 
-                            <span class="badge 
-                                {% if task.status == 'активна' %}bg-primary
-                                {% elif task.status == 'завершена' %}bg-success
-                                {% elif task.status == 'отложена' %}bg-warning
-                                {% else %}bg-secondary{% endif %}">
-                                {{ task.status }}
-                            </span>
-                        </p>
-                        <p><strong>Дата создания:</strong> {{ task.created_at or 'Не указана' }}</p>
-                        <p><strong>Дата начала:</strong> {{ task.start_date or 'Не указана' }}</p>
-                        <p><strong>Дедлайн:</strong> {{ task.deadline or 'Не указан' }}</p>
-                        {% if task.completion_date %}
-                        <p><strong>Дата завершения:</strong> {{ task.completion_date }}</p>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="col-md-6">
-                        {% if assignee %}
-                            <p><strong>Ответственный:</strong> {{ assignee.name }} ({{ assignee.username }})</p>
-                        {% else %}
-                            <p><strong>Ответственный:</strong> Не назначен</p>
-                        {% endif %}
-                        
-                        {% if creator %}
-                            <p><strong>Создатель:</strong> {{ creator.name }} ({{ creator.username }})</p>
-                        {% else %}
-                            <p><strong>Создатель:</strong> Неизвестно</p>
-                        {% endif %}
-                        
-                        <p><strong>Проект:</strong> 
-                            {% if task.project_id %}
-                                <a href="{{ url_for('project_detail', project_id=task.project_id) }}">Перейти к проекту</a>
-                            {% else %}
-                                Не указан
-                            {% endif %}
-                        </p>
-                    </div>
-                </div>
-            </div>
+{% extends 'base.html' %}
+
+{% block title %}{{ task.title }} - НХТК{% endblock %}
+
+{% block content %}
+<div class="project-detail">
+    <div class="actions-bar">
+        <a href="{{ url_for('projects.project_detail', project_id=task.project_id) }}" class="btn back-btn">Назад к проекту</a>
+    </div>
+
+    <h2>{{ task.title }}</h2>
+
+    <div class="info-grid">
+        <div class="info-item">
+            <strong>Статус</strong>
+            <p><span class="status-badge {% if task.status == 'активна' %}status-active{% elif task.status == 'завершена' %}status-completed{% else %}status-paused{% endif %}">{{ task.status }}</span></p>
         </div>
-        
-        <!-- Файлы задачи -->
-        {% if task.files and task.files|length > 0 %}
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5>Прикрепленные файлы</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    {% for file in task.files %}
-                    <div class="col-md-6 mb-2">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title">{{ file.filename }}</h6>
-                                <p class="card-text">
-                                    Размер: {{ "%.2f"|format(file.size/1024) }} KB<br>
-                                    Загружен: {{ file.uploaded_at }}<br>
-                                </p>
-                                <a href="{{ url_for('static', filename='uploads/' + file.unique_filename) }}" 
-                                   class="btn btn-sm btn-primary" 
-                                   download="{{ file.filename }}">Скачать</a>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
+        <div class="info-item">
+            <strong>Исполнитель</strong>
+            <p>{{ assignee.name if assignee else 'Не назначен' }}</p>
         </div>
-        {% endif %}
-        
-        <!-- История изменений -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5>История изменений</h5>
-            </div>
-            <div class="card-body">
-                {% if task.history %}
-                <ul class="list-group">
-                    {% for change in task.history %}
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <strong>{{ change.action }}</strong><br>
-                                <small class="text-muted">{{ change.date }} - {{ change.user_name }}</small>
-                            </div>
-                        </div>
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p>История изменений пока отсутствует</p>
-                {% endif %}
-            </div>
+        <div class="info-item">
+            <strong>Дата создания</strong>
+            <p>{{ task.created_at }}</p>
         </div>
-        
-        <div class="mt-3">
-            <a href="{{ url_for('project_detail', project_id=task.project_id) }}" class="btn btn-secondary">Назад к проекту</a>
+        <div class="info-item">
+            <strong>Дедлайн</strong>
+            <p>{{ task.deadline }}</p>
+        </div>
+        <div class="info-item">
+            <strong>Дата начала</strong>
+            <p>{{ task.start_date or 'Не указана' }}</p>
+        </div>
+        <div class="info-item">
+            <strong>Создатель</strong>
+            <p>{{ creator.name if creator else 'Неизвестно' }}</p>
         </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+
+    <div class="project-description">
+        <h3>Описание</h3>
+        <p>{{ task.description or 'Нет описания' }}</p>
+    </div>
+
+    {% if task.files %}
+    <div class="task-files-section">
+        <h4>Прикрепленные файлы</h4>
+        <div class="files-list">
+            {% for file in task.files %}
+            <div class="file-item">
+                <span>{{ file.filename }}</span>
+                <small>{{ file.uploaded_at }}</small>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="form-actions">
+        <form action="{{ url_for('tasks.update_task_status', task_id=task.id) }}" method="POST" class="status-form">
+            <select name="status" class="status-select">
+                <option value="активна" {% if task.status == 'активна' %}selected{% endif %}>Активна</option>
+                <option value="завершена" {% if task.status == 'завершена' %}selected{% endif %}>Завершена</option>
+                <option value="отложена" {% if task.status == 'отложена' %}selected{% endif %}>Отложена</option>
+            </select>
+            <button type="submit" class="btn">Обновить статус</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

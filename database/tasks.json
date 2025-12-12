@@ -22,5 +22,18 @@
     "deadline": "2025-12-25",
     "status": "завершена",
     "completion_date": ""
+  },
+  {
+    "id": "8c62f683",
+    "project_id": "7fc4523a",
+    "title": "da",
+    "description": "lool",
+    "assignee_id": "49203535",
+    "created_by": "1",
+    "created_at": "09.12.2025",
+    "start_date": "2003-01-12",
+    "deadline": "2029-01-12",
+    "status": "активна",
+    "completion_date": ""
   }
 ]

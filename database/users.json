@@ -13,7 +13,7 @@
     "username": "ruk",
     "password": "scrypt:32768:8:1$7tzI3RpamdUPj8QO$a7c44cd8e56a6b857dcb33baf2d2a6bfb4d858b7d4d7fa79725b731d30253238323381bd15730554f8b0d9801b28386059ada37af7e07f004d9b376f50ddcd63",
     "name": "ruk",
-    "role": "manager",
+    "role": "supervisor",
     "token": "6724DFAA",
     "projects": []
   }
