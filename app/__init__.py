@@ -8,8 +8,8 @@ app = None
 def create_app():
     global app
     app = Flask(__name__, 
-                template_folder='../templates',
-                static_folder='../static')
+                template_folder='templates',
+                static_folder='static')
     app.config.from_object(Config)
 
     login_manager = LoginManager()
@@ -19,6 +19,7 @@ def create_app():
 
     app.config['UPLOAD_FOLDER'] = os.path.join(Config.BASE_DIR, 'uploads')
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+    app.config['DATABASE_PATH'] = Config.DATABASE_PATH
 
     os.makedirs(app.config['DATABASE_PATH'], exist_ok=True)
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)

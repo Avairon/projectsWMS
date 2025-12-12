@@ -1221,6 +1221,117 @@ small {
     min-width: 150px;
 }
 
+.users-cards {
+    display: none;
+}
+
+.user-card {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.user-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%);
+}
+
+.user-card-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.3rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.user-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-card-info h4 {
+    margin: 0 0 4px 0;
+    color: var(--gray-800);
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-card-username {
+    color: var(--gray-600);
+    font-size: 0.9rem;
+}
+
+.user-card-body {
+    padding: 1rem;
+}
+
+.user-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.user-card-row:last-child {
+    border-bottom: none;
+}
+
+.user-card-label {
+    color: var(--gray-600);
+    font-weight: 500;
+}
+
+.user-card-token {
+    font-family: 'Courier New', monospace;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.user-card-actions {
+    display: flex;
+    gap: 8px;
+    padding: 1rem;
+    background: var(--gray-100);
+    flex-wrap: wrap;
+}
+
+.user-card-actions .btn {
+    flex: 1;
+    text-align: center;
+    min-width: 100px;
+}
+
+.user-card-actions .inline-form {
+    flex: 1;
+    margin-left: 0;
+}
+
+.user-card-actions .inline-form .btn {
+    width: 100%;
+}
+
+.desktop-only {
+    display: block;
+}
+
+.mobile-only {
+    display: none;
+}
+
 @media (max-width: 992px) {
     .mobile-menu-toggle {
         display: block;
@@ -1366,6 +1477,18 @@ small {
     .gantt-timeline-item {
         min-width: 30px;
         font-size: 0.65rem;
+    }
+    
+    .desktop-only {
+        display: none;
+    }
+    
+    .mobile-only {
+        display: block;
+    }
+    
+    .users-cards {
+        display: block;
     }
 }
 

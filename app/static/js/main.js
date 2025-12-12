@@ -7,22 +7,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function initMobileMenu() {
     const header = document.querySelector('header .container');
     const nav = document.querySelector('nav');
+    const toggle = document.querySelector('.mobile-menu-toggle');
     
-    if (!header || !nav) return;
-    
-    let toggle = document.querySelector('.mobile-menu-toggle');
-    if (!toggle) {
-        toggle = document.createElement('button');
-        toggle.className = 'mobile-menu-toggle';
-        toggle.innerHTML = '&#9776;';
-        toggle.setAttribute('aria-label', 'Toggle menu');
-        toggle.setAttribute('aria-expanded', 'false');
-        
-        const h1 = header.querySelector('h1');
-        if (h1) {
-            h1.after(toggle);
-        }
-    }
+    if (!header || !nav || !toggle) return;
     
     toggle.addEventListener('click', function() {
         nav.classList.toggle('active');
