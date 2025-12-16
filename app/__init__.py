@@ -42,7 +42,7 @@ def create_app():
     @app.route('/generate_token', methods=['POST'])
     def generate_token_route():
         from flask import request, flash, redirect, url_for
-        from flask_login import current_user, login_required
+        from flask_login import current_user
         from app.utils import generate_token, can_access_project
         
         if not current_user.is_authenticated:
@@ -58,24 +58,24 @@ def create_app():
         
         if role not in ['admin', 'manager', 'supervisor', 'worker']:
             flash('Недопустимая роль для токена', 'error')
-            return redirect(url_for('dashboard.dashboard'))
+            return redirect(url_for('auth.profile'))
         
         if role == 'worker' and not project_id:
             flash('Для исполнителя необходимо указать проект', 'error')
-            return redirect(url_for('dashboard.dashboard'))
+            return redirect(url_for('auth.profile'))
         
         if current_user.role == 'manager' and role not in ['worker', 'supervisor']:
             flash('Руководитель может генерировать токены только для исполнителей и кураторов', 'error')
-            return redirect(url_for('dashboard.dashboard'))
+            return redirect(url_for('auth.profile'))
         
         if current_user.role == 'manager' and project_id:
             if not can_access_project(project_id):
                 flash('У вас нет доступа к указанному проекту', 'error')
-                return redirect(url_for('dashboard.dashboard'))
+                return redirect(url_for('auth.profile'))
         
         token_id = generate_token(role, project_id)
         
         flash(f'Токен успешно сгенерирован: {token_id}', 'success')
-        return redirect(url_for('dashboard.dashboard'))
+        return redirect(url_for('auth.profile'))
 
     return app

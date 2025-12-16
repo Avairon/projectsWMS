@@ -5,8 +5,7 @@
 {% block content %}
 <div class="create-task">
     <h2>Создание задачи</h2>
-    <p><strong>Проект:</strong> {{ project.name }}</p>
-    
+    <p class="info-box">Проект: <strong>{{ project.name }}</strong></p>
     <form method="POST">
         <div class="form-group">
             <label for="title">Название задачи</label>

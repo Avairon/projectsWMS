@@ -39,7 +39,7 @@ def create_task(project_id):
         eligible_users = [u for u in users if u['id'] in team_member_ids]
 
     if request.method == 'POST':
-        start_date = request.form.get('start_date', datetime.now().strftime("%d.%m.%Y"))
+        start_date = request.form.get('start_date', datetime.now().strftime("%d/%m/%Y"))
         deadline = request.form['deadline']
 
         if start_date and deadline:
@@ -60,7 +60,7 @@ def create_task(project_id):
             "description": request.form['description'].strip(),
             "assignee_id": request.form['assignee_id'],
             "created_by": current_user.id,
-            "created_at": datetime.now().strftime("%d.%m.%Y"),
+            "created_at": datetime.now().strftime("%d/%m/%Y"),
             "start_date": start_date,
             "deadline": request.form['deadline'],
             "status": "активна",
@@ -71,7 +71,7 @@ def create_task(project_id):
         tasks.append(task)
         save_data(app_config.TASKS_DB, tasks)
 
-        project['last_activity'] = datetime.now().strftime("%d.%m.%Y")
+        project['last_activity'] = datetime.now().strftime("%d/%m/%Y")
         for i, p in enumerate(projects):
             if p.get('id') == project_id:
                 projects[i] = project
@@ -132,7 +132,7 @@ def update_task_status(task_id):
     task['status'] = new_status
 
     if new_status == 'завершена' and task.get('status') != 'завершена':
-        task['completion_date'] = datetime.now().strftime("%d.%m.%Y")
+        task['completion_date'] = datetime.now().strftime("%d/%m/%Y")
     elif new_status != 'завершена':
         task['completion_date'] = ""
 
@@ -146,7 +146,7 @@ def update_task_status(task_id):
     projects = load_data(app_config.PROJECTS_DB)
     project = next((p for p in projects if p.get('id') == task.get('project_id')), None)
     if project:
-        project['last_activity'] = datetime.now().strftime("%d.%m.%Y")
+        project['last_activity'] = datetime.now().strftime("%d/%m/%Y")
         for i, p in enumerate(projects):
             if p.get('id') == project.get('id'):
                 projects[i] = project
@@ -211,7 +211,7 @@ def update_task(task_id):
         task['title'] = new_title.strip()
         add_task_history(task, f'Изменено название', current_user.id, users)
 
-    if new_description and new_description != task.get('description'):
+    if new_description is not None and new_description != task.get('description'):
         task['description'] = new_description.strip()
         add_task_history(task, f'Изменено описание', current_user.id, users)
 
@@ -227,6 +227,10 @@ def update_task(task_id):
         new_status = request.form['status']
         task['status'] = new_status
         add_task_history(task, f'Изменен статус на "{new_status}"', current_user.id, users)
+        if new_status == 'завершена':
+            task['completion_date'] = datetime.now().strftime("%d/%m/%Y")
+        else:
+            task['completion_date'] = ""
 
     for i, t in enumerate(tasks):
         if t.get('id') == task_id:
@@ -238,7 +242,7 @@ def update_task(task_id):
     projects = load_data(app_config.PROJECTS_DB)
     project = next((p for p in projects if p.get('id') == project_id), None)
     if project:
-        project['last_activity'] = datetime.now().strftime("%d.%m.%Y")
+        project['last_activity'] = datetime.now().strftime("%d/%m/%Y")
         for i, p in enumerate(projects):
             if p.get('id') == project_id:
                 projects[i] = project
@@ -286,7 +290,7 @@ def upload_task_file(task_id):
             'filename': filename,
             'unique_filename': unique_filename,
             'uploaded_by': current_user.id,
-            'uploaded_at': datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+            'uploaded_at': datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             'size': os.path.getsize(filepath)
         }
 
@@ -375,5 +379,18 @@ def api_task_detail(task_id):
 
     if 'files' not in task:
         task['files'] = []
+
+    projects = load_data(app_config.PROJECTS_DB)
+    project = next((p for p in projects if p['id'] == task.get('project_id')), None)
+    team_users = []
+    if project:
+        team_ids = project.get('team', [])
+        if project.get('manager_id'):
+            team_ids.append(project.get('manager_id'))
+        if project.get('supervisor_id'):
+            team_ids.append(project.get('supervisor_id'))
+        team_users = [{'id': u['id'], 'name': u['name']} for u in users if u['id'] in team_ids]
+    
+    task['team_users'] = team_users
 
     return jsonify(task)

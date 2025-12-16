@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import User, load_user
-from app.utils import load_data, save_data, init_database, validate_token, mark_token_as_used, get_available_roles
+from app.utils import load_data, save_data, init_database, validate_token, mark_token_as_used, get_available_roles, load_directions, save_directions
 import uuid
 from datetime import datetime
 from config import Config
@@ -29,7 +29,7 @@ def register():
         
         users = load_data(app_config.USERS_DB)
         if any(user['username'] == username for user in users):
-            flash('Пользователь с таким именем уже существует')
+            flash('Пользователь с таким логином уже существует')
             return render_template('register.html', roles=get_available_roles())
         
         display_token = str(uuid.uuid4())[:8].upper()
@@ -102,7 +102,7 @@ def login():
             flash(f'Добро пожаловать, {name}!')
             return redirect(url_for('dashboard.dashboard'))
         else:
-            flash('Неверное имя пользователя или пароль')
+            flash('Неверный логин или пароль')
     
     return render_template('login.html')
 
@@ -114,6 +114,25 @@ def logout():
     return redirect(url_for('auth.login'))
 
 
+@auth_bp.route('/profile')
+@login_required
+def profile():
+    users = load_data(app_config.USERS_DB)
+    user_data = next((u for u in users if u['id'] == current_user.id), None)
+    projects = load_data(app_config.PROJECTS_DB)
+    
+    if current_user.role == 'admin':
+        visible_projects = projects
+    elif current_user.role == 'manager':
+        visible_projects = [p for p in projects if p.get('manager_id', '') == current_user.id or p.get('supervisor_id', '') == current_user.id]
+    elif current_user.role == 'supervisor':
+        visible_projects = [p for p in projects if p.get('supervisor_id', '') == current_user.id]
+    else:
+        visible_projects = [p for p in projects if current_user.id in p.get('team', [])]
+    
+    return render_template('profile.html', user_data=user_data, projects=visible_projects)
+
+
 @auth_bp.route('/admin/users')
 @login_required
 def admin_users():
@@ -123,6 +142,51 @@ def admin_users():
     
     users = load_data(app_config.USERS_DB)
     return render_template('admin_users.html', users=users)
+
+
+@auth_bp.route('/admin/directions')
+@login_required
+def admin_directions():
+    if current_user.role != 'admin':
+        flash('У вас нет доступа к этой странице')
+        return redirect(url_for('dashboard.dashboard'))
+    
+    directions = load_directions()
+    return render_template('admin_directions.html', directions=directions)
+
+
+@auth_bp.route('/admin/directions/add', methods=['POST'])
+@login_required
+def add_direction():
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Нет доступа'}), 403
+    
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Название направления не может быть пустым')
+        return redirect(url_for('auth.admin_directions'))
+    
+    directions = load_directions()
+    new_id = str(uuid.uuid4())[:8]
+    directions.append({'id': new_id, 'name': name})
+    save_directions(directions)
+    
+    flash('Направление успешно добавлено')
+    return redirect(url_for('auth.admin_directions'))
+
+
+@auth_bp.route('/admin/directions/delete/<direction_id>', methods=['POST'])
+@login_required
+def delete_direction(direction_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Нет доступа'}), 403
+    
+    directions = load_directions()
+    directions = [d for d in directions if d['id'] != direction_id]
+    save_directions(directions)
+    
+    flash('Направление успешно удалено')
+    return redirect(url_for('auth.admin_directions'))
 
 
 @auth_bp.route('/admin/users/edit/<user_id>', methods=['GET', 'POST'])

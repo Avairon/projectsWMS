@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="create-project">
-    <h2>Создание нового проекта</h2>
+    <h2>Создание проекта</h2>
     <form method="POST">
         <div class="form-group">
             <label for="name">Название проекта</label>
@@ -13,12 +13,17 @@
 
         <div class="form-group">
             <label for="direction">Направление</label>
-            <input type="text" id="direction" name="direction" required>
+            <select id="direction" name="direction" required>
+                <option value="">-- Выберите направление --</option>
+                {% for direction in directions %}
+                <option value="{{ direction.name }}">{{ direction.name }}</option>
+                {% endfor %}
+            </select>
         </div>
 
         <div class="form-group">
-            <label for="description">Описание</label>
-            <textarea id="description" name="description" rows="4"></textarea>
+            <label for="description">Описание проекта</label>
+            <textarea id="description" name="description" rows="4" required></textarea>
         </div>
 
         <div class="form-group">
@@ -36,7 +41,7 @@
             <div class="half-width">
                 <div class="form-group">
                     <label for="end_date">Дата окончания</label>
-                    <input type="date" id="end_date" name="end_date" required>
+                    <input type="date" id="end_date" name="end_date">
                 </div>
             </div>
         </div>
@@ -57,9 +62,9 @@
                 <div class="form-group">
                     <label for="manager_id">Руководитель проекта</label>
                     <select id="manager_id" name="manager_id" required>
-                        <option value="">-- Выберите --</option>
+                        <option value="">-- Выберите руководителя --</option>
                         {% for manager in managers %}
-                        <option value="{{ manager.id }}">{{ manager.name }}</option>
+                        <option value="{{ manager.id }}" {% if manager.id == current_user.id %}selected{% endif %}>{{ manager.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -69,20 +74,22 @@
         <div class="form-group">
             <label for="status">Статус</label>
             <select id="status" name="status">
-                <option value="в работе">В работе</option>
-                <option value="завершен">Завершен</option>
+                <option value="в работе" selected>В работе</option>
                 <option value="приостановлен">Приостановлен</option>
+                <option value="завершен">Завершён</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label>Команда проекта</label>
+            <label>Участники команды</label>
             <div class="team-members">
-                {% for user in users if user.role == 'worker' %}
+                {% for user in users %}
+                {% if user.role == 'worker' %}
                 <div class="team-member">
-                    <input type="checkbox" id="member_{{ user.id }}" name="team_members" value="{{ user.id }}">
-                    <label for="member_{{ user.id }}">{{ user.name }}</label>
+                    <input type="checkbox" name="team_members" value="{{ user.id }}" id="team-{{ user.id }}">
+                    <label for="team-{{ user.id }}">{{ user.name }}</label>
                 </div>
+                {% endif %}
                 {% endfor %}
             </div>
         </div>

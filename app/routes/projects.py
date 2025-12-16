@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import login_required, current_user
-from app.utils import load_data, save_data, can_access_project, can_access_task
+from app.utils import load_data, save_data, can_access_project, can_access_task, load_directions
 from config import Config
 import uuid
 from datetime import datetime
@@ -54,6 +54,7 @@ def create_project():
     users = load_data(app_config.USERS_DB)
     managers = [u for u in users if u['role'] in ['admin', 'manager']]
     curators = [u for u in users if u['role'] in ['admin', 'supervisor']]
+    directions = load_directions()
 
     if request.method == 'POST':
         project_id = str(uuid.uuid4())[:8]
@@ -66,7 +67,7 @@ def create_project():
             "expected_result": request.form['expected_result'].strip(),
             "start_date": request.form['start_date'],
             "end_date": request.form['end_date'],
-            "last_activity": datetime.now().strftime("%d.%m.%Y"),
+            "last_activity": datetime.now().strftime("%d/%m/%Y"),
             "status": request.form.get('status', 'в работе'),
             "supervisor_id": request.form['supervisor_id'],
             "manager_id": request.form['manager_id'],
@@ -80,7 +81,7 @@ def create_project():
         flash('Проект успешно создан')
         return redirect(url_for('projects.project_detail', project_id=project_id))
 
-    return render_template('create_project.html', users=users, managers=managers, curators=curators)
+    return render_template('create_project.html', users=users, managers=managers, curators=curators, directions=directions)
 
 
 @projects_bp.route('/project/<project_id>/edit', methods=['GET', 'POST'])
@@ -103,6 +104,7 @@ def edit_project(project_id):
 
     users = load_data(app_config.USERS_DB)
     managers = [u for u in users if u['role'] in ['admin', 'manager']]
+    directions = load_directions()
 
     if request.method == 'POST':
         project['name'] = request.form['name'].strip()
@@ -114,7 +116,7 @@ def edit_project(project_id):
         project['supervisor_id'] = request.form.get('supervisor_id', None)
         project['manager_id'] = request.form.get('manager_id', None)
         project['team'] = request.form.getlist('team_members')
-        project['last_activity'] = datetime.now().strftime("%d.%m.%Y")
+        project['last_activity'] = datetime.now().strftime("%d/%m/%Y")
 
         for i, p in enumerate(projects):
             if p['id'] == project_id:
@@ -125,7 +127,7 @@ def edit_project(project_id):
         flash('Проект успешно обновлен')
         return redirect(url_for('projects.project_detail', project_id=project_id))
 
-    return render_template('edit_project.html', project=project, users=users, managers=managers)
+    return render_template('edit_project.html', project=project, users=users, managers=managers, directions=directions)
 
 
 @projects_bp.route('/api/project/<project_id>/team', methods=['GET'])

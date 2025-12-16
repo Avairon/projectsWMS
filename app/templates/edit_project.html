@@ -13,12 +13,17 @@
 
         <div class="form-group">
             <label for="direction">Направление</label>
-            <input type="text" id="direction" name="direction" value="{{ project.direction }}" required>
+            <select id="direction" name="direction" required>
+                <option value="">-- Выберите направление --</option>
+                {% for direction in directions %}
+                <option value="{{ direction.name }}" {% if direction.name == project.direction %}selected{% endif %}>{{ direction.name }}</option>
+                {% endfor %}
+            </select>
         </div>
 
         <div class="form-group">
-            <label for="description">Описание</label>
-            <textarea id="description" name="description" rows="4">{{ project.description }}</textarea>
+            <label for="description">Описание проекта</label>
+            <textarea id="description" name="description" rows="4" required>{{ project.description }}</textarea>
         </div>
 
         <div class="form-group">
@@ -30,7 +35,7 @@
             <div class="half-width">
                 <div class="form-group">
                     <label for="start_date">Дата начала</label>
-                    <input type="date" id="start_date" name="start_date" value="{{ project.start_date }}" disabled>
+                    <input type="text" id="start_date" value="{{ project.start_date }}" disabled>
                 </div>
             </div>
             <div class="half-width">
@@ -47,8 +52,10 @@
                     <label for="supervisor_id">Куратор</label>
                     <select id="supervisor_id" name="supervisor_id">
                         <option value="">-- Не выбран --</option>
-                        {% for user in users if user.role in ['admin', 'supervisor'] %}
+                        {% for user in users %}
+                        {% if user.role in ['admin', 'supervisor'] %}
                         <option value="{{ user.id }}" {% if user.id == project.supervisor_id %}selected{% endif %}>{{ user.name }}</option>
+                        {% endif %}
                         {% endfor %}
                     </select>
                 </div>
@@ -57,7 +64,6 @@
                 <div class="form-group">
                     <label for="manager_id">Руководитель проекта</label>
                     <select id="manager_id" name="manager_id" required>
-                        <option value="">-- Выберите --</option>
                         {% for manager in managers %}
                         <option value="{{ manager.id }}" {% if manager.id == project.manager_id %}selected{% endif %}>{{ manager.name }}</option>
                         {% endfor %}
@@ -70,25 +76,27 @@
             <label for="status">Статус</label>
             <select id="status" name="status">
                 <option value="в работе" {% if project.status == 'в работе' %}selected{% endif %}>В работе</option>
-                <option value="завершен" {% if project.status == 'завершен' %}selected{% endif %}>Завершен</option>
                 <option value="приостановлен" {% if project.status == 'приостановлен' %}selected{% endif %}>Приостановлен</option>
+                <option value="завершен" {% if project.status == 'завершен' %}selected{% endif %}>Завершён</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label>Команда проекта</label>
+            <label>Участники команды</label>
             <div class="team-members">
-                {% for user in users if user.role == 'worker' %}
+                {% for user in users %}
+                {% if user.role == 'worker' %}
                 <div class="team-member">
-                    <input type="checkbox" id="member_{{ user.id }}" name="team_members" value="{{ user.id }}" {% if user.id in project.team %}checked{% endif %}>
-                    <label for="member_{{ user.id }}">{{ user.name }}</label>
+                    <input type="checkbox" name="team_members" value="{{ user.id }}" id="team-{{ user.id }}" {% if user.id in project.team %}checked{% endif %}>
+                    <label for="team-{{ user.id }}">{{ user.name }}</label>
                 </div>
+                {% endif %}
                 {% endfor %}
             </div>
         </div>
 
         <div class="form-actions">
-            <button type="submit">Сохранить изменения</button>
+            <button type="submit">Сохранить</button>
             <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn cancel-btn">Отмена</a>
         </div>
     </form>

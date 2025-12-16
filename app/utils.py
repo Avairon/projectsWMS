@@ -21,6 +21,8 @@ def init_database(force_recreate=False):
             os.remove(app_config.TASKS_DB)
         if os.path.exists(app_config.TOKENS_DB):
             os.remove(app_config.TOKENS_DB)
+        if os.path.exists(app_config.DIRECTIONS_DB):
+            os.remove(app_config.DIRECTIONS_DB)
 
     if not os.path.exists(app_config.USERS_DB):
         print("Создание файла пользователей...")
@@ -59,6 +61,19 @@ def init_database(force_recreate=False):
         with open(app_config.TOKENS_DB, 'w', encoding='utf-8') as f:
             json.dump(tokens, f, ensure_ascii=False, indent=2)
         print("Файл токенов создан успешно")
+    
+    if not os.path.exists(app_config.DIRECTIONS_DB):
+        print("Создание файла направлений...")
+        directions = [
+            {"id": "1", "name": "Информационные технологии"},
+            {"id": "2", "name": "Машиностроение"},
+            {"id": "3", "name": "Энергетика"},
+            {"id": "4", "name": "Строительство"},
+            {"id": "5", "name": "Образование"}
+        ]
+        with open(app_config.DIRECTIONS_DB, 'w', encoding='utf-8') as f:
+            json.dump(directions, f, ensure_ascii=False, indent=2)
+        print("Файл направлений создан успешно")
 
 
 def load_data(file_path):
@@ -71,6 +86,14 @@ def load_data(file_path):
 def save_data(file_path, data):
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def load_directions():
+    return load_data(app_config.DIRECTIONS_DB)
+
+
+def save_directions(directions):
+    save_data(app_config.DIRECTIONS_DB, directions)
 
 
 def can_access_task(task_id):
@@ -137,7 +160,7 @@ def generate_token(role, project_id=None):
         'id': str(uuid.uuid4()),
         'role': role,
         'project_id': project_id,
-        'created_at': datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+        'created_at': datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         'used': False
     }
     tokens = load_tokens()
@@ -174,7 +197,7 @@ def get_user_token(user_id, project_id=None):
         'id': str(uuid.uuid4()),
         'user_id': user_id,
         'project_id': project_id,
-        'created_at': datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+        'created_at': datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         'used': False
     }
     tokens.append(token)
@@ -191,7 +214,7 @@ def add_task_history(task, action, user_id, users):
     
     history_entry = {
         'action': action,
-        'date': datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+        'date': datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         'user_id': user_id,
         'user_name': user_name
     }

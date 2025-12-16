@@ -38,7 +38,7 @@ def dashboard():
         project_ids = [p['id'] for p in visible_projects]
         user_tasks = [t for t in tasks if t['project_id'] in project_ids]
     else:
-        user_tasks = [t for t in tasks if t['assignee_id'] == current_user.id and t['status'] == 'активна']
+        user_tasks = [t for t in tasks if t['assignee_id'] == current_user.id]
     
     stats = {
         'total_projects': len(visible_projects),
