@@ -39,9 +39,28 @@ def create_task(project_id):
         eligible_users = [u for u in users if u['id'] in team_member_ids]
 
     if request.method == 'POST':
-        start_date = request.form.get('start_date', datetime.now().strftime("%d.%m.%Y"))
+        start_date = request.form.get('start_date', '')
         deadline = request.form['deadline']
-
+        
+        # Конвертируем даты в нужный формат, если они предоставлены
+        if start_date:
+            try:
+                start_dt = parse_date(start_date)
+                start_date = start_dt.strftime("%d.%m.%Y")
+            except:
+                flash('Некорректный формат даты начала')
+                return render_template('create_task.html', project=project, users=eligible_users)
+        else:
+            start_date = datetime.now().strftime("%d.%m.%Y")
+        
+        if deadline:
+            try:
+                deadline_dt = parse_date(deadline)
+                deadline = deadline_dt.strftime("%d.%m.%Y")
+            except:
+                flash('Некорректный формат даты дедлайна')
+                return render_template('create_task.html', project=project, users=eligible_users)
+        
         if start_date and deadline:
             try:
                 start_dt = parse_date(start_date)
@@ -62,7 +81,7 @@ def create_task(project_id):
             "created_by": current_user.id,
             "created_at": datetime.now().strftime("%d.%m.%Y"),
             "start_date": start_date,
-            "deadline": request.form['deadline'],
+            "deadline": deadline,
             "status": "активна",
             "completion_date": ""
         }
@@ -181,6 +200,21 @@ def update_task(task_id):
     new_description = request.form.get('description')
     new_start_date = request.form.get('start_date')
     new_deadline = request.form.get('deadline')
+    
+    # Конвертируем даты в нужный формат, если они предоставлены
+    if new_start_date:
+        try:
+            start_dt = parse_date(new_start_date)
+            new_start_date = start_dt.strftime("%d.%m.%Y")
+        except:
+            return jsonify({'error': 'Некорректный формат даты начала'}), 400
+    
+    if new_deadline:
+        try:
+            deadline_dt = parse_date(new_deadline)
+            new_deadline = deadline_dt.strftime("%d.%m.%Y")
+        except:
+            return jsonify({'error': 'Некорректный формат даты дедлайна'}), 400
 
     if new_start_date and new_deadline:
         try:
