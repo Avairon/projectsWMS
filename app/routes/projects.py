@@ -58,6 +58,26 @@ def create_project():
 
     if request.method == 'POST':
         project_id = str(uuid.uuid4())[:8]
+        
+        start_date = request.form['start_date']
+        end_date = request.form.get('end_date', '')
+        
+        # Проверяем формат даты и при необходимости конвертируем
+        if start_date:
+            try:
+                start_dt = parse_date(start_date)
+                start_date = start_dt.strftime("%d.%m.%Y")
+            except:
+                flash('Некорректный формат даты начала')
+                return render_template('create_project.html', users=users, managers=managers, curators=curators, directions=directions)
+        
+        if end_date:
+            try:
+                end_dt = parse_date(end_date)
+                end_date = end_dt.strftime("%d.%m.%Y")
+            except:
+                flash('Некорректный формат даты окончания')
+                return render_template('create_project.html', users=users, managers=managers, curators=curators, directions=directions)
 
         new_project = {
             "id": project_id,
@@ -65,8 +85,8 @@ def create_project():
             "description": request.form['description'].strip(),
             "direction": request.form['direction'].strip(),
             "expected_result": request.form['expected_result'].strip(),
-            "start_date": request.form['start_date'],
-            "end_date": request.form['end_date'],
+            "start_date": start_date,
+            "end_date": end_date,
             "last_activity": datetime.now().strftime("%d.%m.%Y"),
             "status": request.form.get('status', 'в работе'),
             "supervisor_id": request.form['supervisor_id'],
@@ -111,7 +131,19 @@ def edit_project(project_id):
         project['description'] = request.form['description'].strip()
         project['direction'] = request.form['direction'].strip()
         project['expected_result'] = request.form['expected_result'].strip()
-        project['end_date'] = request.form.get('end_date', None)
+        
+        end_date = request.form.get('end_date', None)
+        if end_date:
+            try:
+                end_dt = parse_date(end_date)
+                end_date = end_dt.strftime("%d.%m.%Y")
+                project['end_date'] = end_date
+            except:
+                flash('Некорректный формат даты окончания')
+                return render_template('edit_project.html', project=project, users=users, managers=managers, directions=directions)
+        else:
+            project['end_date'] = end_date
+        
         project['status'] = request.form.get('status', 'в работе')
         project['supervisor_id'] = request.form.get('supervisor_id', None)
         project['manager_id'] = request.form.get('manager_id', None)

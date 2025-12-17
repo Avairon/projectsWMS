@@ -7,7 +7,7 @@
     "assignee_id": "1",
     "created_by": "1",
     "created_at": "08.12.2025",
-    "deadline": "2025-12-30",
+    "deadline": "30.12.2025",
     "status": "активна",
     "completion_date": ""
   },
@@ -19,7 +19,7 @@
     "assignee_id": "b394c21e",
     "created_by": "b394c21e",
     "created_at": "08.12.2025",
-    "deadline": "2025-12-25",
+    "deadline": "25.12.2025",
     "status": "завершена",
     "completion_date": ""
   },
