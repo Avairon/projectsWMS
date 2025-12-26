@@ -5,7 +5,8 @@
 {% block content %}
 <div class="project-detail">
     <div class="actions-bar">
-        <a href="{{ url_for('projects.project_detail', project_id=task.project_id) }}" class="btn back-btn">Назад к проекту</a>
+        <a href="{{ url_for('projects.project_detail', project_id=task.project_id) }}" class="btn back-btn">Назад к
+            проекту</a>
     </div>
 
     <h2>{{ task.title }}</h2>
@@ -13,7 +14,9 @@
     <div class="info-grid">
         <div class="info-item">
             <strong>Статус</strong>
-            <p><span class="status-badge {% if task.status == 'активна' %}status-active{% elif task.status == 'завершена' %}status-completed{% else %}status-paused{% endif %}">{{ task.status }}</span></p>
+            <p><span
+                    class="status-badge {% if task.status == 'активна' %}status-active{% elif task.status == 'завершена' %}status-completed{% else %}status-paused{% endif %}">{{
+                    task.status }}</span></p>
         </div>
         <div class="info-item">
             <strong>Исполнитель</strong>
@@ -50,7 +53,8 @@
             <div class="file-item">
                 <span>{{ file.filename }}</span>
                 <div class="file-actions">
-                    <a href="/uploads/{{ file.executor_dir }}/{{ file.unique_filename }}" download class="file-action-btn download-btn">Скачать</a>
+                    <a href="/uploads/{{ file.executor_dir }}/{{ file.unique_filename }}" download
+                        class="file-action-btn download-btn">Скачать</a>
                 </div>
                 <small>{{ file.uploaded_at }} ({{ format_file_size(file.size) }})</small>
             </div>
@@ -63,14 +67,21 @@
     {% if current_user.id == task.assignee_id or current_user.role in ['admin', 'manager', 'supervisor'] %}
     <div class="task-reporting-section">
         <h4>Отчет по задаче</h4>
-        <form id="reportForm" action="{{ url_for('tasks.report_task', task_id=task.id) }}" method="POST" enctype="multipart/form-data">
+        <form id="reportForm" action="{{ url_for('tasks.report_task', task_id=task.id) }}" method="POST"
+            enctype="multipart/form-data">
             <div class="form-group">
-                <label for="comment">Комментарий:</label>
-                <textarea id="comment" name="comment" rows="4" placeholder="Добавьте комментарий к отчету..."></textarea>
+                <label for="comment_done">Сделано:</label>
+                <textarea id="comment_done" name="comment_done" rows="4" placeholder="Что было сделано..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="comment_planned">Запланировано:</label>
+                <textarea id="comment_planned" name="comment_planned" rows="4"
+                    placeholder="Что планируется сделать..."></textarea>
             </div>
             <div class="form-group">
                 <label for="report_file">Файл (необязательно):</label>
-                <input type="file" id="report_file" name="report_file" accept=".txt,.pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.xls,.xlsx">
+                <input type="file" id="report_file" name="report_file"
+                    accept=".txt,.pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.xls,.xlsx">
             </div>
             <button type="submit" class="btn">Отправить отчет</button>
         </form>
@@ -85,17 +96,32 @@
             {% for report in task.reports|reverse %}
             <div class="report-item">
                 <div class="report-header">
-                    <small>{{ report.reported_at }}</small>
+                    <strong>Отчет #{{ task.reports|length - loop.index0 }}</strong> - <small>{{ report.reported_at
+                        }}</small>
                 </div>
                 <div class="report-content">
-                    {% if report.comment %}
-                        <p>{{ report.comment }}</p>
+                    {% if report.comment_done %}
+                    <div class="report-section">
+                        <strong>Сделано:</strong>
+                        <p>{{ report.comment_done }}</p>
+                    </div>
                     {% endif %}
+                    {% if report.comment_planned %}
+                    <div class="report-section">
+                        <strong>Запланировано:</strong>
+                        <p>{{ report.comment_planned }}</p>
+                    </div>
+                    {% endif %}
+                    {% if not report.comment_done and not report.comment_planned and report.comment %}
+                    <p>{{ report.comment }}</p>
+                    {% endif %}
+
                     {% if report.file %}
                     <div class="report-file">
                         <strong>Прикрепленный файл:</strong>
                         <div class="file-actions">
-                            <a href="/uploads/{{ report.file.executor_dir }}/{{ report.file.unique_filename }}" download class="file-action-btn download-btn">Скачать</a>
+                            <a href="/uploads/{{ report.file.executor_dir }}/{{ report.file.unique_filename }}" download
+                                class="file-action-btn download-btn">Скачать</a>
                         </div>
                         <small>{{ report.file.filename }} ({{ format_file_size(report.file.size) }})</small>
                     </div>
@@ -110,9 +136,9 @@
     <div class="form-actions">
         <form action="{{ url_for('tasks.update_task_status', task_id=task.id) }}" method="POST" class="status-form">
             <select name="status" class="status-select">
-                <option value="активна" {% if task.status == 'активна' %}selected{% endif %}>Активна</option>
-                <option value="завершена" {% if task.status == 'завершена' %}selected{% endif %}>Завершена</option>
-                <option value="отложена" {% if task.status == 'отложена' %}selected{% endif %}>Отложена</option>
+                <option value="активна" {% if task.status=='активна' %}selected{% endif %}>Активна</option>
+                <option value="завершена" {% if task.status=='завершена' %}selected{% endif %}>Завершена</option>
+                <option value="отложена" {% if task.status=='отложена' %}selected{% endif %}>Отложена</option>
             </select>
             <button type="submit" class="btn">Обновить статус</button>
         </form>
@@ -120,29 +146,29 @@
 </div>
 
 <script>
-// Handle form submission
-document.getElementById('reportForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    
-    try {
-        const response = await fetch(this.action, {
-            method: 'POST',
-            body: formData
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            alert(result.message);
-            location.reload(); // Reload the page to show the new report
-        } else {
-            alert('Ошибка: ' + result.error);
+    // Handle form submission
+    document.getElementById('reportForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        try {
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(result.message);
+                location.reload(); // Reload the page to show the new report
+            } else {
+                alert('Ошибка: ' + result.error);
+            }
+        } catch (error) {
+            alert('Ошибка при отправке отчета: ' + error.message);
         }
-    } catch (error) {
-        alert('Ошибка при отправке отчета: ' + error.message);
-    }
-});
+    });
 </script>
 {% endblock %}

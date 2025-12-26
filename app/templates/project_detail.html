@@ -59,8 +59,8 @@
                 <span class="member-name">{{ member.name }}</span>
                 <span class="role-badge role-{{ member.role }}">
                     {% if member.role == 'admin' %}Администратор
-                    {% elif member.role == 'manager' %}Руководитель
-                    {% elif member.role == 'supervisor' %}Куратор
+                    {% elif member.role == 'manager' %}Руководитель проекта
+                    {% elif member.role == 'supervisor' %}Куратор проектного направления
                     {% else %}Исполнитель
                     {% endif %}
                 </span>

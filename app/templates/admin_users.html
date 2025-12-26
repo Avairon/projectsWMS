@@ -30,8 +30,8 @@
                     <td>
                         <span class="role-badge role-{{ user.role }}">
                             {% if user.role == 'admin' %}Администратор
-                            {% elif user.role == 'manager' %}Руководитель
-                            {% elif user.role == 'supervisor' %}Куратор
+                            {% elif user.role == 'manager' %}Руководитель проекта
+                            {% elif user.role == 'supervisor' %}Куратор проектного направления
                             {% else %}Исполнитель
                             {% endif %}
                         </span>
@@ -66,8 +66,8 @@
                     <span class="user-card-label">Роль:</span>
                     <span class="role-badge role-{{ user.role }}">
                         {% if user.role == 'admin' %}Администратор
-                        {% elif user.role == 'manager' %}Руководитель
-                        {% elif user.role == 'supervisor' %}Куратор
+                        {% elif user.role == 'manager' %}Руководитель проекта
+                        {% elif user.role == 'supervisor' %}Куратор проектного направления
                         {% else %}Исполнитель
                         {% endif %}
                     </span>

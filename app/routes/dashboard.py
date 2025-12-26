@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import login_required, current_user
-from app.utils import load_data, save_data, can_access_project, get_available_roles
+from app.utils import load_data, save_data, can_access_project, get_available_roles, load_directions
 from config import Config
 import uuid
 from datetime import datetime
@@ -21,6 +21,7 @@ def dashboard():
     projects = load_data(app_config.PROJECTS_DB)
     tasks = load_data(app_config.TASKS_DB)
     users = load_data(app_config.USERS_DB)
+    directions = load_directions()
     
     if current_user.role == 'admin':
         visible_projects = projects
@@ -54,5 +55,6 @@ def dashboard():
                          projects=visible_projects, 
                          tasks=user_tasks, 
                          users=users, 
+                         directions=directions,
                          stats=stats,
                          user_token=user_token)

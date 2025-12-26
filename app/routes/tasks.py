@@ -382,7 +382,9 @@ def report_task(task_id):
     if current_user.id != task.get('assignee_id') and current_user.role not in ['admin', 'manager', 'supervisor']:
         return jsonify({'error': 'Только исполнитель задачи может отправить отчет'}), 403
 
-    comment = request.form.get('comment', '').strip()
+    # Process report submission
+    comment_done = request.form.get('comment_done', '').strip()
+    comment_planned = request.form.get('comment_planned', '').strip()
     
     # Process file upload if present
     file_info = None
@@ -435,7 +437,9 @@ def report_task(task_id):
     # Create report entry
     report_entry = {
         'id': str(uuid.uuid4()),
-        'comment': comment,
+        'comment_done': comment_done,
+        'comment_planned': comment_planned,
+        'comment': comment_done + '\n' + comment_planned, # Fallback for old templates
         'file': file_info,
         'reported_by': current_user.id,
         'reported_at': datetime.now().strftime("%d.%m.%Y %H:%M:%S")
@@ -453,7 +457,8 @@ def report_task(task_id):
 
     # Add to task history
     users = load_data(app_config.USERS_DB)
-    add_task_history(task, f'Отчет: {comment[:50]}...' if len(comment) > 50 else f'Отчет: {comment}', current_user.id, users)
+    history_comment = f'Отчет добавлен'
+    add_task_history(task, history_comment, current_user.id, users)
 
     return jsonify({
         'success': True, 
@@ -510,6 +515,8 @@ def task_detail(task_id):
         formatted_report = {
             'id': report.get('id'),
             'comment': report.get('comment', ''),
+            'comment_done': report.get('comment_done', ''),
+            'comment_planned': report.get('comment_planned', ''),
             'file': report.get('file'),
             'reported_by': report.get('reported_by'),
             'executor_name': executor_name,
@@ -609,6 +616,8 @@ def api_task_detail(task_id):
         formatted_report = {
             'id': report.get('id'),
             'comment': report.get('comment', ''),
+            'comment_done': report.get('comment_done', ''),
+            'comment_planned': report.get('comment_planned', ''),
             'file': report.get('file'),
             'reported_by': report.get('reported_by'),
             'executor_name': executor_name,

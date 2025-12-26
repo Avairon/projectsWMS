@@ -51,20 +51,66 @@ function initProjectFilters() {
     const showCompletedCheckbox = document.getElementById('show-completed-projects');
     const projectsList = document.getElementById('projects-list');
     
-    if (showCompletedCheckbox && projectsList) {
-        showCompletedCheckbox.addEventListener('change', function() {
-            const showCompleted = this.checked;
+    // New filters
+    const directionFilter = document.getElementById('project-direction-filter');
+    const managerFilter = document.getElementById('project-manager-filter');
+    const supervisorFilter = document.getElementById('project-supervisor-filter');
+
+    if (projectsList) {
+        function filterProjects() {
+            const showCompleted = showCompletedCheckbox ? showCompletedCheckbox.checked : false;
+            const direction = directionFilter ? directionFilter.value : '';
+            const manager = managerFilter ? managerFilter.value : '';
+            const supervisor = supervisorFilter ? supervisorFilter.value : '';
+            
             const projectCards = projectsList.querySelectorAll('.project-card');
             
             projectCards.forEach(card => {
                 const status = card.dataset.status;
-                if (status === 'завершен') {
-                    card.style.display = showCompleted ? '' : 'none';
-                }
+                const cardDirection = card.dataset.direction;
+                const cardManager = card.dataset.manager;
+                const cardSupervisor = card.dataset.supervisor;
+                
+                let showByStatus = showCompleted ? true : status !== 'завершен';
+                let showByDirection = !direction || cardDirection === direction;
+                let showByManager = !manager || cardManager === manager;
+                let showBySupervisor = !supervisor || cardSupervisor === supervisor;
+                
+                card.style.display = (showByStatus && showByDirection && showByManager && showBySupervisor) ? '' : 'none';
             });
-        });
+        }
         
-        showCompletedCheckbox.dispatchEvent(new Event('change'));
+        if (showCompletedCheckbox) showCompletedCheckbox.addEventListener('change', filterProjects);
+        if (directionFilter) directionFilter.addEventListener('change', filterProjects);
+        if (managerFilter) managerFilter.addEventListener('change', filterProjects);
+        if (supervisorFilter) supervisorFilter.addEventListener('change', filterProjects);
+        
+        // Initial filter
+        filterProjects();
+    }
+}
+
+function resetFilters() {
+    const filters = [
+        'project-direction-filter',
+        'project-manager-filter',
+        'project-supervisor-filter',
+        'task-project-filter',
+        'task-status-filter'
+    ];
+    
+    filters.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.value = '';
+            el.dispatchEvent(new Event('change'));
+        }
+    });
+    
+    const showCompleted = document.getElementById('show-completed-projects');
+    if (showCompleted) {
+        showCompleted.checked = false;
+        showCompleted.dispatchEvent(new Event('change'));
     }
 }
 
@@ -494,7 +540,7 @@ function formatDateForInput(date) {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
+    return `${year}-${month}-${day}`;
 }
 
 function submitTaskEdit() {

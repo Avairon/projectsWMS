@@ -138,9 +138,19 @@ def get_available_roles():
     return [
         {'id': 'admin', 'name': 'Администратор'},
         {'id': 'manager', 'name': 'Руководитель проекта'},
-        {'id': 'supervisor', 'name': 'Куратор'},
+        {'id': 'supervisor', 'name': 'Куратор проектного направления'},
         {'id': 'worker', 'name': 'Исполнитель'}
     ]
+
+
+def convert_to_iso(date_str):
+    if not date_str:
+        return ''
+    try:
+        from datetime import datetime
+        return datetime.strptime(date_str, "%d.%m.%Y").strftime("%Y-%m-%d")
+    except:
+        return ''
 
 
 def load_tokens():

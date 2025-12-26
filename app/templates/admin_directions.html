@@ -25,8 +25,10 @@
             {% for direction in directions %}
             <div class="direction-item">
                 <span class="direction-name">{{ direction.name }}</span>
-                <form action="{{ url_for('auth.delete_direction', direction_id=direction.id) }}" method="POST" class="inline-form">
-                    <button type="submit" class="btn small-btn delete-btn" onclick="return confirm('Удалить направление?')">Удалить</button>
+                <form action="{{ url_for('auth.delete_direction', direction_id=direction.id) }}" method="POST"
+                    class="inline-form">
+                    <button type="submit" class="btn small-btn delete-btn"
+                        onclick="return confirm('Удалить направление?')">Удалить</button>
                 </form>
             </div>
             {% endfor %}

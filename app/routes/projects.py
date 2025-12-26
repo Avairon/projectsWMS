@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import login_required, current_user
-from app.utils import load_data, save_data, can_access_project, can_access_task, load_directions
+from app.utils import load_data, save_data, can_access_project, can_access_task, load_directions, convert_to_iso
 from config import Config
 import uuid
 from datetime import datetime
@@ -132,6 +132,15 @@ def edit_project(project_id):
         project['direction'] = request.form['direction'].strip()
         project['expected_result'] = request.form['expected_result'].strip()
         
+        start_date = request.form.get('start_date')
+        if start_date:
+            try:
+                # Try parsing from date input (YYYY-MM-DD)
+                start_dt = parse_date(start_date)
+                project['start_date'] = start_dt.strftime("%d.%m.%Y")
+            except:
+                pass # Keep original if parse fails
+
         end_date = request.form.get('end_date', None)
         if end_date:
             try:
@@ -158,6 +167,10 @@ def edit_project(project_id):
         save_data(app_config.PROJECTS_DB, projects)
         flash('Проект успешно обновлен')
         return redirect(url_for('projects.project_detail', project_id=project_id))
+
+    # Prepare ISO dates for date inputs
+    project['start_date_iso'] = convert_to_iso(project.get('start_date'))
+    project['end_date_iso'] = convert_to_iso(project.get('end_date'))
 
     return render_template('edit_project.html', project=project, users=users, managers=managers, directions=directions)
 

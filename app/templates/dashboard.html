@@ -7,7 +7,7 @@
     <h2>Панель управления</h2>
 
     <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card" onclick="resetFilters()" style="cursor: pointer;">
             <h3>Всего проектов</h3>
             <span class="stat-number">{{ stats.total_projects }}</span>
         </div>
@@ -33,6 +33,30 @@
         <div class="section-header">
             <h3>Проекты</h3>
             <div class="section-controls">
+                <div class="filter-group">
+                    <select id="project-direction-filter">
+                        <option value="">Все направления</option>
+                        {% for d in directions %}
+                        <option value="{{ d.name }}">{{ d.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="project-manager-filter">
+                        <option value="">Все руководители</option>
+                        {% for u in users if u.role == 'manager' %}
+                        <option value="{{ u.id }}">{{ u.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                 <div class="filter-group">
+                    <select id="project-supervisor-filter">
+                        <option value="">Все кураторы</option>
+                        {% for u in users if u.role == 'supervisor' %}
+                        <option value="{{ u.id }}">{{ u.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
                 <label class="toggle-checkbox">
                     <input type="checkbox" id="show-completed-projects">
                     <span>Показать завершённые</span>
@@ -45,9 +69,16 @@
         {% if projects %}
         <div class="projects-list" id="projects-list">
             {% for project in projects %}
-            <div class="project-card status-{% if project.status == 'в работе' %}active{% elif project.status == 'завершен' %}completed{% else %}paused{% endif %}" data-status="{{ project.status }}">
+            {% set manager = users | selectattr('id', 'equalto', project.manager_id) | first %}
+            {% set supervisor = users | selectattr('id', 'equalto', project.supervisor_id) | first %}
+            <div class="project-card status-{% if project.status == 'в работе' %}active{% elif project.status == 'завершен' %}completed{% else %}paused{% endif %}" 
+                 data-status="{{ project.status }}"
+                 data-direction="{{ project.direction }}"
+                 data-manager="{{ project.manager_id }}"
+                 data-supervisor="{{ project.supervisor_id }}">
                 <h4>{{ project.name }}</h4>
                 <p><strong>Направление:</strong> {{ project.direction or 'Не указано' }}</p>
+                <p><strong>Руководитель:</strong> {{ manager.name if manager else 'Не назначен' }}</p>
                 <p><strong>Статус:</strong> <span class="status-badge {% if project.status == 'в работе' %}status-active{% elif project.status == 'завершен' %}status-completed{% else %}status-paused{% endif %}">{{ project.status }}</span></p>
                 <p><strong>Последняя активность:</strong> {{ project.last_activity }}</p>
                 <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn">Подробнее</a>
