@@ -1,0 +1,56 @@
+[
+  {
+    "id": "1",
+    "username": "admin",
+    "password": "pbkdf2:sha256:1000000$FjiOlS0G$b8e3e97368a3f2bc81337f397f994867968af95fb5873f48a2cbaf94d8a49b03",
+    "name": "Администратор системы",
+    "role": "admin",
+    "token": "ADMIN001",
+    "projects": []
+  },
+  {
+    "id": "d40bd07c",
+    "username": "НВКромм",
+    "password": "scrypt:32768:8:1$vQoYPLof1dBwm5YQ$99f419766f01c75773e69666f269c63cdb7acbd392d16a9c30821ec1f3b7c941b33a1b8d5bc3804ae77936d0069558c8951a5dcf27d056e73f3d20b2d97537b1",
+    "name": "Наталья Викторовна Кромм",
+    "role": "admin",
+    "token": "8C3A91F2",
+    "projects": []
+  },
+  {
+    "id": "12e7652a",
+    "username": "Avairon",
+    "password": "scrypt:32768:8:1$Yl8eArkj3JxFBSuZ$f1de7266f01ec9f766f6bd3a6d673318ff76ff32574ab461ee82240e6e0b55c6eccc1501a291b7b1c0b51b0c768b40f9454160a2511caadbae2d759ba65b6664",
+    "name": "Липский Назар Алексеевич",
+    "role": "worker",
+    "token": "A6F6BD06",
+    "projects": []
+  },
+  {
+    "id": "52f91648",
+    "username": "Кирилл",
+    "password": "scrypt:32768:8:1$e2gZKw98nsdTbLZN$355a63b43978a9f41b91fd3563d426b07c5dee9f4c0947ca1b149acf0121296f2eb99548de1b6a46aea5d776c0f2f35f04b29fc87eca5d27933b8b1b4cd5833b",
+    "name": "Смагин Кирилл Дмитриевич",
+    "role": "worker",
+    "token": "ACB9FE49",
+    "projects": []
+  },
+  {
+    "id": "bd5eafa7",
+    "username": "СВ",
+    "password": "scrypt:32768:8:1$B3l8JcoK0m71R7gc$7d180e468f53913ee154ef023200cbec2e6f354784006c03fc28eac15579689719d5c95b58711592e71e3781529105e1ad7827dffdff36d1536d7aa3098d4a6a",
+    "name": "Ромасько Светлана Владимировна",
+    "role": "manager",
+    "token": "86EDB79C",
+    "projects": []
+  },
+  {
+    "id": "6c87e4cf",
+    "username": "tn-80@mail.ru",
+    "password": "scrypt:32768:8:1$e5XvE279vtK7TN1Q$3e49b50e712829c5605840807752bb920d0da1e579b7a32e36225494a03848af2f6d641d04883ad6fb9358b922253dc77ff636de1f136e45289006331bd2cb2a",
+    "name": "Червякова Татьяна Николаевна",
+    "role": "manager",
+    "token": "3D699CC7",
+    "projects": []
+  }
+]

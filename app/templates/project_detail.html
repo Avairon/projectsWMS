@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.name }} - НХТК{% endblock %}
+
+{% block content %}
+<div class="project-detail">
+    <div class="actions-bar">
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn back-btn">Назад</a>
+        {% if current_user.role in ['admin', 'manager'] %}
+        <a href="{{ url_for('projects.edit_project', project_id=project.id) }}" class="btn">Редактировать</a>
+        {% endif %}
+    </div>
+
+    <h2>{{ project.name }}</h2>
+
+    <div class="info-grid">
+        <div class="info-item">
+            <strong>Статус</strong>
+            <p><span class="status-badge {% if project.status == 'в работе' %}status-active{% elif project.status == 'завершен' %}status-completed{% else %}status-paused{% endif %}">{{ project.status }}</span></p>
+        </div>
+        <div class="info-item">
+            <strong>Направление</strong>
+            <p>{{ project.direction or 'Не указано' }}</p>
+        </div>
+        <div class="info-item">
+            <strong>Дата начала</strong>
+            <p>{{ project.start_date }}</p>
+        </div>
+        <div class="info-item">
+            <strong>Дата окончания</strong>
+            <p>{{ project.end_date or 'Не указана' }}</p>
+        </div>
+        <div class="info-item">
+            <strong>Руководитель Проектов</strong>
+            <p>{{ supervisor.name if supervisor else 'Не назначен' }}</p>
+        </div>
+        <div class="info-item">
+            <strong>Куратор Направления</strong>
+            <p>{{ manager.name if manager else 'Не назначен' }}</p>
+        </div>
+    </div>
+
+    <div class="project-description">
+        <h3>Описание проекта</h3>
+        <p>{{ project.description or 'Нет описания' }}</p>
+    </div>
+
+    <div class="project-result">
+        <h3>Ожидаемый результат</h3>
+        <p>{{ project.expected_result or 'Не указан' }}</p>
+    </div>
+
+    <div class="project-team">
+        <h3>Команда проекта</h3>
+        {% if team_members %}
+        <ul class="team-list">
+            {% for member in team_members %}
+            <li>
+                <span class="member-name">{{ member.name }}</span>
+                <span class="role-badge role-{{ member.role }}">
+                    {% if member.role == 'admin' %}Администратор
+                    {% elif member.role == 'manager' %}Руководитель
+                    {% elif member.role == 'supervisor' %}Куратор
+                    {% else %}Исполнитель
+                    {% endif %}
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="no-data">Нет участников</p>
+        {% endif %}
+    </div>
+
+    <div class="project-tabs">
+        <button class="tab-btn active" data-tab="tasks-tab">Список задач</button>
+        <button class="tab-btn" data-tab="gantt-tab">Диаграмма Ганта</button>
+    </div>
+
+    <div id="tasks-tab" class="tab-content active">
+        <div class="project-tasks">
+            <div class="section-header">
+                <h3>Задачи проекта</h3>
+                {% if current_user.role in ['admin', 'manager'] %}
+                <a href="{{ url_for('tasks.create_task', project_id=project.id) }}" class="btn">Добавить задачу</a>
+                {% endif %}
+            </div>
+            {% if tasks %}
+            <div class="table-wrapper">
+                <table class="tasks-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Название</th>
+                            <th>Исполнитель</th>
+                            <th>Дата начала</th>
+                            <th>Дедлайн</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        {% set assignee = users | selectattr('id', 'equalto', task.assignee_id) | first %}
+                        <tr class="task-row" data-task-id="{{ task.id }}">
+                            <td>{{ loop.index }}</td>
+                            <td>{{ task.title }}</td>
+                            <td>{{ assignee.name if assignee else 'Не назначен' }}</td>
+                            <td>{{ task.start_date or '-' }}</td>
+                            <td>{{ task.deadline }}</td>
+                            <td>
+                                <span class="status-badge {% if task.status == 'активна' %}status-active{% elif task.status == 'завершена' %}status-completed{% else %}status-paused{% endif %}">{{ task.status }}</span>
+                            </td>
+                            <td>
+                                <button class="btn small-btn edit-task-btn" data-task-id="{{ task.id }}">Изменить</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">Нет задач в проекте</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="gantt-tab" class="tab-content">
+        <div class="gantt-container">
+            <div class="gantt-header">
+                <h3>Диаграмма Ганта</h3>
+                <div class="gantt-controls">
+                    <button class="btn small-btn gantt-zoom-btn" data-zoom="day">День</button>
+                    <button class="btn small-btn gantt-zoom-btn active" data-zoom="week">Неделя</button>
+                    <button class="btn small-btn gantt-zoom-btn" data-zoom="month">Месяц</button>
+                    <button class="btn small-btn gantt-zoom-btn" data-zoom="year">Год</button>
+                </div>
+            </div>
+            <div class="gantt-chart" id="gantt-chart" data-project-id="{{ project.id }}">
+            </div>
+            <div class="gantt-legend">
+                <div class="legend-item">
+                    <span class="legend-color status-active"></span>
+                    <span>Активные</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color status-completed"></span>
+                    <span>Завершённые</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color status-paused"></span>
+                    <span>Отложенные</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="task-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Редактирование задачи</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="edit-task-form">
+                <input type="hidden" id="edit-task-id" name="task_id">
+                <div class="form-group">
+                    <label for="edit-task-title">Название</label>
+                    <input type="text" id="edit-task-title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-task-description">Описание</label>
+                    <textarea id="edit-task-description" name="description" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="half-width">
+                        <div class="form-group">
+                            <label for="edit-task-assignee">Исполнитель</label>
+                            <select id="edit-task-assignee" name="assignee_id"></select>
+                        </div>
+                    </div>
+                    <div class="half-width">
+                        <div class="form-group">
+                            <label for="edit-task-status">Статус</label>
+                            <select id="edit-task-status" name="status">
+                                <option value="активна">Активна</option>
+                                <option value="завершена">Завершена</option>
+                                <option value="отложена">Отложена</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="half-width">
+                        <div class="form-group">
+                            <label for="edit-task-start">Дата начала (ДД.ММ.ГГГГ)</label>
+                            <input type="text" id="edit-task-start" name="start_date" placeholder="ДД.ММ.ГГГГ">
+                        </div>
+                    </div>
+                    <div class="half-width">
+                        <div class="form-group">
+                            <label for="edit-task-deadline">Дедлайн (ДД.ММ.ГГГГ)</label>
+                            <input type="text" id="edit-task-deadline" name="deadline" placeholder="ДД.ММ.ГГГГ">
+                        </div>
+                    </div>
+                </div>
+                <div class="task-history" id="task-history">
+                    <h4>История изменений</h4>
+                    <div class="history-list"></div>
+                </div>
+                <div class="task-files" id="task-files">
+                    <h4>Прикрепленные файлы</h4>
+                    <div class="files-list"></div>
+                </div>
+                
+                <div class="task-reports" id="task-reports">
+                    <h4>Отчеты по задаче</h4>
+                    <div class="reports-list"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn">Сохранить</button>
+                    <button type="button" class="btn cancel-btn modal-close-btn">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

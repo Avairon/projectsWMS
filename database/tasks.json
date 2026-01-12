@@ -1,0 +1,233 @@
+[
+  {
+    "id": "6c652586",
+    "project_id": "6ae27402",
+    "title": "ТЗ для программы по УП",
+    "description": "Написание ТЗ для программы по управлению проектами",
+    "assignee_id": "d40bd07c",
+    "created_by": "d40bd07c",
+    "created_at": "15.12.2025",
+    "start_date": "10.10.2025",
+    "deadline": "15.10.2025",
+    "status": "активна",
+    "completion_date": "",
+    "history": [
+      {
+        "action": "Изменена дата начала",
+        "date": "15.12.2025 11:24:22",
+        "user_id": "d40bd07c",
+        "user_name": "Наталья Викторовна Кромм"
+      },
+      {
+        "action": "Изменен дедлайн",
+        "date": "15.12.2025 11:24:22",
+        "user_id": "d40bd07c",
+        "user_name": "Наталья Викторовна Кромм"
+      },
+      {
+        "action": "Изменена дата начала",
+        "date": "19.12.2025 08:50:21",
+        "user_id": "d40bd07c",
+        "user_name": "Наталья Викторовна Кромм"
+      },
+      {
+        "action": "Изменено название",
+        "date": "19.12.2025 09:35:26",
+        "user_id": "d40bd07c",
+        "user_name": "Наталья Викторовна Кромм"
+      }
+    ],
+    "reports": [
+      {
+        "id": "7c450c91-4bde-4741-9aa6-6c1316326fab",
+        "comment": "тестовый отчет",
+        "file": null,
+        "reported_by": "1",
+        "reported_at": "18.12.2025 17:39:08"
+      }
+    ]
+  },
+  {
+    "id": "b9afe244",
+    "project_id": "6ae27402",
+    "title": "Разработка ПО",
+    "description": "Разработать пилотный вариант программы согласно ТЗ",
+    "assignee_id": "12e7652a",
+    "created_by": "d40bd07c",
+    "created_at": "15.12.2025",
+    "start_date": "13.10.2025",
+    "deadline": "23.12.2025",
+    "status": "активна",
+    "completion_date": "",
+    "history": [
+      {
+        "action": "Изменена дата начала",
+        "date": "15.12.2025 11:23:31",
+        "user_id": "d40bd07c",
+        "user_name": "Наталья Викторовна Кромм"
+      },
+      {
+        "action": "Изменен дедлайн",
+        "date": "15.12.2025 11:23:31",
+        "user_id": "d40bd07c",
+        "user_name": "Наталья Викторовна Кромм"
+      },
+      {
+        "action": "Изменена дата начала",
+        "date": "15.12.2025 11:24:28",
+        "user_id": "d40bd07c",
+        "user_name": "Наталья Викторовна Кромм"
+      },
+      {
+        "action": "Изменен дедлайн",
+        "date": "15.12.2025 11:24:28",
+        "user_id": "d40bd07c",
+        "user_name": "Наталья Викторовна Кромм"
+      },
+      {
+        "action": "Изменено название",
+        "date": "19.12.2025 09:35:37",
+        "user_id": "d40bd07c",
+        "user_name": "Наталья Викторовна Кромм"
+      }
+    ],
+    "reports": [
+      {
+        "id": "b777ee41-3179-4f3f-9cc2-d75e92e6093b",
+        "comment": "Тестовое прикрепление",
+        "file": {
+          "filename": "da00b2aa59d51753e1534a1a8e7db01e.png",
+          "unique_filename": "report_b9afe244_10cc4206_da00b2aa59d51753e1534a1a8e7db01e.png",
+          "uploaded_by": "12e7652a",
+          "uploaded_at": "18.12.2025 14:13:11",
+          "size": 245084,
+          "executor_dir": ""
+        },
+        "reported_by": "12e7652a",
+        "reported_at": "18.12.2025 14:13:11"
+      },
+      {
+        "id": "22bc9277-3684-4152-bb37-a7103e0496b3",
+        "comment": "Тестовое прикрепление",
+        "file": {
+          "filename": "da00b2aa59d51753e1534a1a8e7db01e.png",
+          "unique_filename": "report_b9afe244_2fb49d82_da00b2aa59d51753e1534a1a8e7db01e.png",
+          "uploaded_by": "12e7652a",
+          "uploaded_at": "18.12.2025 14:13:22",
+          "size": 245084,
+          "executor_dir": ""
+        },
+        "reported_by": "12e7652a",
+        "reported_at": "18.12.2025 14:13:22"
+      },
+      {
+        "id": "a2dce382-44b6-40c2-856e-67609e2eac14",
+        "comment": "Тестовое прикрепление",
+        "file": {
+          "filename": "da00b2aa59d51753e1534a1a8e7db01e.png",
+          "unique_filename": "report_b9afe244_e0a69c12_da00b2aa59d51753e1534a1a8e7db01e.png",
+          "uploaded_by": "12e7652a",
+          "uploaded_at": "18.12.2025 14:13:41",
+          "size": 245084,
+          "executor_dir": ""
+        },
+        "reported_by": "12e7652a",
+        "reported_at": "18.12.2025 14:13:41"
+      },
+      {
+        "id": "13f89d6d-058e-4139-9d0c-37cb2222f4c4",
+        "comment": "Котик",
+        "file": {
+          "filename": "f7a8084fdc2fd4945d68c13d9bf6ef65.jpg",
+          "unique_filename": "report_b9afe244_a16b01df_f7a8084fdc2fd4945d68c13d9bf6ef65.jpg",
+          "uploaded_by": "12e7652a",
+          "uploaded_at": "18.12.2025 14:16:20",
+          "size": 51280,
+          "executor_dir": ""
+        },
+        "reported_by": "12e7652a",
+        "reported_at": "18.12.2025 14:16:20"
+      },
+      {
+        "id": "9dc67811-3a26-4c29-9b06-ca7467a857f3",
+        "comment": "Контрольная проверка перед тестом",
+        "file": null,
+        "reported_by": "12e7652a",
+        "reported_at": "18.12.2025 17:16:28"
+      }
+    ]
+  },
+  {
+    "id": "5aff534d",
+    "project_id": "6ae27402",
+    "title": "Подготовить отчет",
+    "description": "Отчет о проведенной работе по проектной деятельности для Директора",
+    "assignee_id": "d40bd07c",
+    "created_by": "d40bd07c",
+    "created_at": "19.12.2025",
+    "start_date": "18.12.2025",
+    "deadline": "22.12.2025",
+    "status": "активна",
+    "completion_date": ""
+  },
+  {
+    "id": "c4f67d9f",
+    "project_id": "5a6c7985",
+    "title": "Подготовка материалов к курсу",
+    "description": "Собрать все методические материалы и структурировать, написать план работы для реализации проекта",
+    "assignee_id": "d40bd07c",
+    "created_by": "d40bd07c",
+    "created_at": "19.12.2025",
+    "start_date": "18.12.2025",
+    "deadline": "01.10.2026",
+    "status": "активна",
+    "completion_date": ""
+  },
+  {
+    "id": "fe405d7c",
+    "project_id": "6ae27402",
+    "title": "Тестирование системы НХТК - Реестр Проектов",
+    "description": "Тестирование системы НХТК - Реестр Проектов совместно с Заместителями Директора (Кураторами направлений), Червяковой Т.Н. и Ромасько С.В.",
+    "assignee_id": "d40bd07c",
+    "created_by": "d40bd07c",
+    "created_at": "19.12.2025",
+    "start_date": "18.12.2025",
+    "deadline": "10.01.2026",
+    "status": "активна",
+    "completion_date": "",
+    "history": [
+      {
+        "action": "Изменен дедлайн",
+        "date": "19.12.2025 10:41:17",
+        "user_id": "d40bd07c",
+        "user_name": "Наталья Викторовна Кромм"
+      }
+    ]
+  },
+  {
+    "id": "82320e39",
+    "project_id": "6cdd3157",
+    "title": "Подготовить заявку",
+    "description": "Оформить, заполнить приложения",
+    "assignee_id": "bd5eafa7",
+    "created_by": "bd5eafa7",
+    "created_at": "19.12.2025",
+    "start_date": "18.12.2025",
+    "deadline": "28.12.2025",
+    "status": "активна",
+    "completion_date": ""
+  },
+  {
+    "id": "89b711bf",
+    "project_id": "54f0097b",
+    "title": "разработка методических указаний",
+    "description": "прпл",
+    "assignee_id": "6c87e4cf",
+    "created_by": "6c87e4cf",
+    "created_at": "19.12.2025",
+    "start_date": "20.04.2025",
+    "deadline": "25.05.2026",
+    "status": "активна",
+    "completion_date": ""
+  }
+]

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Управление направлениями - НХТК{% endblock %}
+
+{% block content %}
+<div class="admin-users">
+    <h2>Управление направлениями проектов</h2>
+
+    <div class="section">
+        <h3>Добавить направление</h3>
+        <form action="{{ url_for('auth.add_direction') }}" method="POST" class="direction-form">
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <input type="text" name="name" placeholder="Название направления" required>
+                </div>
+                <button type="submit" class="btn">Добавить</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="section">
+        <h3>Список направлений</h3>
+        {% if directions %}
+        <div class="directions-list">
+            {% for direction in directions %}
+            <div class="direction-item">
+                <span class="direction-name">{{ direction.name }}</span>
+                <form action="{{ url_for('auth.delete_direction', direction_id=direction.id) }}" method="POST" class="inline-form">
+                    <button type="submit" class="btn small-btn delete-btn" onclick="return confirm('Удалить направление?')">Удалить</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="no-data">Нет направлений</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
