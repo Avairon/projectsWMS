@@ -10,6 +10,114 @@ app_config = Config()
 projects_bp = Blueprint('projects', __name__)
 
 
+def calculate_project_statistics(project_id):
+    """
+    Вычисляет статистику по проекту:
+    - % не выполненных задач
+    - % выполненных задач в срок
+    - количество сотрудников
+    """
+    tasks = load_data(app_config.TASKS_DB)
+    users = load_data(app_config.USERS_DB)
+    
+    # Получаем задачи проекта
+    project_tasks = [t for t in tasks if t.get('project_id') == project_id]
+    
+    total_tasks = len(project_tasks)
+    completed_tasks = [t for t in project_tasks if t.get('status') == 'завершена']
+    incomplete_tasks = [t for t in project_tasks if t.get('status') != 'завершена']
+    
+    # Вычисляем процент невыполненных задач
+    percent_incomplete = 0
+    if total_tasks > 0:
+        percent_incomplete = (len(incomplete_tasks) / total_tasks) * 100
+    
+    # Вычисляем процент выполненных задач в срок
+    completed_on_time = 0
+    for task in completed_tasks:
+        if 'completion_date' in task and task['completion_date']:
+            try:
+                deadline = parse_date(task['deadline'], dayfirst=True)
+                completion_date = parse_date(task['completion_date'], dayfirst=True)
+                if completion_date <= deadline:
+                    completed_on_time += 1
+            except:
+                # Если не удается распарсить даты, считаем, что задача не выполнена в срок
+                pass
+    
+    percent_completed_on_time = 0
+    if len(completed_tasks) > 0:
+        percent_completed_on_time = (completed_on_time / len(completed_tasks)) * 100
+    
+    # Получаем команду проекта
+    projects = load_data(app_config.PROJECTS_DB)
+    project = next((p for p in projects if p.get('id') == project_id), None)
+    team_members = project.get('team', []) if project else []
+    employee_count = len(team_members)
+    
+    return {
+        'percent_incomplete': round(percent_incomplete, 2),
+        'percent_completed_on_time': round(percent_completed_on_time, 2),
+        'employee_count': employee_count
+    }
+
+
+def calculate_employee_statistics(project_id):
+    """
+    Вычисляет статистику по сотрудникам проекта:
+    - сколько всего задач выполнено
+    - % выполненных задач в срок
+    """
+    tasks = load_data(app_config.TASKS_DB)
+    users = load_data(app_config.USERS_DB)
+    
+    # Получаем задачи проекта
+    project_tasks = [t for t in tasks if t.get('project_id') == project_id]
+    
+    # Получаем команду проекта
+    projects = load_data(app_config.PROJECTS_DB)
+    project = next((p for p in projects if p.get('id') == project_id), None)
+    team_member_ids = project.get('team', []) if project else []
+    
+    employee_stats = []
+    
+    for user_id in team_member_ids:
+        user = next((u for u in users if u.get('id') == user_id), None)
+        if user:
+            # Все задачи пользователя в проекте
+            user_tasks = [t for t in project_tasks if t.get('assignee_id') == user_id]
+            
+            # Выполненные задачи пользователя
+            completed_tasks = [t for t in user_tasks if t.get('status') == 'завершена']
+            
+            # Выполненные в срок задачи
+            completed_on_time = 0
+            for task in completed_tasks:
+                if 'completion_date' in task and task['completion_date']:
+                    try:
+                        deadline = parse_date(task['deadline'], dayfirst=True)
+                        completion_date = parse_date(task['completion_date'], dayfirst=True)
+                        if completion_date <= deadline:
+                            completed_on_time += 1
+                    except:
+                        # Если не удается распарсить даты, считаем, что задача не выполнена в срок
+                        pass
+            
+            # Процент выполненных задач в срок
+            percent_completed_on_time = 0
+            if len(completed_tasks) > 0:
+                percent_completed_on_time = (completed_on_time / len(completed_tasks)) * 100
+            
+            employee_stats.append({
+                'id': user_id,
+                'name': user.get('name', ''),
+                'total_completed_tasks': len(completed_tasks),
+                'percent_completed_on_time': round(percent_completed_on_time, 2)
+            })
+    
+    return employee_stats
+
+
 @projects_bp.route('/project/<project_id>')
 @login_required
 def project_detail(project_id):
@@ -35,13 +143,35 @@ def project_detail(project_id):
         team_members = [next((u for u in users if u.get('id') == member_id), None) for member_id in project.get('team', [])]
         team_members = [m for m in team_members if m]
 
+    # Получаем статистику проекта
+    project_stats = calculate_project_statistics(project_id)
+    employee_stats = calculate_employee_statistics(project_id)
+    
     return render_template('project_detail.html', 
                          project=project, 
                          tasks=project_tasks, 
                          supervisor=supervisor, 
                          manager=manager, 
                          team_members=team_members,
-                         users=users)
+                         users=users,
+                         project_stats=project_stats,
+                         employee_stats=employee_stats)
+
+
+@projects_bp.route('/api/project/<project_id>/statistics')
+@login_required
+def project_statistics_api(project_id):
+    """API endpoint для получения статистики проекта"""
+    if not can_access_project(project_id):
+        return jsonify({'error': 'У вас нет доступа к этому проекту'}), 403
+
+    project_stats = calculate_project_statistics(project_id)
+    employee_stats = calculate_employee_statistics(project_id)
+    
+    return jsonify({
+        'project_stats': project_stats,
+        'employee_stats': employee_stats
+    })
 
 
 @projects_bp.route('/create_project', methods=['GET', 'POST'])
