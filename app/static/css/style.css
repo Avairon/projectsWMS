@@ -798,6 +798,74 @@ small {
     -webkit-overflow-scrolling: touch;
 }
 
+/* Стили для отображения проектов и задач списком при количестве > 3 */
+.projects-list.list-view,
+.tasks-list.list-view {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: unset;
+    gap: 0.8rem;
+}
+
+.projects-list.list-view .project-card,
+.tasks-list.list-view .task-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.2rem;
+    border-left-width: 8px;
+    min-height: auto;
+}
+
+.projects-list.list-view .project-card h4,
+.tasks-list.list-view .task-card h4 {
+    margin-bottom: 0.6rem;
+}
+
+.projects-list.list-view .project-card p,
+.tasks-list.list-view .task-card p {
+    margin-bottom: 0.4rem;
+    font-size: 0.85rem;
+}
+
+.projects-list.list-view .project-card .btn,
+.tasks-list.list-view .task-card .btn {
+    align-self: flex-start;
+    margin-top: 0.6rem;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 768px) {
+    .projects-list.list-view .project-card,
+    .tasks-list.list-view .task-card {
+        padding: 1rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .section-controls {
+        gap: 10px;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group label {
+        margin-bottom: 4px;
+    }
+    
+    .filter-group select {
+        min-width: auto;
+    }
+}
+
 .tab-btn {
     background: transparent;
     color: var(--gray-600);

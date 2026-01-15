@@ -49,22 +49,51 @@ function initTabs() {
 
 function initProjectFilters() {
     const showCompletedCheckbox = document.getElementById('show-completed-projects');
+    const projectStatusFilter = document.getElementById('project-status-filter');
+    const projectDirectionFilter = document.getElementById('project-direction-filter');
     const projectsList = document.getElementById('projects-list');
     
     if (showCompletedCheckbox && projectsList) {
-        showCompletedCheckbox.addEventListener('change', function() {
-            const showCompleted = this.checked;
+        function filterProjects() {
+            const showCompleted = showCompletedCheckbox.checked;
+            const status = projectStatusFilter ? projectStatusFilter.value : '';
+            const direction = projectDirectionFilter ? projectDirectionFilter.value : '';
             const projectCards = projectsList.querySelectorAll('.project-card');
             
             projectCards.forEach(card => {
-                const status = card.dataset.status;
-                if (status === 'завершен') {
-                    card.style.display = showCompleted ? '' : 'none';
-                }
+                const cardStatus = card.dataset.status;
+                const cardDirection = card.dataset.direction;
+                
+                let showByCompletion = showCompleted || cardStatus !== 'завершен';
+                let showByStatus = !status || cardStatus === status;
+                let showByDirection = !direction || cardDirection === direction;
+                
+                card.style.display = (showByCompletion && showByStatus && showByDirection) ? '' : 'none';
             });
-        });
+            
+            // Определяем количество видимых проектов и устанавливаем режим отображения
+            const visibleProjects = Array.from(projectCards).filter(card => card.style.display !== 'none');
+            updateProjectsDisplayMode(visibleProjects.length);
+        }
         
-        showCompletedCheckbox.dispatchEvent(new Event('change'));
+        function updateProjectsDisplayMode(count) {
+            if (count > 3) {
+                projectsList.classList.add('list-view');
+            } else {
+                projectsList.classList.remove('list-view');
+            }
+        }
+        
+        showCompletedCheckbox.addEventListener('change', filterProjects);
+        if (projectStatusFilter) {
+            projectStatusFilter.addEventListener('change', filterProjects);
+        }
+        if (projectDirectionFilter) {
+            projectDirectionFilter.addEventListener('change', filterProjects);
+        }
+        
+        // Инициализируем фильтрацию
+        filterProjects();
     }
 }
 
@@ -88,6 +117,18 @@ function initTaskFilters() {
                 
                 card.style.display = (showByProject && showByStatus) ? '' : 'none';
             });
+            
+            // Определяем количество видимых задач и устанавливаем режим отображения
+            const visibleTasks = Array.from(taskCards).filter(card => card.style.display !== 'none');
+            updateTasksDisplayMode(visibleTasks.length);
+        }
+        
+        function updateTasksDisplayMode(count) {
+            if (count > 3) {
+                tasksList.classList.add('list-view');
+            } else {
+                tasksList.classList.remove('list-view');
+            }
         }
         
         if (projectFilter) {
@@ -96,6 +137,9 @@ function initTaskFilters() {
         if (statusFilter) {
             statusFilter.addEventListener('change', filterTasks);
         }
+        
+        // Инициализируем фильтрацию
+        filterTasks();
     }
 }
 
