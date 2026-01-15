@@ -8,24 +8,21 @@
 
     <div class="stats-grid">
         <div class="stat-card">
-            <h3>Всего проектов</h3>
-            <span class="stat-number">{{ stats.total_projects }}</span>
+            <h3>Выполнение задач</h3>
+            <div class="stat-number">{{ stats.completed_tasks }}/{{ stats.total_tasks }}</div>
+            <div class="stat-percentage">{{ "%.2f"|format(stats.completed_percentage) }}% выполнено<br>{{ "%.2f"|format(stats.on_time_percentage) }}% в срок</div>
         </div>
         <div class="stat-card">
-            <h3>Активных проектов</h3>
-            <span class="stat-number">{{ stats.active_projects }}</span>
+            <h3>Участников</h3>
+            <span class="stat-number">{{ stats.unique_assignees }}</span>
         </div>
         <div class="stat-card">
-            <h3>Всего задач</h3>
-            <span class="stat-number">{{ stats.total_tasks }}</span>
-        </div>
-        <div class="stat-card">
-            <h3>Активных задач</h3>
-            <span class="stat-number">{{ stats.active_tasks }}</span>
-        </div>
-        <div class="stat-card">
-            <h3>Завершённых задач</h3>
-            <span class="stat-number">{{ stats.completed_tasks }}</span>
+            <h3>Статус задач</h3>
+            <div class="task-status-breakdown">
+                <div>Не начато: {{ stats.not_started_tasks }}, {{ "%.1f"|format(stats.not_started_tasks/stats.total_tasks*100 if stats.total_tasks > 0 else 0) }}%</div>
+                <div>В работе: {{ stats.active_tasks }}, {{ "%.1f"|format(stats.active_tasks/stats.total_tasks*100 if stats.total_tasks > 0 else 0) }}%</div>
+                <div>Завершены: {{ stats.completed_tasks }}, {{ "%.1f"|format(stats.completed_tasks/stats.total_tasks*100 if stats.total_tasks > 0 else 0) }}%</div>
+            </div>
         </div>
     </div>
 
