@@ -359,6 +359,22 @@ button:active, .btn:active {
     background-clip: text;
 }
 
+.stat-percentage {
+    font-size: 0.9rem;
+    color: var(--gray-700);
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
+.task-status-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--gray-700);
+}
+
 .section {
     margin-bottom: 2rem;
 }
