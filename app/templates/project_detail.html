@@ -32,6 +32,12 @@
     margin: 0;
 }
 
+.stat-subvalue {
+    font-size: 14px;
+    color: #6c757d;
+    margin: 5px 0 0 0;
+}
+
 .employee-stats-table {
     margin-top: 20px;
 }
@@ -215,10 +221,7 @@
                 <div class="stat-card">
                     <h4>% выполненных задач</h4>
                     <p class="stat-value">{{ "%.2f"|format(project_stats.percent_completed) }}%</p>
-                </div>
-                <div class="stat-card">
-                    <h4>% выполненных в срок</h4>
-                    <p class="stat-value">{{ "%.2f"|format(project_stats.percent_completed_on_time) }}%</p>
+                    <p class="stat-subvalue">из них в срок: {{ "%.2f"|format(project_stats.percent_completed_on_time) }}%</p>
                 </div>
                 <div class="stat-card">
                     <h4>Размер команды</h4>

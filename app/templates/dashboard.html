@@ -65,6 +65,10 @@
                 <p><strong>Направление:</strong> {{ project.direction or 'Не указано' }}</p>
                 <p><strong>Статус:</strong> <span class="status-badge {% if project.status == 'в работе' %}status-active{% elif project.status == 'завершен' %}status-completed{% else %}status-paused{% endif %}">{{ project.status }}</span></p>
                 <p><strong>Последняя активность:</strong> {{ project.last_activity }}</p>
+                {% set supervisor = users | selectattr('id', 'equalto', project.supervisor_id) | first %}
+                {% set manager = users | selectattr('id', 'equalto', project.manager_id) | first %}
+                <p><strong>Руководитель:</strong> {{ manager.name if manager else 'Не назначен' }}</p>
+                <p><strong>Куратор:</strong> {{ supervisor.name if supervisor else 'Не назначен' }}</p>
                 <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn">Подробнее</a>
             </div>
             {% endfor %}
