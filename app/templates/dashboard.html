@@ -33,6 +33,24 @@
         <div class="section-header">
             <h3>Проекты</h3>
             <div class="section-controls">
+                <div class="filter-group">
+                    <label for="project-status-filter">Статус:</label>
+                    <select id="project-status-filter">
+                        <option value="">Все статусы</option>
+                        <option value="в работе">В работе</option>
+                        <option value="завершен">Завершённые</option>
+                        <option value="приостановлен">Приостановленные</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="project-direction-filter">Направление:</label>
+                    <select id="project-direction-filter">
+                        <option value="">Все направления</option>
+                        {% for direction in directions %}
+                        <option value="{{ direction }}">{{ direction }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
                 <label class="toggle-checkbox">
                     <input type="checkbox" id="show-completed-projects">
                     <span>Показать завершённые</span>
@@ -45,7 +63,7 @@
         {% if projects %}
         <div class="projects-list" id="projects-list">
             {% for project in projects %}
-            <div class="project-card status-{% if project.status == 'в работе' %}active{% elif project.status == 'завершен' %}completed{% else %}paused{% endif %}" data-status="{{ project.status }}">
+            <div class="project-card status-{% if project.status == 'в работе' %}active{% elif project.status == 'завершен' %}completed{% else %}paused{% endif %}" data-status="{{ project.status }}" data-direction="{{ project.direction or '' }}">
                 <h4>{{ project.name }}</h4>
                 <p><strong>Направление:</strong> {{ project.direction or 'Не указано' }}</p>
                 <p><strong>Статус:</strong> <span class="status-badge {% if project.status == 'в работе' %}status-active{% elif project.status == 'завершен' %}status-completed{% else %}status-paused{% endif %}">{{ project.status }}</span></p>
