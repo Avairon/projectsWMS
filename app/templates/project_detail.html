@@ -213,16 +213,22 @@
             <h3>Статистика проекта</h3>
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h4>% Не выполненных задач</h4>
-                    <p class="stat-value">{{ "%.2f"|format(project_stats.percent_incomplete) }}%</p>
+                    <h4>% выполненных задач</h4>
+                    <p class="stat-value">{{ "%.2f"|format(project_stats.percent_completed) }}%</p>
                 </div>
                 <div class="stat-card">
-                    <h4>% Выполненных задач в срок</h4>
+                    <h4>% выполненных в срок</h4>
                     <p class="stat-value">{{ "%.2f"|format(project_stats.percent_completed_on_time) }}%</p>
                 </div>
                 <div class="stat-card">
-                    <h4>Количество сотрудников</h4>
+                    <h4>Размер команды</h4>
                     <p class="stat-value">{{ project_stats.employee_count }}</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Всего: {{ project_stats.not_started_count + project_stats.started_count + project_stats.completed_count }}</h4>
+                    <p class="stat-value">Не начато: {{ project_stats.not_started_count }}, {{ project_stats.not_started_percent }}%</p>
+                    <p class="stat-value">В работе: {{ project_stats.started_count }}, {{ project_stats.started_percent }}%</p>
+                    <p class="stat-value">Завершены: {{ project_stats.completed_count }}, {{ project_stats.completed_percent }}%</p>
                 </div>
             </div>
 
@@ -233,16 +239,20 @@
                     <thead>
                         <tr>
                             <th>Сотрудник</th>
-                            <th>Всего задач выполнено</th>
-                            <th>% выполненных задач в срок</th>
+                            <th>Просроченные задачи</th>
+                            <th>Всего активных задач</th>
+                            <th>Всего выполнено задач</th>
+                            <th>Дисциплина: % выполненных задач в срок</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for emp_stat in employee_stats %}
                         <tr>
                             <td>{{ emp_stat.name }}</td>
+                            <td>{{ emp_stat.overdue_tasks_count }}</td>
+                            <td>{{ emp_stat.total_active_tasks }}</td>
                             <td>{{ emp_stat.total_completed_tasks }}</td>
-                            <td>{{ "%.2f"|format(emp_stat.percent_completed_on_time) }}%</td>
+                            <td>{{ "%.2f"|format(emp_stat.discipline_percent) }}%</td>
                         </tr>
                         {% endfor %}
                     </tbody>
