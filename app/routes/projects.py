@@ -13,9 +13,10 @@ projects_bp = Blueprint('projects', __name__)
 def calculate_project_statistics(project_id):
     """
     Вычисляет статистику по проекту:
-    - % не выполненных задач
+    - % выполненных задач
     - % выполненных задач в срок
-    - количество сотрудников
+    - количество сотрудников (размер команды)
+    - общая статистика задач (не начато, в работе, завершено)
     """
     tasks = load_data(app_config.TASKS_DB)
     users = load_data(app_config.USERS_DB)
@@ -25,12 +26,13 @@ def calculate_project_statistics(project_id):
     
     total_tasks = len(project_tasks)
     completed_tasks = [t for t in project_tasks if t.get('status') == 'завершена']
-    incomplete_tasks = [t for t in project_tasks if t.get('status') != 'завершена']
+    started_tasks = [t for t in project_tasks if t.get('status') in ['активна', 'отложена']]  # started but not completed
+    not_started_tasks = [t for t in project_tasks if t.get('status') not in ['активна', 'отложена', 'завершена']]
     
-    # Вычисляем процент невыполненных задач
-    percent_incomplete = 0
+    # Вычисляем процент выполненных задач
+    percent_completed = 0
     if total_tasks > 0:
-        percent_incomplete = (len(incomplete_tasks) / total_tasks) * 100
+        percent_completed = (len(completed_tasks) / total_tasks) * 100
     
     # Вычисляем процент выполненных задач в срок
     completed_on_time = 0
@@ -46,8 +48,8 @@ def calculate_project_statistics(project_id):
                 pass
     
     percent_completed_on_time = 0
-    if len(completed_tasks) > 0:
-        percent_completed_on_time = (completed_on_time / len(completed_tasks)) * 100
+    if total_tasks > 0 and total_tasks != len(not_started_tasks):  # avoid division by zero if all tasks are not started
+        percent_completed_on_time = (completed_on_time / len(completed_tasks)) * 100 if len(completed_tasks) > 0 else 0
     
     # Получаем команду проекта
     projects = load_data(app_config.PROJECTS_DB)
@@ -55,18 +57,35 @@ def calculate_project_statistics(project_id):
     team_members = project.get('team', []) if project else []
     employee_count = len(team_members)
     
+    # Подсчет задач по статусам
+    not_started_count = len(not_started_tasks)
+    started_count = len(started_tasks)  # includes both active and paused
+    completed_count = len(completed_tasks)
+    
+    # Проценты по статусам
+    not_started_percent = (not_started_count / total_tasks * 100) if total_tasks > 0 else 0
+    started_percent = (started_count / total_tasks * 100) if total_tasks > 0 else 0
+    completed_percent = (completed_count / total_tasks * 100) if total_tasks > 0 else 0
+    
     return {
-        'percent_incomplete': round(percent_incomplete, 2),
+        'percent_completed': round(percent_completed, 2),
         'percent_completed_on_time': round(percent_completed_on_time, 2),
-        'employee_count': employee_count
+        'employee_count': employee_count,  # размер команды
+        'total_tasks': total_tasks,
+        'not_started_count': not_started_count,
+        'started_count': started_count,
+        'completed_count': completed_count,
+        'not_started_percent': round(not_started_percent, 2),
+        'started_percent': round(started_percent, 2),
+        'completed_percent': round(completed_percent, 2)
     }
 
 
 def calculate_employee_statistics(project_id):
     """
     Вычисляет статистику по сотрудникам проекта:
-    - сколько всего задач выполнено
-    - % выполненных задач в срок
+    - сколько всего/макс просроченных задач
+    - % выполненных задач в срок (дисциплина)
     """
     tasks = load_data(app_config.TASKS_DB)
     users = load_data(app_config.USERS_DB)
@@ -87,6 +106,21 @@ def calculate_employee_statistics(project_id):
             # Все задачи пользователя в проекте
             user_tasks = [t for t in project_tasks if t.get('assignee_id') == user_id]
             
+            # Активные задачи (в работе)
+            active_tasks = [t for t in user_tasks if t.get('status') in ['активна', 'отложена']]
+            
+            # Просроченные задачи (в работе, но дедлайн прошел)
+            overdue_tasks = []
+            for task in active_tasks:
+                if 'deadline' in task and task['deadline']:
+                    try:
+                        deadline = parse_date(task['deadline'], dayfirst=True)
+                        if datetime.now() > deadline:
+                            overdue_tasks.append(task)
+                    except:
+                        # Если не удается распарсить дату, пропускаем задачу
+                        pass
+            
             # Выполненные задачи пользователя
             completed_tasks = [t for t in user_tasks if t.get('status') == 'завершена']
             
@@ -103,16 +137,18 @@ def calculate_employee_statistics(project_id):
                         # Если не удается распарсить даты, считаем, что задача не выполнена в срок
                         pass
             
-            # Процент выполненных задач в срок
-            percent_completed_on_time = 0
+            # Процент выполненных задач в срок (дисциплина)
+            discipline_percent = 0
             if len(completed_tasks) > 0:
-                percent_completed_on_time = (completed_on_time / len(completed_tasks)) * 100
+                discipline_percent = (completed_on_time / len(completed_tasks)) * 100
             
             employee_stats.append({
                 'id': user_id,
                 'name': user.get('name', ''),
+                'overdue_tasks_count': len(overdue_tasks),
+                'total_active_tasks': len(active_tasks),
                 'total_completed_tasks': len(completed_tasks),
-                'percent_completed_on_time': round(percent_completed_on_time, 2)
+                'discipline_percent': round(discipline_percent, 2)  # дисциплина
             })
     
     return employee_stats
