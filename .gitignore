@@ -24,22 +24,24 @@ wheels/
 # Environment
 .env
 .env.local
-.env.*
-.venv/
-venv/
-ENV/
+*.env.*
+
+# Logs
+*.log
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# Logs
-*.log
+*.tmp
 
 # Coverage
 .coverage
 coverage/
 htmlcov/
+
+# Testing
+.pytest_cache/
+.mypy_cache/
 ```
