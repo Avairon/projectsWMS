@@ -1286,7 +1286,6 @@ small {
 .profile-project-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     padding: 1rem;
     background: var(--gray-100);
     border-radius: var(--border-radius);
@@ -1295,8 +1294,13 @@ small {
 }
 
 .profile-project-item .project-name {
+    flex-grow: 1;
     font-weight: 500;
     color: var(--gray-800);
+}
+
+.profile-project-item .status-badge {
+    margin-right: auto;
 }
 
 .directions-list {
