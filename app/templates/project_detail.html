@@ -80,11 +80,11 @@
         </div>
         <div class="info-item">
             <strong>Дата начала</strong>
-            <p>{{ project.start_date }}</p>
+            <p>{{ project.start_date.strftime('%d.%m.%Y') if project.start_date else 'Не указана' }}</p>
         </div>
         <div class="info-item">
             <strong>Дата окончания</strong>
-            <p>{{ project.end_date or 'Не указана' }}</p>
+            <p>{{ project.end_date.strftime('%d.%m.%Y') if project.end_date else 'Не указана' }}</p>
         </div>
         <div class="info-item">
             <strong>Статус</strong>
@@ -187,8 +187,8 @@
                             <td>{{ loop.index }}</td>
                             <td>{{ task.title }}</td>
                             <td>{{ assignee.name if assignee else 'Не назначен' }}</td>
-                            <td>{{ task.start_date or '-' }}</td>
-                            <td>{{ task.deadline }}</td>
+                            <td>{{ task.start_date.strftime('%d.%m.%Y') if task.start_date else '-' }}</td>
+                            <td>{{ task.deadline.strftime('%d.%m.%Y') if task.deadline else 'Не указан' }}</td>
                             <td>
                                 <span class="status-badge {% if task.status == 'активна' %}status-active{% elif task.status == 'завершена' %}status-completed{% else %}status-paused{% endif %}">{{ task.status }}</span>
                             </td>
@@ -322,13 +322,13 @@
                     <div class="half-width">
                         <div class="form-group">
                             <label for="edit-task-start">Дата начала (ДД.ММ.ГГГГ)</label>
-                            <input type="text" id="edit-task-start" name="start_date" placeholder="ДД.ММ.ГГГГ">
+                            <input type="text" id="edit-task-start" name="start_date" placeholder="ДД.ММ.ГГГГ" value="{{ task.start_date.strftime('%d.%m.%Y') if task.start_date else '' }}">
                         </div>
                     </div>
                     <div class="half-width">
                         <div class="form-group">
                             <label for="edit-task-deadline">Дедлайн (ДД.ММ.ГГГГ)</label>
-                            <input type="text" id="edit-task-deadline" name="deadline" placeholder="ДД.ММ.ГГГГ">
+                            <input type="text" id="edit-task-deadline" name="deadline" placeholder="ДД.ММ.ГГГГ" value="{{ task.deadline.strftime('%d.%m.%Y') if task.deadline else '' }}">
                         </div>
                     </div>
                 </div>

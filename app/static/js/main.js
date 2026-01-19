@@ -1,3 +1,19 @@
+// Функция для парсинга даты из формата DD.MM.YYYY
+function parseDateDDMMYYYY(dateStr) {
+    if (!dateStr) return null;
+    
+    if (dateStr.includes('.')) {
+        const parts = dateStr.split('.');
+        if (parts.length === 3) {
+            // parts[0] = день, parts[1] = месяц, parts[2] = год
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+    }
+    
+    // Если не DD.MM.YYYY, пробуем стандартный формат
+    return new Date(dateStr);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     initMobileMenu();
     initTabs();
@@ -5,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initTaskFilters();
     initGanttChart();
     initTaskModal();
+    initDatePickers();
 });
 
 function initMobileMenu() {
@@ -136,6 +153,13 @@ function loadGanttData(projectId) {
 function parseDate(dateStr) {
     if (!dateStr) return null;
     
+    if (dateStr.includes('.')) {
+        const parts = dateStr.split('.');
+        if (parts.length === 3) {
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+    }
+    
     if (dateStr.includes('-')) {
         return new Date(dateStr);
     }
@@ -147,17 +171,12 @@ function parseDate(dateStr) {
         }
     }
     
-    if (dateStr.includes('.')) {
-        const parts = dateStr.split('.');
-        if (parts.length === 3) {
-            return new Date(parts[2], parts[1] - 1, parts[0]);
-        }
-    }
-    
     return new Date(dateStr);
 }
 
 function formatDateDDMMYYYY(date) {
+    if (!date) return '';
+    
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -491,6 +510,8 @@ function closeTaskModal() {
 }
 
 function formatDateForInput(date) {
+    if (!date) return '';
+    
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -543,5 +564,330 @@ function toggleTeam() {
         teamDiv.style.display = 'block';
     } else {
         teamDiv.style.display = 'none';
+    }
+}
+
+function initDatePickers() {
+    // Находим все поля ввода даты и добавляем к ним функциональность календаря
+    const datePickerInputs = document.querySelectorAll('input[type="text"][id*="date"], input[type="text"][placeholder*="ДД.ММ.ГГГГ"]');
+    
+    datePickerInputs.forEach(input => {
+        // Проверяем, что поле еще не имеет обработчиков
+        if (input.hasAttribute('data-datepicker-initialized')) {
+            return;
+        }
+        
+        input.setAttribute('data-datepicker-initialized', 'true');
+        
+        // Добавляем иконку календаря
+        input.style.position = 'relative';
+        input.style.backgroundImage = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z\' /%3E%3C/svg%3E")';
+        input.style.backgroundRepeat = 'no-repeat';
+        input.style.backgroundPosition = 'right 8px center';
+        input.style.backgroundSize = '16px 16px';
+        input.style.paddingRight = '30px';
+        
+        // Обработчик клика для открытия календаря
+        input.addEventListener('click', function(e) {
+            if (!this._datePickerDiv) {
+                createDatePicker(this);
+            }
+        });
+        
+        // Обработчик ввода для валидации формата даты
+        input.addEventListener('blur', function() {
+            validateDateFormat(this);
+        });
+        
+        // Обработчик клавиш для ограничения ввода
+        input.addEventListener('keypress', function(e) {
+            // Разрешаем только цифры и точки
+            if (!/[0-9.]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Tab') {
+                e.preventDefault();
+            }
+        });
+    });
+}
+
+function createDatePicker(inputElement) {
+    // Удаляем предыдущий календарь, если он существует
+    if (inputElement._datePickerDiv && inputElement._datePickerDiv.parentNode) {
+        inputElement._datePickerDiv.parentNode.removeChild(inputElement._datePickerDiv);
+    }
+    
+    // Создаем контейнер для календаря
+    const datePicker = document.createElement('div');
+    datePicker.className = 'date-picker-popup';
+    datePicker.style.cssText = `
+        position: absolute;
+        z-index: 1000;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        padding: 10px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        display: none;
+    `;
+    
+    // Получаем текущую дату или дату из поля ввода
+    let currentDate = new Date();
+    if (inputElement.value) {
+        const parsedDate = parseDateDDMMYYYY(inputElement.value);
+        if (parsedDate && !isNaN(parsedDate.getTime())) {
+            currentDate = parsedDate;
+        }
+    }
+    
+    let currentMonth = currentDate.getMonth();
+    let currentYear = currentDate.getFullYear();
+    
+    // Создаем заголовок календаря
+    const header = document.createElement('div');
+    header.style.cssText = `
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    `;
+    
+    const prevButton = document.createElement('button');
+    prevButton.innerHTML = '&lt;';
+    prevButton.style.cssText = `
+        border: none;
+        background: #f0f0f0;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 3px;
+    `;
+    prevButton.onclick = () => {
+        currentMonth--;
+        if (currentMonth < 0) {
+            currentMonth = 11;
+            currentYear--;
+        }
+        updateCalendar();
+    };
+    
+    const nextButton = document.createElement('button');
+    nextButton.innerHTML = '&gt;';
+    nextButton.style.cssText = `
+        border: none;
+        background: #f0f0f0;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 3px;
+    `;
+    nextButton.onclick = () => {
+        currentMonth++;
+        if (currentMonth > 11) {
+            currentMonth = 0;
+            currentYear++;
+        }
+        updateCalendar();
+    };
+    
+    const monthYearDisplay = document.createElement('span');
+    monthYearDisplay.style.fontWeight = 'bold';
+    
+    header.appendChild(prevButton);
+    header.appendChild(monthYearDisplay);
+    header.appendChild(nextButton);
+    datePicker.appendChild(header);
+    
+    // Создаем заголовки дней недели
+    const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+    const weekdayRow = document.createElement('div');
+    weekdayRow.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        font-weight: bold;
+        margin-bottom: 5px;
+        text-align: center;
+    `;
+    
+    weekdays.forEach(day => {
+        const dayEl = document.createElement('div');
+        dayEl.textContent = day;
+        dayEl.style.cssText = 'padding: 5px; font-size: 12px;';
+        weekdayRow.appendChild(dayEl);
+    });
+    
+    datePicker.appendChild(weekdayRow);
+    
+    // Контейнер для дней
+    const daysContainer = document.createElement('div');
+    daysContainer.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+    `;
+    
+    datePicker.appendChild(daysContainer);
+    
+    // Функция обновления календаря
+    function updateCalendar() {
+        // Обновляем заголовок
+        const monthNames = [
+            'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+            'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+        ];
+        monthYearDisplay.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+        
+        // Очищаем контейнер дней
+        daysContainer.innerHTML = '';
+        
+        // Получаем первый день месяца и последний день месяца
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        const startingDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1; // Понедельник как первый день
+        
+        // Заполняем пустые ячейки до первого дня месяца
+        for (let i = 0; i < startingDayOfWeek; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.style.cssText = 'height: 30px;';
+            daysContainer.appendChild(emptyCell);
+        }
+        
+        // Заполняем дни месяца
+        for (let day = 1; day <= lastDay.getDate(); day++) {
+            const dayElement = document.createElement('div');
+            dayElement.textContent = day;
+            dayElement.style.cssText = `
+                height: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                border-radius: 3px;
+                user-select: none;
+            `;
+            
+            const today = new Date();
+            const isToday = today.getDate() === day && 
+                           today.getMonth() === currentMonth && 
+                           today.getFullYear() === currentYear;
+            
+            if (isToday) {
+                dayElement.style.backgroundColor = '#007bff';
+                dayElement.style.color = 'white';
+            }
+            
+            // Подсвечиваем выбранную дату
+            if (inputElement.value) {
+                const selectedDate = parseDateDDMMYYYY(inputElement.value);
+                if (selectedDate &&
+                    selectedDate.getDate() === day &&
+                    selectedDate.getMonth() === currentMonth &&
+                    selectedDate.getFullYear() === currentYear) {
+                    dayElement.style.backgroundColor = '#007bff';
+                    dayElement.style.color = 'white';
+                }
+            }
+            
+            dayElement.addEventListener('click', function() {
+                const formattedDate = `${String(day).padStart(2, '0')}.${String(currentMonth + 1).padStart(2, '0')}.${currentYear}`;
+                inputElement.value = formattedDate;
+                
+                // Скрываем календарь
+                datePicker.style.display = 'none';
+                
+                // Удаляем календарь из DOM
+                if (datePicker.parentNode) {
+                    datePicker.parentNode.removeChild(datePicker);
+                }
+                delete inputElement._datePickerDiv;
+            });
+            
+            dayElement.addEventListener('mouseover', function() {
+                this.style.backgroundColor = '#e9ecef';
+            });
+            
+            dayElement.addEventListener('mouseout', function() {
+                const isSelected = inputElement.value && 
+                                 parseDateDDMMYYYY(inputElement.value) &&
+                                 parseDateDDMMYYYY(inputElement.value).getDate() === day &&
+                                 parseDateDDMMYYYY(inputElement.value).getMonth() === currentMonth &&
+                                 parseDateDDMMYYYY(inputElement.value).getFullYear() === currentYear;
+                                 
+                const isToday = today.getDate() === day && 
+                               today.getMonth() === currentMonth && 
+                               today.getFullYear() === currentYear;
+                
+                if (isSelected) {
+                    this.style.backgroundColor = '#007bff';
+                    this.style.color = 'white';
+                } else if (isToday) {
+                    this.style.backgroundColor = '#007bff';
+                    this.style.color = 'white';
+                } else {
+                    this.style.backgroundColor = '';
+                    this.style.color = '';
+                }
+            });
+            
+            daysContainer.appendChild(dayElement);
+        }
+    }
+    
+    // Инициализируем календарь
+    updateCalendar();
+    
+    // Добавляем календарь в DOM
+    document.body.appendChild(datePicker);
+    inputElement._datePickerDiv = datePicker;
+    
+    // Позиционируем календарь под полем ввода
+    const rect = inputElement.getBoundingClientRect();
+    datePicker.style.top = `${rect.bottom + window.scrollY}px`;
+    datePicker.style.left = `${rect.left + window.scrollX}px`;
+    
+    // Показываем календарь
+    datePicker.style.display = 'block';
+    
+    // Обработчик для закрытия календаря при клике вне его области
+    const closePicker = function(e) {
+        if (!datePicker.contains(e.target) && e.target !== inputElement) {
+            datePicker.style.display = 'none';
+            document.removeEventListener('click', closePicker);
+            if (datePicker.parentNode) {
+                datePicker.parentNode.removeChild(datePicker);
+            }
+            delete inputElement._datePickerDiv;
+        }
+    };
+    
+    setTimeout(() => {
+        document.addEventListener('click', closePicker);
+    }, 10);
+}
+
+function validateDateFormat(inputElement) {
+    const value = inputElement.value.trim();
+    
+    // Проверяем формат DD.MM.YYYY
+    const datePattern = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+    const match = value.match(datePattern);
+    
+    if (value && match) {
+        const day = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10) - 1; // Месяцы в JS начинаются с 0
+        const year = parseInt(match[3], 10);
+        
+        const date = new Date(year, month, day);
+        
+        // Проверяем, является ли дата действительной
+        if (date.getFullYear() !== year || 
+            date.getMonth() !== month || 
+            date.getDate() !== day) {
+            inputElement.setCustomValidity('Введите действительную дату');
+        } else {
+            inputElement.setCustomValidity('');
+        }
+    } else if (value) {
+        inputElement.setCustomValidity('Введите дату в формате ДД.ММ.ГГГГ');
+    } else {
+        inputElement.setCustomValidity('');
     }
 }
