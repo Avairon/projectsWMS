@@ -33,7 +33,7 @@
             <h3>Количество исполнителей</h3>
             <span class="stat-number">{{ stats.executors_count }}</span>
         </div>
-        {% elif current_user.role == 'curator' %}
+        {% elif current_user.role == 'curator' or current_user.role == 'supervisor' %}
         <!-- Статистика для куратора направления -->
         <div class="stat-card">
             <h3>Всего проектов в работе (мои)</h3>
@@ -73,7 +73,7 @@
             <h3>Количество исполнителей (в моих проектах)</h3>
             <span class="stat-number">{{ stats.my_manager_executors_count }}</span>
         </div>
-        {% elif current_user.role == 'executor' %}
+        {% elif current_user.role == 'executor' or current_user.role == 'worker' %}
         <!-- Статистика для исполнителя -->
         <div class="stat-card">
             <h3>Общее количество задач</h3>
