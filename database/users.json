@@ -52,5 +52,14 @@
     "role": "manager",
     "token": "3D699CC7",
     "projects": []
+  },
+  {
+    "id": "a689e28d",
+    "username": "ruk",
+    "password": "scrypt:32768:8:1$i54bZJYxhtu7uPbE$0381711241c1deccdb3d7484ebbcac0ee5947a4f977e0a084d38a4c339b8d23ee20669517500f0b14530251118930718c453644a1f62f371184f5fa07015b8de",
+    "name": "ruk",
+    "role": "supervisor",
+    "token": "71872302",
+    "projects": []
   }
 ]

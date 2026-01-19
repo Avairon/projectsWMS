@@ -154,6 +154,20 @@
         "file": null,
         "reported_by": "12e7652a",
         "reported_at": "18.12.2025 17:16:28"
+      },
+      {
+        "id": "f3d84265-c122-4fb4-a32d-e195bff53921",
+        "comment": "Тест отчетов2",
+        "file": {
+          "filename": "schwi.gif",
+          "unique_filename": "report_b9afe244_0a16a93a_schwi.gif",
+          "uploaded_by": "12e7652a",
+          "uploaded_at": "20.01.2026 05:55:41",
+          "size": 10067843,
+          "executor_dir": ""
+        },
+        "reported_by": "12e7652a",
+        "reported_at": "20.01.2026 05:55:41"
       }
     ]
   },
