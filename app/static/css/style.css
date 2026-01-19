@@ -832,6 +832,32 @@ small {
     display: block;
 }
 
+.toggle-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    padding: 12px 22px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+    min-height: 44px;
+    margin-bottom: 15px;
+}
+
+.toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.toggle-btn:active {
+    transform: translateY(0);
+}
+
 .gantt-container {
     background: white;
     border-radius: var(--border-radius-lg);
