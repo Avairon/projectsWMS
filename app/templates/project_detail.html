@@ -102,21 +102,49 @@
         <p>{{ project.expected_result or 'Не указан' }}</p>
     </div>
 
-    <div class="project-team">
+    <button class="toggle-btn" onclick="toggleTeam()">Показать/скрыть команду проекта</button>
+    <div class="project-team" style="display:none;" id="project-team-section">
         <h3>Команда проекта</h3>
         {% if team_members %}
         <ul class="team-list">
-            {% for member in team_members %}
+            <!-- Handle case where supervisor and manager are the same person -->
+            {% if supervisor and manager and supervisor.id == manager.id %}
             <li>
-                <span class="member-name">{{ member.name }}</span>
-                <span class="role-badge role-{{ member.role }}">
-                    {% if member.role == 'admin' %}Администратор
-                    {% elif member.role == 'manager' %}Руководитель
-                    {% elif member.role == 'supervisor' %}Куратор
-                    {% else %}Исполнитель
-                    {% endif %}
-                </span>
+                <span class="member-name">{{ supervisor.name }}</span>
+                <span class="role-badge role-supervisor">Куратор и Руководитель</span>
             </li>
+            {% else %}
+                <!-- Place curator first if exists and different from manager -->
+                {% if supervisor %}
+                <li>
+                    <span class="member-name">{{ supervisor.name }}</span>
+                    <span class="role-badge role-supervisor">Куратор</span>
+                </li>
+                {% endif %}
+                
+                <!-- Place manager second if exists -->
+                {% if manager %}
+                <li>
+                    <span class="member-name">{{ manager.name }}</span>
+                    <span class="role-badge role-manager">Руководитель</span>
+                </li>
+                {% endif %}
+            {% endif %}
+            
+            <!-- Add remaining team members -->
+            {% for member in team_members %}
+                {% if member.id != (supervisor.id if supervisor else 'none') and member.id != (manager.id if manager else 'none') %}
+                <li>
+                    <span class="member-name">{{ member.name }}</span>
+                    <span class="role-badge role-{{ member.role }}">
+                        {% if member.role == 'admin' %}Администратор
+                        {% elif member.role == 'manager' %}Руководитель
+                        {% elif member.role == 'supervisor' %}Куратор
+                        {% else %}Исполнитель
+                        {% endif %}
+                    </span>
+                </li>
+                {% endif %}
             {% endfor %}
         </ul>
         {% else %}
@@ -310,7 +338,8 @@
                     <div class="reports-list"></div>
                 </div>
 
-                <div class="task-history" id="task-history">
+                <button class="toggle-btn" onclick="toggleHistory()">Показать/скрыть историю изменений</button>
+                <div class="task-history" id="task-history" style="display:none;">
                     <h4>История изменений</h4>
                     <div class="history-list"></div>
                 </div>

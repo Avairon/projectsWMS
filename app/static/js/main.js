@@ -526,3 +526,21 @@ function submitTaskEdit() {
         alert('Ошибка при сохранении задачи');
     });
 }
+
+function toggleHistory() {
+    const historyDiv = document.getElementById('task-history');
+    if (historyDiv.style.display === 'none' || historyDiv.style.display === '') {
+        historyDiv.style.display = 'block';
+    } else {
+        historyDiv.style.display = 'none';
+    }
+}
+
+function toggleTeam() {
+    const teamDiv = document.getElementById('project-team-section');
+    if (teamDiv.style.display === 'none' || teamDiv.style.display === '') {
+        teamDiv.style.display = 'block';
+    } else {
+        teamDiv.style.display = 'none';
+    }
+}
