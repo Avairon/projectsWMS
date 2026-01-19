@@ -67,8 +67,12 @@
 
     <div class="info-grid">
         <div class="info-item">
-            <strong>Статус</strong>
-            <p><span class="status-badge {% if project.status == 'в работе' %}status-active{% elif project.status == 'завершен' %}status-completed{% else %}status-paused{% endif %}">{{ project.status }}</span></p>
+            <strong>Куратор Направления</strong>
+            <p>{{ manager.name if manager else 'Не назначен' }}</p>
+        </div>
+        <div class="info-item">
+            <strong>Руководитель Проектов</strong>
+            <p>{{ supervisor.name if supervisor else 'Не назначен' }}</p>
         </div>
         <div class="info-item">
             <strong>Направление</strong>
@@ -83,12 +87,8 @@
             <p>{{ project.end_date or 'Не указана' }}</p>
         </div>
         <div class="info-item">
-            <strong>Руководитель Проектов</strong>
-            <p>{{ supervisor.name if supervisor else 'Не назначен' }}</p>
-        </div>
-        <div class="info-item">
-            <strong>Куратор Направления</strong>
-            <p>{{ manager.name if manager else 'Не назначен' }}</p>
+            <strong>Статус</strong>
+            <p><span class="status-badge {% if project.status == 'в работе' %}status-active{% elif project.status == 'завершен' %}status-completed{% else %}status-paused{% endif %}">{{ project.status }}</span></p>
         </div>
     </div>
 
