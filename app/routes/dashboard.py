@@ -22,10 +22,12 @@ def dashboard():
     tasks = load_data(app_config.TASKS_DB)
     users = load_data(app_config.USERS_DB)
     
-    # Преобразуем роли для совместимости (если используется 'supervisor' вместо 'curator')
+    # Преобразуем роли для совместимости (если используется 'supervisor' вместо 'curator' или 'worker' вместо 'executor')
     role = current_user.role
     if role == 'supervisor':
         role = 'curator'
+    elif role == 'worker':
+        role = 'executor'
     
     if role == 'admin':
         visible_projects = projects
