@@ -7,27 +7,234 @@
     <h2>Панель управления</h2>
 
     <div class="stats-grid">
+        {% if current_user.role == 'admin' %}
+        <!-- Статистика для администратора -->
         <div class="stat-card">
-            <h3>Всего проектов</h3>
-            <span class="stat-number">{{ stats.total_projects }}</span>
+            <h3>Всего проектов в работе</h3>
+            <span class="stat-number">{{ stats.total_active_projects }}</span>
         </div>
         <div class="stat-card">
-            <h3>Активных проектов</h3>
-            <span class="stat-number">{{ stats.active_projects }}</span>
+            <h3>Всего проектов отложенных</h3>
+            <span class="stat-number">{{ stats.total_paused_projects }}</span>
+        </div>
+        <div class="stat-card clickable" onclick="showOverdueProjects()">
+            <h3>Проекты с просроченным дедлайном</h3>
+            <span class="stat-number">{{ stats.overdue_projects_count }}</span>
+        </div>
+        <div class="stat-card clickable" onclick="showCuratorsList()">
+            <h3>Количество кураторов</h3>
+            <span class="stat-number">{{ stats.curators_count }}</span>
         </div>
         <div class="stat-card">
-            <h3>Всего задач</h3>
-            <span class="stat-number">{{ stats.total_tasks }}</span>
+            <h3>Количество руководителей</h3>
+            <span class="stat-number">{{ stats.managers_count }}</span>
         </div>
         <div class="stat-card">
-            <h3>Активных задач</h3>
-            <span class="stat-number">{{ stats.active_tasks }}</span>
+            <h3>Количество исполнителей</h3>
+            <span class="stat-number">{{ stats.executors_count }}</span>
+        </div>
+        {% elif current_user.role == 'curator' %}
+        <!-- Статистика для куратора направления -->
+        <div class="stat-card">
+            <h3>Всего проектов в работе (мои)</h3>
+            <span class="stat-number">{{ stats.my_active_projects }}</span>
         </div>
         <div class="stat-card">
-            <h3>Завершённых задач</h3>
-            <span class="stat-number">{{ stats.completed_tasks }}</span>
+            <h3>Всего приостановленных проектов (мои)</h3>
+            <span class="stat-number">{{ stats.my_paused_projects }}</span>
         </div>
+        <div class="stat-card clickable" onclick="showMyOverdueProjects()">
+            <h3>Проекты с просроченным дедлайном (мои)</h3>
+            <span class="stat-number">{{ stats.my_overdue_projects_count }}</span>
+        </div>
+        <div class="stat-card">
+            <h3>Количество руководителей (в моих проектах)</h3>
+            <span class="stat-number">{{ stats.my_managers_count }}</span>
+        </div>
+        <div class="stat-card">
+            <h3>Количество исполнителей (в моих проектах)</h3>
+            <span class="stat-number">{{ stats.my_executors_count }}</span>
+        </div>
+        {% elif current_user.role == 'manager' %}
+        <!-- Статистика для руководителя -->
+        <div class="stat-card">
+            <h3>Всего проектов в работе (мои)</h3>
+            <span class="stat-number">{{ stats.my_manager_active_projects }}</span>
+        </div>
+        <div class="stat-card">
+            <h3>Всего приостановленных проектов (мои)</h3>
+            <span class="stat-number">{{ stats.my_manager_paused_projects }}</span>
+        </div>
+        <div class="stat-card clickable" onclick="showProjectsWithOverdueTasks()">
+            <h3>Проекты с просроченными задачами</h3>
+            <span class="stat-number">{{ stats.projects_with_overdue_tasks_count }}</span>
+        </div>
+        <div class="stat-card">
+            <h3>Количество исполнителей (в моих проектах)</h3>
+            <span class="stat-number">{{ stats.my_manager_executors_count }}</span>
+        </div>
+        {% elif current_user.role == 'executor' %}
+        <!-- Статистика для исполнителя -->
+        <div class="stat-card">
+            <h3>Общее количество задач</h3>
+            <span class="stat-number">{{ stats.executor_total_tasks }}</span>
+        </div>
+        <div class="stat-card">
+            <h3>Активные задачи</h3>
+            <span class="stat-number">{{ stats.executor_active_tasks }}</span>
+        </div>
+        <div class="stat-card">
+            <h3>Завершенные задачи</h3>
+            <span class="stat-number">{{ stats.executor_completed_tasks }}</span>
+        </div>
+        <div class="stat-card">
+            <h3>Отложенные задачи</h3>
+            <span class="stat-number">{{ stats.executor_paused_tasks }}</span>
+        </div>
+        <div class="stat-card clickable" onclick="showOverdueExecutorTasks()">
+            <h3>Просроченные задачи</h3>
+            <span class="stat-number">{{ stats.executor_overdue_tasks }}</span>
+        </div>
+        {% endif %}
     </div>
+    
+    <!-- Скрипты для отображения списков при клике -->
+    <script>
+        function showOverdueProjects() {
+            // Отправляем AJAX-запрос для получения списка просроченных проектов
+            fetch('/api/overdue_projects')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(project => {
+                        listHTML += `<li><a href="/projects/${project.id}">${project.name}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    // Показываем список в модальном окне или отдельной области
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Проекты с просроченным дедлайном</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showCuratorsList() {
+            // Отправляем AJAX-запрос для получения списка кураторов
+            fetch('/api/curators_list')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(curator => {
+                        listHTML += `<li>${curator.name} (${curator.email})</li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    // Показываем список в модальном окне или отдельной области
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Список кураторов</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showMyOverdueProjects() {
+            // Отправляем AJAX-запрос для получения списка просроченных проектов куратора
+            fetch('/api/my_overdue_projects')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(project => {
+                        listHTML += `<li><a href="/projects/${project.id}">${project.name}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    // Показываем список в модальном окне или отдельной области
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Мои проекты с просроченным дедлайном</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showProjectsWithOverdueTasks() {
+            // Отправляем AJAX-запрос для получения списка проектов с просроченными задачами
+            fetch('/api/projects_with_overdue_tasks')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(project => {
+                        listHTML += `<li><a href="/projects/${project.id}">${project.name}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    // Показываем список в модальном окне или отдельной области
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Проекты с просроченными задачами</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showOverdueExecutorTasks() {
+            // Отправляем AJAX-запрос для получения списка просроченных задач исполнителя
+            fetch('/api/overdue_executor_tasks')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(task => {
+                        listHTML += `<li><a href="/tasks/${task.id}">${task.title}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    // Показываем список в модальном окне или отдельной области
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Просроченные задачи</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+    </script>
 
     <div class="section">
         <div class="section-header">
