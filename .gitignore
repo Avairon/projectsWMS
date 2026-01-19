@@ -5,9 +5,13 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Logs and temp files
+# Dependencies
+.venv/
+venv/
+env/
+
+# Logs
 *.log
-*.tmp
 
 # Environment
 .env
@@ -17,14 +21,16 @@ __pycache__/
 # Editors
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# Dependencies
-.venv/
-venv/
-node_modules/
+# Coverage
+.coverage
+coverage/
+htmlcov/
 
 # Build artifacts
 dist/
 build/
-target/
+*.egg-info/
 ```
