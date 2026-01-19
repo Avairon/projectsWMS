@@ -527,7 +527,8 @@ function submitTaskEdit() {
     });
 }
 
-function toggleHistory() {
+function toggleHistory(event) {
+    event.stopPropagation();
     const historyDiv = document.getElementById('task-history');
     if (historyDiv.style.display === 'none' || historyDiv.style.display === '') {
         historyDiv.style.display = 'block';
