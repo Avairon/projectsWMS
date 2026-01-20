@@ -110,13 +110,17 @@ def get_overdue_projects(projects):
     overdue_projects = []
     today = datetime.now().date()
     for project in projects:
-        if 'deadline' in project and project['deadline']:
+        #DEBUG
+        print(project['end_date'] + " " + str(today))
+        if 'end_date' in project and project['end_date']:
             try:
-                deadline_date = datetime.strptime(project['deadline'], '%Y-%m-%d').date()
+                # Формат даты в ваших данных: DD.MM.YYYY
+                deadline_date = datetime.strptime(project['end_date'], '%d.%m.%Y').date()
                 if deadline_date < today:
+                    print(project['name'] + " <- DEADLINE")
                     overdue_projects.append(project)
             except ValueError:
-                # Если формат даты некорректный, пропускаем
+                # Некорректный формат даты — пропускаем
                 continue
     return overdue_projects
 

@@ -107,7 +107,7 @@
                 .then(data => {
                     let listHTML = '<ul>';
                     data.forEach(project => {
-                        listHTML += `<li><a href="/projects/${project.id}">${project.name}</a></li>`;
+                        listHTML += `<li><a href="/project/${project.id}">${project.name}</a></li>`;
                     });
                     listHTML += '</ul>';
                     

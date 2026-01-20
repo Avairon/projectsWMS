@@ -6,7 +6,7 @@
     "direction": "Цифровая среда",
     "expected_result": "К 28 февраля 2026 создана и запущена управляемая ситема работы с проектами. Протестирована. Есть Регламент и инструкция для пользователя. Все проекты оформлены и ведутся в штатном режиме.",
     "start_date": "2025-10-01",
-    "end_date": "28.02.2026",
+    "end_date": "13.01.2026",
     "last_activity": "20.01.2026",
     "status": "в работе",
     "supervisor_id": "d40bd07c",
@@ -56,6 +56,20 @@
     "status": "в работе",
     "supervisor_id": "d40bd07c",
     "manager_id": "6c87e4cf",
+    "team": []
+  },
+  {
+    "id": "9a04141a",
+    "name": "asddas",
+    "description": "asds",
+    "direction": "Промталанты",
+    "expected_result": "adasdd",
+    "start_date": "01.01.2026",
+    "end_date": "02.01.2026",
+    "last_activity": "20.01.2026",
+    "status": "в работе",
+    "supervisor_id": "1",
+    "manager_id": "1",
     "team": []
   }
 ]

@@ -550,6 +550,8 @@ function submitTaskEdit() {
 
 function toggleHistory(event) {
     event.stopPropagation();
+    event.preventDefault(); // иногда помогает, если есть другие обработчики
+
     const historyDiv = document.getElementById('task-history');
     if (historyDiv.style.display === 'none' || historyDiv.style.display === '') {
         historyDiv.style.display = 'block';

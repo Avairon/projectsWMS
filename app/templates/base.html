@@ -35,6 +35,7 @@
                             <li><a href="{{ url_for('auth.admin_users') }}">Пользователи</a></li>
                             <li><a href="{{ url_for('auth.admin_directions') }}">Направления</a></li>
                         {% endif %}
+                        <li>ОТЧЕТЫ(СДЕЛАТЬ)</li>
                         <li><a href="{{ url_for('auth.logout') }}">Выход ({{ current_user.name }})</a></li>
                     {% else %}
                         <li><a href="{{ url_for('auth.login') }}">Вход</a></li>
@@ -63,7 +64,7 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2024 НХТК - Реестр проектов</p>
+            <p>&copy; 2025 НХТК - Реестр проектов</p>
         </div>
     </footer>
 

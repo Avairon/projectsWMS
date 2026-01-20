@@ -9,8 +9,8 @@
     "created_at": "15.12.2025",
     "start_date": "10.10.2025",
     "deadline": "15.10.2025",
-    "status": "активна",
-    "completion_date": "",
+    "status": "завершена",
+    "completion_date": "20.01.2026",
     "history": [
       {
         "action": "Изменена дата начала",
@@ -35,6 +35,12 @@
         "date": "19.12.2025 09:35:26",
         "user_id": "d40bd07c",
         "user_name": "Наталья Викторовна Кромм"
+      },
+      {
+        "action": "Изменен статус на \"завершена\"",
+        "date": "20.01.2026 12:55:47",
+        "user_id": "1",
+        "user_name": "Администратор системы"
       }
     ],
     "reports": [
@@ -56,7 +62,7 @@
     "created_by": "d40bd07c",
     "created_at": "15.12.2025",
     "start_date": "13.10.2025",
-    "deadline": "23.12.2025",
+    "deadline": "23.11.2026",
     "status": "активна",
     "completion_date": "",
     "history": [
@@ -89,6 +95,12 @@
         "date": "19.12.2025 09:35:37",
         "user_id": "d40bd07c",
         "user_name": "Наталья Викторовна Кромм"
+      },
+      {
+        "action": "Изменен дедлайн",
+        "date": "20.01.2026 13:01:21",
+        "user_id": "1",
+        "user_name": "Администратор системы"
       }
     ],
     "reports": [
@@ -168,6 +180,20 @@
         },
         "reported_by": "12e7652a",
         "reported_at": "20.01.2026 05:55:41"
+      },
+      {
+        "id": "ecd85f09-cf5a-4449-b986-7e1988aa1c9b",
+        "comment": "Тестовый отчет 3",
+        "file": {
+          "filename": "4.jpg",
+          "unique_filename": "report_b9afe244_381eca00_4.jpg",
+          "uploaded_by": "12e7652a",
+          "uploaded_at": "20.01.2026 13:02:47",
+          "size": 826457,
+          "executor_dir": ""
+        },
+        "reported_by": "12e7652a",
+        "reported_at": "20.01.2026 13:02:47"
       }
     ]
   },
