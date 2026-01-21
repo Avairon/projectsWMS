@@ -105,19 +105,20 @@
             fetch('/api/overdue_projects')
                 .then(response => response.json())
                 .then(data => {
-                    let listHTML = '<ul>';
+                    let tableHTML = '<table class="overdue-table">';
+                    tableHTML += '<thead><tr><th>Имя проекта</th><th>Прошло дней от дедлайна</th><th>Перейти</th></tr></thead><tbody>';
                     data.forEach(project => {
-                        listHTML += `<li><a href="/project/${project.id}">${project.name}</a></li>`;
+                        tableHTML += `<tr><td>${project.name}</td><td>${project.days_since_deadline}</td><td><a href="/project/${project.id}" class="btn">Перейти</a></td></tr>`;
                     });
-                    listHTML += '</ul>';
+                    tableHTML += '</tbody></table>';
                     
-                    // Показываем список в модальном окне или отдельной области
+                    // Показываем таблицу в модальном окне или отдельной области
                     const modal = document.createElement('div');
                     modal.innerHTML = `
                         <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
-                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-width:90vw; max-height:70vh; overflow-y:auto;">
                                 <h3>Проекты с просроченным дедлайном</h3>
-                                ${listHTML}
+                                ${tableHTML}
                                 <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
                             </div>
                         </div>
@@ -159,19 +160,20 @@
             fetch('/api/my_overdue_projects')
                 .then(response => response.json())
                 .then(data => {
-                    let listHTML = '<ul>';
+                    let tableHTML = '<table class="overdue-table">';
+                    tableHTML += '<thead><tr><th>Имя проекта</th><th>Прошло дней от дедлайна</th><th>Перейти</th></tr></thead><tbody>';
                     data.forEach(project => {
-                        listHTML += `<li><a href="/projects/${project.id}">${project.name}</a></li>`;
+                        tableHTML += `<tr><td>${project.name}</td><td>${project.days_since_deadline}</td><td><a href="/projects/${project.id}" class="btn">Перейти</a></td></tr>`;
                     });
-                    listHTML += '</ul>';
+                    tableHTML += '</tbody></table>';
                     
-                    // Показываем список в модальном окне или отдельной области
+                    // Показываем таблицу в модальном окне или отдельной области
                     const modal = document.createElement('div');
                     modal.innerHTML = `
                         <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
-                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-width:90vw; max-height:70vh; overflow-y:auto;">
                                 <h3>Мои проекты с просроченным дедлайном</h3>
-                                ${listHTML}
+                                ${tableHTML}
                                 <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
                             </div>
                         </div>
@@ -186,19 +188,20 @@
             fetch('/api/projects_with_overdue_tasks')
                 .then(response => response.json())
                 .then(data => {
-                    let listHTML = '<ul>';
+                    let tableHTML = '<table class="overdue-table">';
+                    tableHTML += '<thead><tr><th>Имя проекта</th><th>Прошло дней от дедлайна</th><th>Перейти</th></tr></thead><tbody>';
                     data.forEach(project => {
-                        listHTML += `<li><a href="/projects/${project.id}">${project.name}</a></li>`;
+                        tableHTML += `<tr><td>${project.name}</td><td>${project.days_since_deadline}</td><td><a href="/projects/${project.id}" class="btn">Перейти</a></td></tr>`;
                     });
-                    listHTML += '</ul>';
+                    tableHTML += '</tbody></table>';
                     
-                    // Показываем список в модальном окне или отдельной области
+                    // Показываем таблицу в модальном окне или отдельной области
                     const modal = document.createElement('div');
                     modal.innerHTML = `
                         <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
-                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-width:90vw; max-height:70vh; overflow-y:auto;">
                                 <h3>Проекты с просроченными задачами</h3>
-                                ${listHTML}
+                                ${tableHTML}
                                 <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
                             </div>
                         </div>
@@ -213,19 +216,20 @@
             fetch('/api/overdue_executor_tasks')
                 .then(response => response.json())
                 .then(data => {
-                    let listHTML = '<ul>';
+                    let tableHTML = '<table class="overdue-table">';
+                    tableHTML += '<thead><tr><th>Имя задачи</th><th>Прошло дней от дедлайна</th><th>Перейти</th></tr></thead><tbody>';
                     data.forEach(task => {
-                        listHTML += `<li><a href="/tasks/${task.id}">${task.title}</a></li>`;
+                        tableHTML += `<tr><td>${task.title}</td><td>${task.days_since_deadline}</td><td><a href="/tasks/${task.id}" class="btn">Перейти</a></td></tr>`;
                     });
-                    listHTML += '</ul>';
+                    tableHTML += '</tbody></table>';
                     
-                    // Показываем список в модальном окне или отдельной области
+                    // Показываем таблицу в модальном окне или отдельной области
                     const modal = document.createElement('div');
                     modal.innerHTML = `
                         <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
-                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-width:90vw; max-height:70vh; overflow-y:auto;">
                                 <h3>Просроченные задачи</h3>
-                                ${listHTML}
+                                ${tableHTML}
                                 <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
                             </div>
                         </div>
@@ -233,6 +237,44 @@
                     document.body.appendChild(modal);
                 })
                 .catch(error => console.error('Ошибка:', error));
+        }
+        
+        /* Стили для таблицы просроченных проектов */
+        .overdue-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        .overdue-table th,
+        .overdue-table td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        
+        .overdue-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        .overdue-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .overdue-table .btn {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .overdue-table .btn:hover {
+            background-color: #0056b3;
         }
     </script>
 
@@ -255,8 +297,8 @@
             <div class="project-card status-{% if project.status == 'в работе' %}active{% elif project.status == 'завершен' %}completed{% else %}paused{% endif %}" data-status="{{ project.status }}">
                 <h4>{{ project.name }}</h4>
                 <p><strong>Направление:</strong> {{ project.direction or 'Не указано' }}</p>
-                <p><strong>Куратор Направления:</strong> {{ project.manager_id or 'Не указано' }}</p>
-                <p><strong>Руководитель Проекта:</strong> {{ project.supervisor_id or 'Не указано' }}</p>
+                <p><strong>Куратор Направления:</strong> {{ project.manager_name or 'Не указано' }}</p>
+                <p><strong>Руководитель Проекта:</strong> {{ project.supervisor_name or 'Не указано' }}</p>
                 <p><strong>Статус:</strong> <span class="status-badge {% if project.status == 'в работе' %}status-active{% elif project.status == 'завершен' %}status-completed{% else %}status-paused{% endif %}">{{ project.status }}</span></p>
                 <p><strong>Последняя активность:</strong> {{ project.last_activity }}</p>
                 <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn">Подробнее</a>
