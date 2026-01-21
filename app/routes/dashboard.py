@@ -95,10 +95,33 @@ def dashboard():
             'executor_overdue_tasks': len(get_overdue_tasks_for_executor(current_user.id, my_tasks))
         }
     
+    # Добавляем информацию о пользователях к каждому проекту
+    enhanced_projects = []
+    for project in visible_projects:
+        # Получаем информацию о кураторе (руководителе направления)
+        manager_info = None
+        if project.get('manager_id'):
+            manager = next((u for u in users if u.get('id') == project['manager_id']), None)
+            if manager:
+                manager_info = {'id': manager['id'], 'name': manager.get('name', manager.get('full_name', 'Не указано'))}
+        
+        # Получаем информацию о руководителе проекта
+        supervisor_info = None
+        if project.get('supervisor_id'):
+            supervisor = next((u for u in users if u.get('id') == project['supervisor_id']), None)
+            if supervisor:
+                supervisor_info = {'id': supervisor['id'], 'name': supervisor.get('name', supervisor.get('full_name', 'Не указано'))}
+        
+        # Создаем копию проекта с дополнительной информацией
+        enhanced_project = project.copy()
+        enhanced_project['manager_info'] = manager_info
+        enhanced_project['supervisor_info'] = supervisor_info
+        enhanced_projects.append(enhanced_project)
+
     user_token = current_user.token
 
     return render_template('dashboard.html', 
-                         projects=visible_projects, 
+                         projects=enhanced_projects, 
                          tasks=user_tasks, 
                          users=users, 
                          stats=stats,

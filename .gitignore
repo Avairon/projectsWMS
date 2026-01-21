@@ -1,7 +1,6 @@
 ```
 # Python
-__pycache__/*
-app/__pycache__/*
+__pycache__/
 *.py[cod]
 *$py.class
 *.so
@@ -23,16 +22,25 @@ wheels/
 *.egg
 
 # Environment
+.env
+.env.local
+.env.*
 .venv/
 venv/
-env/
-
-# Logs
-*.log
+ENV/
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*.tmp
+
+# Logs
+*.log
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
 ```
