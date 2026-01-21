@@ -1,6 +1,7 @@
 ```
 # Python
-__pycache__/
+__pycache__/*
+app/__pycache__/*
 *.py[cod]
 *$py.class
 *.so
@@ -25,18 +26,13 @@ wheels/
 .venv/
 venv/
 env/
-ENV/
+
+# Logs
+*.log
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# Logs
-*.log
-
-# OS
-.DS_Store
-Thumbs.db
 ```
