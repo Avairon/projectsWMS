@@ -28,11 +28,13 @@ def create_app():
     from app.routes.dashboard import dashboard_bp
     from app.routes.projects import projects_bp
     from app.routes.tasks import tasks_bp
+    from app.routes.reports import reports_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(projects_bp)
     app.register_blueprint(tasks_bp)
+    app.register_blueprint(reports_bp)
 
     # Register template utilities
     from app.utils import format_file_size

@@ -1615,3 +1615,106 @@ small {
     margin-top: 5px;
     color: var(--gray-600);
 }
+
+/* Reports Page Styles */
+#reports-table-container {
+    margin-top: 2rem;
+    display: none;
+}
+
+#reports-table-container.show {
+    display: block;
+}
+
+.reports-section {
+    margin-bottom: 2rem;
+}
+
+.reports-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.reports-section-header h3 {
+    margin-bottom: 0;
+    color: var(--secondary-color);
+    font-weight: 600;
+    font-size: 1.3rem;
+}
+
+.reports-button {
+    background: linear-gradient(135deg, var(--success-color) 0%, var(--success-light) 100%);
+}
+
+.reports-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.reports-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background: white;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.reports-table th,
+.reports-table td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.reports-table th {
+    background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%);
+    font-weight: 600;
+    color: var(--gray-800);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.reports-table tbody tr:hover {
+    background-color: rgba(52, 152, 219, 0.05);
+}
+
+.report-status-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.report-status-active {
+    background-color: #d4f1e5;
+    color: var(--success-color);
+}
+
+.report-status-completed {
+    background-color: #d6eaf8;
+    color: var(--primary-color);
+}
+
+.report-status-paused {
+    background-color: #fdebd0;
+    color: var(--warning-color);
+}
+
+.report-info-box {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-left: 4px solid var(--primary-color);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: var(--border-radius);
+}
+

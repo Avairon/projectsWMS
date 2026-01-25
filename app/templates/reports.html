@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Отчеты - НХТК Реестр проектов{% endblock %}
+
+{% block content %}
+<div class="reports-section">
+    <div class="reports-section-header">
+        <h3>Отчеты</h3>
+    </div>
+    
+    <div class="report-info-box">
+        <p>На этой странице вы можете получить отчеты по проектам с информацией о статусах, кураторах и руководителях.</p>
+    </div>
+    
+    <div class="form-actions">
+        <button id="show-reports-btn" class="btn reports-button">Показать отчеты</button>
+    </div>
+    
+    <div id="reports-table-container">
+        <div class="table-wrapper">
+            <table class="reports-table">
+                <thead>
+                    <tr>
+                        <th>Название проекта</th>
+                        <th>Куратор направления</th>
+                        <th>Направление</th>
+                        <th>Руководитель</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+                <tbody id="reports-table-body">
+                    <!-- Data will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const showReportsBtn = document.getElementById('show-reports-btn');
+    const reportsTableContainer = document.getElementById('reports-table-container');
+    const reportsTableBody = document.getElementById('reports-table-body');
+    
+    showReportsBtn.addEventListener('click', function() {
+        // Show loading state
+        showReportsBtn.disabled = true;
+        showReportsBtn.textContent = 'Загрузка...';
+        
+        // Fetch reports data
+        fetch('/api/reports/projects')
+            .then(response => response.json())
+            .then(data => {
+                // Clear previous data
+                reportsTableBody.innerHTML = '';
+                
+                if (data.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td colspan="5" style="text-align: center;">Нет данных для отображения</td>';
+                    reportsTableBody.appendChild(row);
+                } else {
+                    // Populate table with data
+                    data.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.project_name || ''}</td>
+                            <td>${item.curator_name || ''}</td>
+                            <td>${item.direction || ''}</td>
+                            <td>${item.manager_name || ''}</td>
+                            <td>
+                                <span class="report-status-badge report-status-${item.status.toLowerCase()}">
+                                    ${item.status || ''}
+                                </span>
+                            </td>
+                        `;
+                        reportsTableBody.appendChild(row);
+                    });
+                }
+                
+                // Show the table container
+                reportsTableContainer.classList.add('show');
+                
+                // Reset button
+                showReportsBtn.disabled = false;
+                showReportsBtn.textContent = 'Показать отчеты';
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке отчетов:', error);
+                
+                // Show error message
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="5" style="text-align: center; color: red;">Ошибка при загрузке данных</td>';
+                reportsTableBody.appendChild(row);
+                
+                reportsTableContainer.classList.add('show');
+                
+                // Reset button
+                showReportsBtn.disabled = false;
+                showReportsBtn.textContent = 'Показать отчеты';
+            });
+    });
+});
+</script>
+{% endblock %}
