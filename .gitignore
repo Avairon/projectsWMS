@@ -29,18 +29,12 @@ wheels/
 venv/
 ENV/
 
+# Logs
+*.log
+
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*.tmp
-
-# Logs
-*.log
-
-# Coverage
-.coverage
-coverage/
-htmlcov/
 ```
