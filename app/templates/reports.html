@@ -21,11 +21,12 @@
             <table class="reports-table">
                 <thead>
                     <tr>
+                        <th>Дата начала</th>
+                        <th>Дата окончания</th>
                         <th>Название проекта</th>
-                        <th>Куратор направления</th>
-                        <th>Направление</th>
-                        <th>Руководитель</th>
                         <th>Статус</th>
+                        <th>Куратор проекта</th>
+                        <th>Руководитель проекта</th>
                     </tr>
                 </thead>
                 <tbody id="reports-table-body">
@@ -56,22 +57,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (data.length === 0) {
                     const row = document.createElement('tr');
-                    row.innerHTML = '<td colspan="5" style="text-align: center;">Нет данных для отображения</td>';
+                    row.innerHTML = '<td colspan="6" style="text-align: center;">Нет данных для отображения</td>';
                     reportsTableBody.appendChild(row);
                 } else {
                     // Populate table with data
                     data.forEach(item => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
+                            <td>${item.start_date || ''}</td>
+                            <td>${item.end_date || ''}</td>
                             <td>${item.project_name || ''}</td>
-                            <td>${item.curator_name || ''}</td>
-                            <td>${item.direction || ''}</td>
-                            <td>${item.manager_name || ''}</td>
                             <td>
                                 <span class="report-status-badge report-status-${item.status.toLowerCase()}">
                                     ${item.status || ''}
                                 </span>
                             </td>
+                            <td>${item.curator_name || ''}</td>
+                            <td>${item.manager_name || ''}</td>
                         `;
                         reportsTableBody.appendChild(row);
                     });
@@ -89,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Show error message
                 const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="5" style="text-align: center; color: red;">Ошибка при загрузке данных</td>';
+                row.innerHTML = '<td colspan="6" style="text-align: center; color: red;">Ошибка при загрузке данных</td>';
                 reportsTableBody.appendChild(row);
                 
                 reportsTableContainer.classList.add('show');
