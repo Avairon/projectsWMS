@@ -55,3 +55,42 @@ def get_projects_report():
         })
     
     return jsonify(report_data)
+
+
+@reports_bp.route('/api/reports/tasks')
+@login_required
+def get_tasks_report():
+    """API endpoint для получения данных отчета по задачам проектов"""
+    if current_user.role != 'admin':
+        return jsonify({'error': 'У вас нет прав доступа к этой странице'}), 403
+    
+    tasks = load_data(app_config.TASKS_DB)
+    users = load_data(app_config.USERS_DB)
+    projects = load_data(app_config.PROJECTS_DB)
+    
+    report_data = []
+    
+    for task in tasks:
+        # Найти исполнителя задачи
+        assignee = next((u for u in users if u.get('id') == task.get('assignee_id')), None)
+        executor_name = assignee.get('name', '') if assignee else ''
+        
+        # Найти проект задачи
+        project = next((p for p in projects if p.get('id') == task.get('project_id')), None)
+        project_name = project.get('name', '') if project else ''
+        
+        # Определяем дату окончания (дедлайн или дата завершения)
+        end_date = task.get('deadline', '')
+        if task.get('status') == 'завершена' and task.get('completion_date'):
+            end_date = task.get('completion_date')
+        
+        report_data.append({
+            'executor': executor_name,
+            'project': project_name,
+            'task': task.get('title', ''),
+            'start_date': task.get('start_date', ''),
+            'end_date': end_date,
+            'status': task.get('status', '')
+        })
+    
+    return jsonify(report_data)

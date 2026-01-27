@@ -15,6 +15,7 @@
     <div class="form-actions">
         <select id="report-type-select" class="form-control">
             <option value="projects">Отчет об общих проектах</option>
+            <option value="tasks">Отчет по задачам проектов</option>
         </select>
         <button id="show-reports-btn" class="btn reports-button">Показать отчеты</button>
     </div>
@@ -23,7 +24,7 @@
         <div class="table-wrapper">
             <table class="reports-table">
                 <thead>
-                    <tr>
+                    <tr id="reports-table-headers">
                         <th>Дата начала</th>
                         <th>Дата окончания</th>
                         <th>Название проекта</th>
@@ -45,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const showReportsBtn = document.getElementById('show-reports-btn');
     const reportsTableContainer = document.getElementById('reports-table-container');
     const reportsTableBody = document.getElementById('reports-table-body');
+    const reportsTableHeaders = document.getElementById('reports-table-headers');
     
     showReportsBtn.addEventListener('click', function() {
         // Show loading state
@@ -55,6 +57,29 @@ document.addEventListener('DOMContentLoaded', function() {
         const reportTypeSelect = document.getElementById('report-type-select');
         const selectedReportType = reportTypeSelect.value;
         
+        // Set table headers based on report type
+        if (selectedReportType === 'tasks') {
+            // Headers for task report
+            reportsTableHeaders.innerHTML = `
+                <th>Исполнитель</th>
+                <th>Проект</th>
+                <th>Задача</th>
+                <th>Дата начала задачи</th>
+                <th>Дата окончания задачи</th>
+                <th>Статус задачи</th>
+            `;
+        } else {
+            // Headers for project report (default)
+            reportsTableHeaders.innerHTML = `
+                <th>Дата начала</th>
+                <th>Дата окончания</th>
+                <th>Название проекта</th>
+                <th>Статус</th>
+                <th>Куратор проекта</th>
+                <th>Руководитель проекта</th>
+            `;
+        }
+        
         // Fetch reports data based on selected report type
         fetch(`/api/reports/${selectedReportType}`)
             .then(response => response.json())
@@ -63,27 +88,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 reportsTableBody.innerHTML = '';
                 
                 if (data.length === 0) {
+                    let colSpan = selectedReportType === 'tasks' ? 6 : 6;
                     const row = document.createElement('tr');
-                    row.innerHTML = '<td colspan="6" style="text-align: center;">Нет данных для отображения</td>';
+                    row.innerHTML = `<td colspan="${colSpan}" style="text-align: center;">Нет данных для отображения</td>`;
                     reportsTableBody.appendChild(row);
                 } else {
-                    // Populate table with data
-                    data.forEach(item => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${item.start_date || ''}</td>
-                            <td>${item.end_date || ''}</td>
-                            <td>${item.project_name || ''}</td>
-                            <td>
-                                <span class="report-status-badge report-status-${item.status.toLowerCase()}">
-                                    ${item.status || ''}
-                                </span>
-                            </td>
-                            <td>${item.curator_name || ''}</td>
-                            <td>${item.manager_name || ''}</td>
-                        `;
-                        reportsTableBody.appendChild(row);
-                    });
+                    // Populate table with data based on report type
+                    if (selectedReportType === 'tasks') {
+                        // Task report data
+                        data.forEach(item => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${item.executor || ''}</td>
+                                <td>${item.project || ''}</td>
+                                <td>${item.task || ''}</td>
+                                <td>${item.start_date || ''}</td>
+                                <td>${item.end_date || ''}</td>
+                                <td>
+                                    <span class="report-status-badge report-status-${item.status.toLowerCase()}">
+                                        ${item.status || ''}
+                                    </span>
+                                </td>
+                            `;
+                            reportsTableBody.appendChild(row);
+                        });
+                    } else {
+                        // Project report data (default)
+                        data.forEach(item => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${item.start_date || ''}</td>
+                                <td>${item.end_date || ''}</td>
+                                <td>${item.project_name || ''}</td>
+                                <td>
+                                    <span class="report-status-badge report-status-${item.status.toLowerCase()}">
+                                        ${item.status || ''}
+                                    </span>
+                                </td>
+                                <td>${item.curator_name || ''}</td>
+                                <td>${item.manager_name || ''}</td>
+                            `;
+                            reportsTableBody.appendChild(row);
+                        });
+                    }
                 }
                 
                 // Show the table container
@@ -96,9 +143,12 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Ошибка при загрузке отчетов:', error);
                 
+                // Determine column count based on report type
+                let colSpan = selectedReportType === 'tasks' ? 6 : 6;
+                
                 // Show error message
                 const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="6" style="text-align: center; color: red;">Ошибка при загрузке данных</td>';
+                row.innerHTML = `<td colspan="${colSpan}" style="text-align: center; color: red;">Ошибка при загрузке данных</td>`;
                 reportsTableBody.appendChild(row);
                 
                 reportsTableContainer.classList.add('show');
