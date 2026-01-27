@@ -13,6 +13,9 @@
     </div>
     
     <div class="form-actions">
+        <select id="report-type-select" class="form-control">
+            <option value="common_projects">Отчет об общих проектах</option>
+        </select>
         <button id="show-reports-btn" class="btn reports-button">Показать отчеты</button>
     </div>
     
@@ -48,8 +51,12 @@ document.addEventListener('DOMContentLoaded', function() {
         showReportsBtn.disabled = true;
         showReportsBtn.textContent = 'Загрузка...';
         
-        // Fetch reports data
-        fetch('/api/reports/projects')
+        // Get selected report type
+        const reportTypeSelect = document.getElementById('report-type-select');
+        const selectedReportType = reportTypeSelect.value;
+        
+        // Fetch reports data based on selected report type
+        fetch(`/api/reports/${selectedReportType}`)
             .then(response => response.json())
             .then(data => {
                 // Clear previous data
