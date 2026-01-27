@@ -1,5 +1,5 @@
-```gitignore
-# Python cache files
+```
+# Python
 __pycache__/
 *.pyc
 *.pyo
@@ -9,7 +9,7 @@ __pycache__/
 *.log
 *.tmp
 
-# Environment files
+# Environment
 .env
 .env.local
 *.env.*
@@ -21,21 +21,4 @@ __pycache__/
 # Dependencies
 .venv/
 venv/
-node_modules/
-
-# Build artifacts
-dist/
-build/
-target/
-
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# MyPy cache
-.mypy_cache/
-
-# Pytest cache
-.pytest_cache/
 ```
