@@ -49,7 +49,9 @@ def get_projects_report():
             'curator_name': supervisor_name,
             'direction': direction_name,
             'manager_name': manager_name,
-            'status': project.get('status', '')
+            'status': project.get('status', ''),
+            'start_date': project.get('start_date', ''),
+            'end_date': project.get('end_date', '')
         })
     
     return jsonify(report_data)
