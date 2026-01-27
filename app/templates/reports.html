@@ -18,6 +18,7 @@
             <option value="tasks">Отчет по задачам проектов</option>
         </select>
         <button id="show-reports-btn" class="btn reports-button">Показать отчеты</button>
+        <button id="download-report-btn" class="btn reports-button" style="display:none;" onclick="downloadReport()">Скачать отчет</button>
     </div>
     
     <div id="reports-table-container">
@@ -42,6 +43,23 @@
 </div>
 
 <script>
+function downloadReport() {
+    // Get selected report type
+    const reportTypeSelect = document.getElementById('report-type-select');
+    const selectedReportType = reportTypeSelect.value;
+    
+    // Construct the download URL based on the report type
+    let downloadUrl;
+    if (selectedReportType === 'tasks') {
+        downloadUrl = '/api/reports/tasks/download';
+    } else {
+        downloadUrl = '/api/reports/projects/download';
+    }
+    
+    // Navigate to the download URL
+    window.location.href = downloadUrl;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const showReportsBtn = document.getElementById('show-reports-btn');
     const reportsTableContainer = document.getElementById('reports-table-container');
@@ -135,6 +153,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Show the table container
                 reportsTableContainer.classList.add('show');
+                
+                // Show the download button and enable it
+                const downloadBtn = document.getElementById('download-report-btn');
+                downloadBtn.style.display = 'inline-block';
                 
                 // Reset button
                 showReportsBtn.disabled = false;
