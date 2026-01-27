@@ -46,9 +46,9 @@ def get_projects_report():
         
         report_data.append({
             'project_name': project.get('name', ''),
-            'curator_name': supervisor_name,
+            'curator_name': manager_name,
             'direction': direction_name,
-            'manager_name': manager_name,
+            'manager_name': supervisor_name,
             'status': project.get('status', ''),
             'start_date': project.get('start_date', ''),
             'end_date': project.get('end_date', '')
