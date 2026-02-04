@@ -209,6 +209,21 @@ def create_project():
                 flash('Некорректный формат даты окончания')
                 return render_template('create_project.html', users=users, managers=managers, curators=curators, directions=directions)
 
+        # Получаем данные об инициаторе
+        initiator_type = request.form.get('initiator_type', '').strip()
+        initiator_name = request.form.get('initiator_name', '').strip()
+        
+        # Валидация инициатора
+        if not initiator_type:
+            flash('Пожалуйста, выберите тип инициатора проекта')
+            return render_template('create_project.html', users=users, managers=managers, curators=curators, directions=directions)
+        
+        # Для некоторых типов инициаторов требуется ФИО
+        if initiator_type in ['deputy_director', 'department_head', 'teacher'] and not initiator_name:
+            flash('Для выбранного типа инициатора необходимо указать ФИО')
+            return render_template('create_project.html', users=users, managers=managers, curators=curators, directions=directions)
+
+
         team_members = request.form.get('team_members', '')
         team = team_members.split(',') if team_members else []
 
@@ -225,6 +240,8 @@ def create_project():
             "supervisor_id": request.form['supervisor_id'],
             "manager_id": request.form['manager_id'],
             "team": team,
+            "initiator_type": initiator_type,
+            "initiator_name": initiator_name if initiator_name else None
         }
 
         projects = load_data(app_config.PROJECTS_DB)
@@ -265,6 +282,21 @@ def edit_project(project_id):
         project['direction'] = request.form['direction'].strip()
         project['expected_result'] = request.form['expected_result'].strip()
         
+        # Обновляем данные об инициаторе
+        initiator_type = request.form.get('initiator_type', '').strip()
+        initiator_name = request.form.get('initiator_name', '').strip()
+        
+        if not initiator_type:
+            flash('Пожалуйста, выберите тип инициатора проекта')
+            return render_template('edit_project.html', project=project, users=users, managers=managers, directions=directions)
+        
+        if initiator_type in ['deputy_director', 'department_head', 'teacher'] and not initiator_name:
+            flash('Для выбранного типа инициатора необходимо указать ФИО')
+            return render_template('edit_project.html', project=project, users=users, managers=managers, directions=directions)
+        
+        project['initiator_type'] = initiator_type
+        project['initiator_name'] = initiator_name if initiator_name else None
+
         end_date = request.form.get('end_date', None)
         if end_date:
             try:

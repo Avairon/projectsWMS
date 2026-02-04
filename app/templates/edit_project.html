@@ -4,11 +4,34 @@
 
 {% block content %}
 <div class="create-project">
-    <h2>Редактирование проекта</h2>
+    <h2>Редактирование Паспорта проекта</h2>
     <form method="POST">
         <div class="form-group">
             <label for="name">Название проекта</label>
             <input type="text" id="name" name="name" value="{{ project.name }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="initiator_type">Инициатор проекта *</label>
+            <select id="initiator_type" name="initiator_type" required onchange="toggleInitiatorFields()">
+                <option value="">-- Выберите тип инициатора --</option>
+                <optgroup label="Внешний источник">
+                    <option value="ministry" {% if project.initiator_type == 'ministry' %}selected{% endif %}>Министерство образования</option>
+                    <option value="national_project" {% if project.initiator_type == 'national_project' %}selected{% endif %}>Национальный проект</option>
+                    <option value="regional_project" {% if project.initiator_type == 'regional_project' %}selected{% endif %}>Региональный проект</option>
+                </optgroup>
+                <optgroup label="Внутренний источник">
+                    <option value="director" {% if project.initiator_type == 'director' %}selected{% endif %}>Директор</option>
+                    <option value="deputy_director" {% if project.initiator_type == 'deputy_director' %}selected{% endif %}>Заместитель директора</option>
+                    <option value="department_head" {% if project.initiator_type == 'department_head' %}selected{% endif %}>Руководитель подразделения</option>
+                    <option value="teacher" {% if project.initiator_type == 'teacher' %}selected{% endif %}>Педагог колледжа</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="form-group" id="initiator_name_field" style="display: none;">
+            <label for="initiator_name">ФИО инициатора *</label>
+            <input type="text" id="initiator_name" name="initiator_name" value="{{ project.initiator_name or '' }}" placeholder="Введите ФИО">
         </div>
 
         <div class="form-group">
@@ -209,4 +232,39 @@
         </div>
     </form>
 </div>
+
+<script>
+function toggleInitiatorFields() {
+    const initiatorType = document.getElementById('initiator_type').value;
+    const nameField = document.getElementById('initiator_name_field');
+    
+    // Показываем поле ФИО только для внутренних источников, кроме "Директор"
+    if (['deputy_director', 'department_head', 'teacher'].includes(initiatorType)) {
+        nameField.style.display = 'block';
+        document.getElementById('initiator_name').required = true;
+    } else {
+        nameField.style.display = 'none';
+        document.getElementById('initiator_name').required = false;
+        if (initiatorType !== 'director') {
+            document.getElementById('initiator_name').value = '';
+        }
+    }
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    toggleInitiatorFields();
+    
+    // Загрузка текущих участников команды
+    const teamMembersInput = document.getElementById('team_members');
+    const teamMemberIds = teamMembersInput.value.split(',').filter(id => id);
+    
+    if (teamMemberIds.length > 0) {
+        const noMembersMsg = document.getElementById('no-members-message');
+        if (noMembersMsg) {
+            noMembersMsg.style.display = 'none';
+        }
+    }
+});
+</script>
 {% endblock %}
