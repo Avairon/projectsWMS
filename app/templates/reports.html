@@ -3,183 +3,418 @@
 {% block title %}Отчеты - НХТК Реестр проектов{% endblock %}
 
 {% block content %}
-<div class="reports-section">
-    <div class="reports-section-header">
-        <h3>Отчеты</h3>
+<div class="container mt-4">
+    <h1 class="mb-4">📊 Отчеты</h1>
+    <p class="text-muted mb-4">На этой странице вы можете получить отчеты по проектам с информацией о статусах, кураторах и руководителях.</p>
+
+    <!-- Тип отчета -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="btn-group" role="group" aria-label="Тип отчета">
+                <button type="button" class="btn btn-primary active" data-report-type="projects">
+                    📋 Отчет по проектам
+                </button>
+                <button type="button" class="btn btn-outline-primary" data-report-type="tasks">
+                    ✅ Отчет по задачам
+                </button>
+            </div>
+        </div>
     </div>
-    
-    <div class="report-info-box">
-        <p>На этой странице вы можете получить отчеты по проектам с информацией о статусах, кураторах и руководителях.</p>
+
+    <!-- Панель фильтров -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">🔍 Фильтры и поиск</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <!-- Поиск -->
+                <div class="col-md-6">
+                    <label class="form-label">Поиск по тексту</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Введите текст для поиска...">
+                    <small class="text-muted">Поиск по всем текстовым полям (название, статус, куратор и т.д.)</small>
+                </div>
+
+                <!-- Поле с датой -->
+                <div class="col-md-3">
+                    <label class="form-label">Поле с датой</label>
+                    <select class="form-select" id="dateField">
+                        <option value="start_date">Дата начала</option>
+                        <option value="end_date">Дата окончания</option>
+                    </select>
+                </div>
+
+                <!-- Тип фильтра даты -->
+                <div class="col-md-3">
+                    <label class="form-label">Тип фильтра</label>
+                    <select class="form-select" id="dateFilterType">
+                        <option value="exact">Точная дата</option>
+                        <option value="range" selected>Диапазон дат</option>
+                    </select>
+                </div>
+
+                <!-- Точная дата -->
+                <div class="col-md-6 date-exact d-none">
+                    <label class="form-label">Дата</label>
+                    <input type="text" class="form-control datepicker" id="exactDate" placeholder="ДД.ММ.ГГГГ">
+                </div>
+
+                <!-- Диапазон дат -->
+                <div class="col-md-6 date-range">
+                    <label class="form-label">Начальная дата</label>
+                    <input type="text" class="form-control datepicker" id="startDate" placeholder="ДД.ММ.ГГГГ">
+                </div>
+                <div class="col-md-6 date-range">
+                    <label class="form-label">Конечная дата</label>
+                    <input type="text" class="form-control datepicker" id="endDate" placeholder="ДД.ММ.ГГГГ">
+                </div>
+
+                <!-- Кнопки действий -->
+                <div class="col-12">
+                    <button class="btn btn-success" id="applyFiltersBtn">
+                        <i class="fas fa-filter"></i> Применить фильтры
+                    </button>
+                    <button class="btn btn-secondary" id="clearFiltersBtn">
+                        <i class="fas fa-eraser"></i> Очистить фильтры
+                    </button>
+                    <button class="btn btn-primary" id="downloadReportBtn">
+                        <i class="fas fa-download"></i> Скачать отчет (Excel)
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-    
-    <div class="form-actions">
-        <select id="report-type-select" class="form-control">
-            <option value="projects">Отчет об общих проектах</option>
-            <option value="tasks">Отчет по задачам проектов</option>
-        </select>
-        <button id="show-reports-btn" class="btn reports-button">Показать отчеты</button>
-        <button id="download-report-btn" class="btn reports-button" style="display:none;" onclick="downloadReport()">Скачать отчет</button>
+
+    <!-- Информация о результатах -->
+    <div class="alert alert-info d-none" id="resultsInfo">
+        <strong>Информация:</strong> 
+        <span id="totalCount">0</span> записей всего, 
+        <span id="filteredCount">0</span> записей отображается
+        <span id="filterInfo" class="ms-3"></span>
     </div>
-    
-    <div id="reports-table-container">
-        <div class="table-wrapper">
-            <table class="reports-table">
-                <thead>
-                    <tr id="reports-table-headers">
-                        <th>Дата начала</th>
-                        <th>Дата окончания</th>
-                        <th>Название проекта</th>
-                        <th>Статус</th>
-                        <th>Куратор проекта</th>
-                        <th>Руководитель проекта</th>
-                    </tr>
-                </thead>
-                <tbody id="reports-table-body">
-                    <!-- Data will be populated by JavaScript -->
-                </tbody>
-            </table>
+
+    <!-- Таблица с данными -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">📋 Данные отчета</h5>
+        </div>
+        <div class="card-body">
+            <div id="tableContainer">
+                <p class="text-muted">Выберите тип отчета и нажмите "Применить фильтры" для отображения данных.</p>
+            </div>
         </div>
     </div>
 </div>
 
-<script>
-function downloadReport() {
-    // Get selected report type
-    const reportTypeSelect = document.getElementById('report-type-select');
-    const selectedReportType = reportTypeSelect.value;
-    
-    // Construct the download URL based on the report type
-    let downloadUrl;
-    if (selectedReportType === 'tasks') {
-        downloadUrl = '/api/reports/tasks/download';
-    } else {
-        downloadUrl = '/api/reports/projects/download';
+<style>
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
     }
-    
-    // Navigate to the download URL
-    window.location.href = downloadUrl;
-}
 
-document.addEventListener('DOMContentLoaded', function() {
-    const showReportsBtn = document.getElementById('show-reports-btn');
-    const reportsTableContainer = document.getElementById('reports-table-container');
-    const reportsTableBody = document.getElementById('reports-table-body');
-    const reportsTableHeaders = document.getElementById('reports-table-headers');
-    
-    showReportsBtn.addEventListener('click', function() {
-        // Show loading state
-        showReportsBtn.disabled = true;
-        showReportsBtn.textContent = 'Загрузка...';
-        
-        // Get selected report type
-        const reportTypeSelect = document.getElementById('report-type-select');
-        const selectedReportType = reportTypeSelect.value;
-        
-        // Set table headers based on report type
-        if (selectedReportType === 'tasks') {
-            // Headers for task report
-            reportsTableHeaders.innerHTML = `
-                <th>Исполнитель</th>
-                <th>Проект</th>
-                <th>Задача</th>
-                <th>Дата начала задачи</th>
-                <th>Дата окончания задачи</th>
-                <th>Статус задачи</th>
-            `;
-        } else {
-            // Headers for project report (default)
-            reportsTableHeaders.innerHTML = `
-                <th>Дата начала</th>
-                <th>Дата окончания</th>
-                <th>Название проекта</th>
-                <th>Статус</th>
-                <th>Куратор проекта</th>
-                <th>Руководитель проекта</th>
-            `;
-        }
-        
-        // Fetch reports data based on selected report type
-        fetch(`/api/reports/${selectedReportType}`)
-            .then(response => response.json())
-            .then(data => {
-                // Clear previous data
-                reportsTableBody.innerHTML = '';
+    .data-table th {
+        background-color: #4472C4;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+
+    .data-table td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        vertical-align: middle;
+    }
+
+    .data-table tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .data-table tr:nth-child(odd) {
+        background-color: #ffffff;
+    }
+
+    .data-table tr:hover {
+        background-color: #e3f2fd;
+    }
+
+    .number-col {
+        width: 50px;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .datepicker {
+        background-color: #fff;
+        background-image: none;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+        color: #555;
+        display: block;
+        font-size: 14px;
+        height: 34px;
+        line-height: 1.42857;
+        padding: 6px 12px;
+        transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
+        width: 100%;
+    }
+
+    .datepicker:focus {
+        border-color: #66afe9;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(102, 175, 233, 0.6);
+        outline: 0 none;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        font-style: italic;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let currentReportType = 'projects';
+        let tableData = null;
+
+        // Инициализация календарей
+        flatpickr('.datepicker', {
+            dateFormat: "d.m.Y",
+            locale: "ru",
+            allowInput: true
+        });
+
+        // Переключение типа отчета
+        document.querySelectorAll('[data-report-type]').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('[data-report-type]').forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.classList.add('btn-outline-primary');
+                });
+                this.classList.add('active');
+                this.classList.remove('btn-outline-primary');
+                currentReportType = this.dataset.reportType;
                 
-                if (data.length === 0) {
-                    let colSpan = selectedReportType === 'tasks' ? 6 : 6;
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td colspan="${colSpan}" style="text-align: center;">Нет данных для отображения</td>`;
-                    reportsTableBody.appendChild(row);
-                } else {
-                    // Populate table with data based on report type
-                    if (selectedReportType === 'tasks') {
-                        // Task report data
-                        data.forEach(item => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${item.executor || ''}</td>
-                                <td>${item.project || ''}</td>
-                                <td>${item.task || ''}</td>
-                                <td>${item.start_date || ''}</td>
-                                <td>${item.end_date || ''}</td>
-                                <td>
-                                    <span class="report-status-badge report-status-${item.status.toLowerCase()}">
-                                        ${item.status || ''}
-                                    </span>
-                                </td>
-                            `;
-                            reportsTableBody.appendChild(row);
-                        });
-                    } else {
-                        // Project report data (default)
-                        data.forEach(item => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${item.start_date || ''}</td>
-                                <td>${item.end_date || ''}</td>
-                                <td>${item.project_name || ''}</td>
-                                <td>
-                                    <span class="report-status-badge report-status-${item.status.toLowerCase()}">
-                                        ${item.status || ''}
-                                    </span>
-                                </td>
-                                <td>${item.curator_name || ''}</td>
-                                <td>${item.manager_name || ''}</td>
-                            `;
-                            reportsTableBody.appendChild(row);
-                        });
+                // Сбросить фильтры при смене отчета
+                clearFilters();
+                document.getElementById('tableContainer').innerHTML = '<p class="text-muted">Выберите тип отчета и нажмите "Применить фильтры" для отображения данных.</p>';
+            });
+        });
+
+        // Переключение типа фильтра даты
+        document.getElementById('dateFilterType').addEventListener('change', function() {
+            if (this.value === 'exact') {
+                document.querySelector('.date-exact').classList.remove('d-none');
+                document.querySelector('.date-range').classList.add('d-none');
+            } else {
+                document.querySelector('.date-exact').classList.add('d-none');
+                document.querySelectorAll('.date-range').forEach(el => {
+                    el.classList.remove('d-none');
+                });
+            }
+        });
+
+        // Применить фильтры
+        document.getElementById('applyFiltersBtn').addEventListener('click', loadReportData);
+
+        // Очистить фильтры
+        document.getElementById('clearFiltersBtn').addEventListener('click', function() {
+            clearFilters();
+            loadReportData();
+        });
+
+        // Скачать отчет
+        document.getElementById('downloadReportBtn').addEventListener('click', downloadReport);
+
+        // Функция очистки фильтров
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('exactDate').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('dateField').value = 'start_date';
+            document.getElementById('dateFilterType').value = 'range';
+            document.querySelector('.date-exact').classList.add('d-none');
+            document.querySelectorAll('.date-range').forEach(el => {
+                el.classList.remove('d-none');
+            });
+            document.getElementById('resultsInfo').classList.add('d-none');
+        }
+
+        // Загрузка данных отчета
+        function loadReportData() {
+            const search = document.getElementById('searchInput').value.trim();
+            const dateField = document.getElementById('dateField').value;
+            const dateFilterType = document.getElementById('dateFilterType').value;
+            let url = `/api/reports/${currentReportType}?`;
+
+            // Добавляем параметры поиска
+            if (search) {
+                url += `search=${encodeURIComponent(search)}&`;
+            }
+
+            // Добавляем параметры фильтра даты
+            if (dateFilterType === 'exact') {
+                const exactDate = document.getElementById('exactDate').value.trim();
+                if (exactDate) {
+                    url += `date_field=${dateField}&start_date=${encodeURIComponent(exactDate)}`;
+                }
+            } else {
+                const startDate = document.getElementById('startDate').value.trim();
+                const endDate = document.getElementById('endDate').value.trim();
+                if (startDate && endDate) {
+                    url += `date_field=${dateField}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+                } else if (startDate) {
+                    url += `date_field=${dateField}&start_date=${encodeURIComponent(startDate)}`;
+                }
+            }
+
+            // Убираем последний &
+            url = url.replace(/[?&]$/, '');
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка загрузки данных');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    tableData = data;
+                    renderTable(data);
+                    updateResultsInfo(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ошибка при загрузке данных: ' + error.message);
+                });
+        }
+
+        // Отображение таблицы
+        function renderTable(data) {
+            const container = document.getElementById('tableContainer');
+            
+            if (!data.data || data.data.length === 0) {
+                container.innerHTML = '<p class="no-data">Нет данных для отображения</p>';
+                return;
+            }
+
+            let html = '<div style="overflow-x: auto;">';
+            html += '<table class="data-table">';
+            html += '<thead><tr>';
+            html += '<th class="number-col">#</th>';
+            
+            // Заголовки
+            data.fields.forEach(field => {
+                html += `<th>${field.label}</th>`;
+            });
+            
+            html += '</tr></thead>';
+            html += '<tbody>';
+            
+            // Данные
+            data.data.forEach(row => {
+                html += '<tr>';
+                html += `<td class="number-col">${row.row_number}</td>`;
+                
+                data.fields.forEach(field => {
+                    const value = row[field.name] || '';
+                    html += `<td>${escapeHtml(value)}</td>`;
+                });
+                
+                html += '</tr>';
+            });
+            
+            html += '</tbody>';
+            html += '</table>';
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+
+        // Обновление информации о результатах
+        function updateResultsInfo(data) {
+            const infoDiv = document.getElementById('resultsInfo');
+            document.getElementById('totalCount').textContent = data.total_count || 0;
+            document.getElementById('filteredCount').textContent = data.filtered_count || 0;
+            
+            let filterText = '';
+            if (data.search_query) {
+                filterText += `Поиск: "${data.search_query}"`;
+            }
+            if (Object.keys(data.filters).length > 0) {
+                if (filterText) filterText += ' | ';
+                for (const [field, filter] of Object.entries(data.filters)) {
+                    const fieldName = data.fields.find(f => f.name === field)?.label || field;
+                    if (filter.type === 'exact') {
+                        filterText += `${fieldName}: ${filter.value}`;
+                    } else if (filter.type === 'range') {
+                        filterText += `${fieldName}: ${filter.start} - ${filter.end}`;
                     }
                 }
-                
-                // Show the table container
-                reportsTableContainer.classList.add('show');
-                
-                // Show the download button and enable it
-                const downloadBtn = document.getElementById('download-report-btn');
-                downloadBtn.style.display = 'inline-block';
-                
-                // Reset button
-                showReportsBtn.disabled = false;
-                showReportsBtn.textContent = 'Показать отчеты';
-            })
-            .catch(error => {
-                console.error('Ошибка при загрузке отчетов:', error);
-                
-                // Determine column count based on report type
-                let colSpan = selectedReportType === 'tasks' ? 6 : 6;
-                
-                // Show error message
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="${colSpan}" style="text-align: center; color: red;">Ошибка при загрузке данных</td>`;
-                reportsTableBody.appendChild(row);
-                
-                reportsTableContainer.classList.add('show');
-                
-                // Reset button
-                showReportsBtn.disabled = false;
-                showReportsBtn.textContent = 'Показать отчеты';
-            });
+            }
+            document.getElementById('filterInfo').textContent = filterText;
+            infoDiv.classList.remove('d-none');
+        }
+
+        // Скачать отчет
+        function downloadReport() {
+            let url = `/api/reports/${currentReportType}/download?`;
+
+            const search = document.getElementById('searchInput').value.trim();
+            const dateField = document.getElementById('dateField').value;
+            const dateFilterType = document.getElementById('dateFilterType').value;
+
+            // Добавляем параметры поиска
+            if (search) {
+                url += `search=${encodeURIComponent(search)}&`;
+            }
+
+            // Добавляем параметры фильтра даты
+            if (dateFilterType === 'exact') {
+                const exactDate = document.getElementById('exactDate').value.trim();
+                if (exactDate) {
+                    url += `date_field=${dateField}&start_date=${encodeURIComponent(exactDate)}`;
+                }
+            } else {
+                const startDate = document.getElementById('startDate').value.trim();
+                const endDate = document.getElementById('endDate').value.trim();
+                if (startDate && endDate) {
+                    url += `date_field=${dateField}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+                } else if (startDate) {
+                    url += `date_field=${dateField}&start_date=${encodeURIComponent(startDate)}`;
+                }
+            }
+
+            // Убираем последний &
+            url = url.replace(/[?&]$/, '');
+
+            // Открываем ссылку для скачивания
+            window.location.href = url;
+        }
+
+        // Экранирование HTML
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // Автоматическая загрузка данных при открытии страницы
+        loadReportData();
     });
-});
 </script>
 {% endblock %}
