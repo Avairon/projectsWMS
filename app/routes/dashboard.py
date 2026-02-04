@@ -22,13 +22,20 @@ def dashboard():
     tasks = load_data(app_config.TASKS_DB)
     users = load_data(app_config.USERS_DB)
     
-    # Преобразуем роли для совместимости (если используется 'supervisor' вместо 'curator' или 'worker' вместо 'executor')
+    # Получаем параметры фильтрации из запроса
+    search_query = request.args.get('search', '').strip().lower()
+    supervisor_filter = request.args.get('supervisor', '')
+    manager_filter = request.args.get('manager', '')
+    show_completed = request.args.get('show_completed', 'false') == 'true'
+    
+    # Преобразуем роли для совместимости
     role = current_user.role
     if role == 'supervisor':
         role = 'curator'
     elif role == 'worker':
         role = 'executor'
-    
+
+    # Фильтрация проектов по видимости (роли)
     if role == 'admin':
         visible_projects = projects
     elif role == 'curator':
@@ -37,7 +44,27 @@ def dashboard():
         visible_projects = [p for p in projects if p.get('manager_id', '') == current_user.id]
     else:  # executor
         visible_projects = [p for p in projects if current_user.id in p.get('team', [])]
+
+    # Применяем фильтры поиска
+    filtered_projects = visible_projects
     
+    # Фильтр по поиску
+    if search_query:
+        filtered_projects = [p for p in filtered_projects if search_query in p.get('name', '').lower()]
+    
+    # Фильтр по руководителю (supervisor)
+    if supervisor_filter:
+        filtered_projects = [p for p in filtered_projects if p.get('supervisor_id') == supervisor_filter]
+    
+    # Фильтр по куратору (manager)
+    if manager_filter:
+        filtered_projects = [p for p in filtered_projects if p.get('manager_id') == manager_filter]
+    
+    # Фильтр по статусу (скрыть завершенные)
+    if not show_completed:
+        filtered_projects = [p for p in filtered_projects if p.get('status') != 'завершен']
+
+    # таски
     user_tasks = []
     if role == 'admin':
         user_tasks = tasks
@@ -125,7 +152,11 @@ def dashboard():
                          tasks=user_tasks, 
                          users=users, 
                          stats=stats,
-                         user_token=user_token)
+                         user_token=user_token,
+                         search_query=search_query,
+                         supervisor_filter=supervisor_filter,
+                         manager_filter=manager_filter,
+                         show_completed=show_completed)
 
 
 def get_overdue_projects(projects):

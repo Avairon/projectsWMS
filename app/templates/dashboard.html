@@ -236,37 +236,159 @@
         }
     </script>
 
-    <div class="section">
-        <div class="section-header">
-            <h3>Проекты</h3>
-            <div class="section-controls">
-                <label class="toggle-checkbox">
-                    <input type="checkbox" id="show-completed-projects">
-                    <span>Показать завершённые</span>
-                </label>
-                {% if current_user.role in ['admin', 'manager'] %}
-                <a href="{{ url_for('projects.create_project') }}" class="btn">Создать проект</a>
-                {% endif %}
+    <div class="section-header">
+        <h3>Список проектов</h3>
+        <div class="section-controls">
+            <div class="toggle-checkbox">
+                <input type="checkbox" id="show-completed" {% if show_completed %}checked{% endif %}>
+                <label for="show-completed">Показать завершённые</label>
             </div>
+            {% if current_user.role in ['admin', 'manager'] %}
+            <a href="{{ url_for('projects.create_project') }}" class="btn">Создать проект</a>
+            {% endif %}
         </div>
+    </div>
+
+    <!-- Форма поиска и фильтров -->
+    <div class="section-controls" style="margin-bottom: 1rem; flex-wrap: wrap;">
+        <div class="filter-group">
+            <label for="project-search">Поиск:</label>
+            <input type="text" id="project-search" class="form-control" placeholder="Поиск по названию..." value="{{ search_query }}">
+        </div>
+        
+        <div class="filter-group">
+            <label for="project-supervisor">Руководитель:</label>
+            <select id="project-supervisor" class="form-control">
+                <option value="">Все руководители</option>
+                {% for user in users if user.role == 'supervisor' %}
+                <option value="{{ user.id }}" {% if supervisor_filter == user.id %}selected{% endif %}>
+                    {{ user.full_name or user.name or user.username }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="project-manager">Куратор:</label>
+            <select id="project-manager" class="form-control">
+                <option value="">Все кураторы</option>
+                {% for user in users if user.role == 'manager' %}
+                <option value="{{ user.id }}" {% if manager_filter == user.id %}selected{% endif %}>
+                    {{ user.full_name or user.name or user.username }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button id="filter-projects-btn" class="btn" style="padding: 8px 14px; font-size: 0.85rem;">Применить</button>
+        <button id="clear-filters-btn" class="btn cancel-btn" style="padding: 8px 14px; font-size: 0.85rem;">Сбросить</button>
+    </div>
+
+    <div class="projects-list" id="projects-container">
         {% if projects %}
-        <div class="projects-list" id="projects-list">
             {% for project in projects %}
-            <div class="project-card status-{% if project.status == 'в работе' %}active{% elif project.status == 'завершен' %}completed{% else %}paused{% endif %}" data-status="{{ project.status }}">
+            <div class="project-card status-{% if project.status == 'в работе' %}active{% elif project.status == 'завершен' %}completed{% else %}paused{% endif %}" data-name="{{ project.name|lower }}" 
+                 data-supervisor="{{ project.supervisor_info.id if project.supervisor_info else '' }}" 
+                 data-manager="{{ project.manager_info.id if project.manager_info else '' }}" 
+                 data-status="{{ project.status }}">
                 <h4>{{ project.name }}</h4>
                 <p><strong>Направление:</strong> {{ project.direction or 'Не указано' }}</p>
                 <p><strong>Куратор Направления:</strong> {{ project.manager_info.name if project.manager_info else 'Не указано' }}</p>
                 <p><strong>Руководитель Проекта:</strong> {{ project.supervisor_info.name if project.supervisor_info else 'Не указано' }}</p>
-                <p><strong>Статус:</strong> <span class="status-badge {% if project.status == 'в работе' %}status-active{% elif project.status == 'завершен' %}status-completed{% else %}status-paused{% endif %}">{{ project.status }}</span></p>
+                <p><strong>Статус:</strong> <span class="status-badge status-{{ project.status }}">{{ project.status }}</span></p>
                 <p><strong>Последняя активность:</strong> {{ project.last_activity }}</p>
                 <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn">Подробнее</a>
             </div>
             {% endfor %}
-        </div>
         {% else %}
         <p class="no-data">Нет доступных проектов</p>
         {% endif %}
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('project-search');
+        const curatorSelect = document.getElementById('project-curator');
+        const managerSelect = document.getElementById('project-manager');
+        const filterBtn = document.getElementById('filter-projects-btn');
+        const clearBtn = document.getElementById('clear-filters-btn');
+        const showCompletedCheckbox = document.getElementById('show-completed');
+        const projectCards = document.querySelectorAll('.project-card');
+
+        // Фильтрация при вводе в поиск
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const curatorId = curatorSelect ? curatorSelect.value : '';
+                const managerId = managerSelect ? managerSelect.value : '';
+                const showCompleted = showCompletedCheckbox ? showCompletedCheckbox.checked : false;
+
+                filterProjects(searchTerm, curatorId, managerId, showCompleted);
+            });
+        }
+
+        // Фильтрация при изменении селектов
+        if (curatorSelect) {
+            curatorSelect.addEventListener('change', applyFilters);
+        }
+
+        if (managerSelect) {
+            managerSelect.addEventListener('change', applyFilters);
+        }
+
+        if (showCompletedCheckbox) {
+            showCompletedCheckbox.addEventListener('change', applyFilters);
+        }
+
+        // Кнопка применения фильтров
+        if (filterBtn) {
+            filterBtn.addEventListener('click', applyFilters);
+        }
+
+        // Кнопка сброса фильтров
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                if (searchInput) searchInput.value = '';
+                if (curatorSelect) curatorSelect.value = '';
+                if (managerSelect) managerSelect.value = '';
+                if (showCompletedCheckbox) showCompletedCheckbox.checked = false;
+                applyFilters();
+
+                // Перезагрузка страницы для сброса всех параметров
+                window.location.href = window.location.pathname;
+            });
+        }
+
+        function applyFilters() {
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const curatorId = curatorSelect ? curatorSelect.value : '';
+            const managerId = managerSelect ? managerSelect.value : '';
+            const showCompleted = showCompletedCheckbox ? showCompletedCheckbox.checked : false;
+
+            filterProjects(searchTerm, curatorId, managerId, showCompleted);
+        }
+
+        function filterProjects(searchTerm, curatorId, managerId, showCompleted) {
+            projectCards.forEach(card => {
+                const projectName = card.dataset.name || '';
+                const projectCurator = card.dataset.curator || '';
+                const projectManager = card.dataset.manager || '';
+                const projectStatus = card.dataset.status || '';
+
+                const matchesSearch = searchTerm === '' || projectName.includes(searchTerm);
+                const matchesCurator = curatorId === '' || projectCurator === curatorId;
+                const matchesManager = managerId === '' || projectManager === managerId;
+                const matchesStatus = showCompleted || projectStatus !== 'завершен';
+
+                if (matchesSearch && matchesCurator && matchesManager && matchesStatus) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    });
+    </script>
 
     <div class="section">
         <div class="section-header">

@@ -1718,3 +1718,49 @@ small {
     border-radius: var(--border-radius);
 }
 
+.form-control {
+    padding: 8px 12px;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.9rem;
+    transition: var(--transition);
+    min-width: 180px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+#project-search {
+    min-width: 200px;
+}
+
+@media (max-width: 768px) {
+    .section-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .filter-group label {
+        margin-bottom: 4px;
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    #filter-projects-btn,
+    #clear-filters-btn {
+        width: 100%;
+    }
+}
