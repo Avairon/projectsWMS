@@ -68,7 +68,7 @@
                 </div>
             </div>
         </div>
-
+        
         <div class="form-row">
             <div class="half-width">
                 <div class="form-group">
@@ -76,7 +76,7 @@
                     <select id="supervisor_id" name="supervisor_id">
                         <option value="">-- Не выбран --</option>
                         {% for user in users %}
-                        {% if user.role in ['admin', 'supervisor'] %}
+                        {% if user.role in ['admin', 'supervisor', 'manager'] %}
                         <option value="{{ user.id }}" {% if user.id == project.supervisor_id %}selected{% endif %}>{{ user.name }}</option>
                         {% endif %}
                         {% endfor %}

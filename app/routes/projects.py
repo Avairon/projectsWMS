@@ -183,7 +183,7 @@ def create_project():
 
     users = load_data(app_config.USERS_DB)
     managers = [u for u in users if u['role'] in ['admin', 'manager']]
-    curators = [u for u in users if u['role'] in ['admin', 'supervisor']]
+    curators = [u for u in users if u['role'] in ['admin', 'supervisor', 'manager']]
     directions = load_directions()
 
     if request.method == 'POST':

@@ -54,11 +54,13 @@
     "expected_result": "рроооло",
     "start_date": "20.04.2025",
     "end_date": "25.05.2026",
-    "last_activity": "19.12.2025",
+    "last_activity": "04.02.2026",
     "status": "в работе",
-    "supervisor_id": "d40bd07c",
+    "supervisor_id": "6c87e4cf",
     "manager_id": "6c87e4cf",
-    "team": []
+    "team": [],
+    "initiator_type": "national_project",
+    "initiator_name": null
   },
   {
     "id": "9a04141a",
@@ -91,5 +93,23 @@
     ],
     "initiator_type": "deputy_director",
     "initiator_name": "Абубе"
+  },
+  {
+    "id": "6e2c5f31",
+    "name": "8888888",
+    "description": "asdasdasd",
+    "direction": "Работодатели",
+    "expected_result": "asdasd",
+    "start_date": "05.02.2026",
+    "end_date": "28.02.2026",
+    "last_activity": "04.02.2026",
+    "status": "приостановлен",
+    "supervisor_id": "bd5eafa7",
+    "manager_id": "bd5eafa7",
+    "team": [
+      "12e7652a"
+    ],
+    "initiator_type": "ministry",
+    "initiator_name": null
   }
 ]
