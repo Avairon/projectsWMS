@@ -1742,28 +1742,29 @@ small {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .filter-group {
         width: 100%;
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .filter-group label {
         margin-bottom: 4px;
     }
-    
+
     .filter-group select,
     .filter-group input {
         width: 100%;
         min-width: auto;
     }
-    
+
     #filter-projects-btn,
     #clear-filters-btn {
         width: 100%;
     }
 }
+
 /* Team Search Styles */
 .team-search-container {
     position: relative;
@@ -1891,4 +1892,163 @@ small {
         position: absolute;
         width: 100%;
     }
+}
+
+/* Additions for Reports Page */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.row.g-3 {
+    margin-right: -0.5rem;
+    margin-left: -0.5rem;
+}
+
+.row.g-3>* {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+.col-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding: 0 15px;
+}
+
+@media (min-width: 768px) {
+    .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+        padding: 0 15px;
+    }
+
+    .col-md-3 {
+        flex: 0 0 25%;
+        max-width: 25%;
+        padding: 0 15px;
+    }
+}
+
+.mt-4 {
+    margin-top: 1.5rem !important;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem !important;
+}
+
+.mb-0 {
+    margin-bottom: 0 !important;
+}
+
+.ms-3 {
+    margin-left: 1rem !important;
+}
+
+.text-muted {
+    color: var(--gray-600) !important;
+}
+
+.text-white {
+    color: white !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+/* Missing Card styles used in HTML */
+.card-header {
+    padding: 1rem 1.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgba(0, 0, 0, .125);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+}
+
+/* Button variants */
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-outline-primary {
+    background: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--gray-600);
+    color: white;
+}
+
+.btn-group {
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+.btn-group .btn {
+    border-radius: 0;
+    margin: 0;
+}
+
+.btn-group .btn:first-child {
+    border-top-left-radius: var(--border-radius);
+    border-bottom-left-radius: var(--border-radius);
+}
+
+.btn-group .btn:last-child {
+    border-top-right-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+}
+
+/* Utilities */
+.d-none {
+    display: none !important;
+}
+
+.alert {
+    position: relative;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+}
+
+.alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
 }
