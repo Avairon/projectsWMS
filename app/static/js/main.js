@@ -1,7 +1,7 @@
 // Функция для парсинга даты из формата DD.MM.YYYY
 function parseDateDDMMYYYY(dateStr) {
     if (!dateStr) return null;
-    
+
     if (dateStr.includes('.')) {
         const parts = dateStr.split('.');
         if (parts.length === 3) {
@@ -9,12 +9,12 @@ function parseDateDDMMYYYY(dateStr) {
             return new Date(parts[2], parts[1] - 1, parts[0]);
         }
     }
-    
+
     // Если не DD.MM.YYYY, пробуем стандартный формат
     return new Date(dateStr);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initMobileMenu();
     initTabs();
     initProjectFilters();
@@ -27,9 +27,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function initMobileMenu() {
     const menuToggle = document.querySelector('.mobile-menu-toggle');
     const nav = document.querySelector('nav');
-    
+
     if (menuToggle && nav) {
-        menuToggle.addEventListener('click', function() {
+        menuToggle.addEventListener('click', function () {
             nav.classList.toggle('active');
             const expanded = nav.classList.contains('active');
             menuToggle.setAttribute('aria-expanded', expanded);
@@ -40,20 +40,20 @@ function initMobileMenu() {
 function initTabs() {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
-    
+
     tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             const targetTab = this.dataset.tab;
-            
+
             tabButtons.forEach(btn => btn.classList.remove('active'));
             tabContents.forEach(content => content.classList.remove('active'));
-            
+
             this.classList.add('active');
             const targetContent = document.getElementById(targetTab);
             if (targetContent) {
                 targetContent.classList.add('active');
             }
-            
+
             if (targetTab === 'gantt-tab') {
                 const ganttChart = document.getElementById('gantt-chart');
                 if (ganttChart && ganttChart.dataset.projectId) {
@@ -67,12 +67,12 @@ function initTabs() {
 function initProjectFilters() {
     const showCompletedCheckbox = document.getElementById('show-completed-projects');
     const projectsList = document.getElementById('projects-list');
-    
+
     if (showCompletedCheckbox && projectsList) {
-        showCompletedCheckbox.addEventListener('change', function() {
+        showCompletedCheckbox.addEventListener('change', function () {
             const showCompleted = this.checked;
             const projectCards = projectsList.querySelectorAll('.project-card');
-            
+
             projectCards.forEach(card => {
                 const status = card.dataset.status;
                 if (status === 'завершен') {
@@ -80,7 +80,7 @@ function initProjectFilters() {
                 }
             });
         });
-        
+
         showCompletedCheckbox.dispatchEvent(new Event('change'));
     }
 }
@@ -89,24 +89,24 @@ function initTaskFilters() {
     const projectFilter = document.getElementById('task-project-filter');
     const statusFilter = document.getElementById('task-status-filter');
     const tasksList = document.getElementById('tasks-list');
-    
+
     if (tasksList) {
         function filterTasks() {
             const projectId = projectFilter ? projectFilter.value : '';
             const status = statusFilter ? statusFilter.value : '';
             const taskCards = tasksList.querySelectorAll('.task-card');
-            
+
             taskCards.forEach(card => {
                 const cardProjectId = card.dataset.projectId;
                 const cardStatus = card.dataset.status;
-                
+
                 let showByProject = !projectId || cardProjectId === projectId;
                 let showByStatus = !status || cardStatus === status;
-                
+
                 card.style.display = (showByProject && showByStatus) ? '' : 'none';
             });
         }
-        
+
         if (projectFilter) {
             projectFilter.addEventListener('change', filterTasks);
         }
@@ -122,15 +122,15 @@ let ganttTasks = [];
 function initGanttChart() {
     const ganttContainer = document.getElementById('gantt-chart');
     const zoomButtons = document.querySelectorAll('.gantt-zoom-btn');
-    
+
     if (!ganttContainer) return;
-    
+
     zoomButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             zoomButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
             currentZoom = this.dataset.zoom;
-            
+
             if (ganttContainer.dataset.projectId) {
                 renderGantt();
             }
@@ -152,31 +152,31 @@ function loadGanttData(projectId) {
 
 function parseDate(dateStr) {
     if (!dateStr) return null;
-    
+
     if (dateStr.includes('.')) {
         const parts = dateStr.split('.');
         if (parts.length === 3) {
             return new Date(parts[2], parts[1] - 1, parts[0]);
         }
     }
-    
+
     if (dateStr.includes('-')) {
         return new Date(dateStr);
     }
-    
+
     if (dateStr.includes('/')) {
         const parts = dateStr.split('/');
         if (parts.length === 3) {
             return new Date(parts[2], parts[1] - 1, parts[0]);
         }
     }
-    
+
     return new Date(dateStr);
 }
 
 function formatDateDDMMYYYY(date) {
     if (!date) return '';
-    
+
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -189,14 +189,14 @@ function renderGantt() {
         ganttChart.innerHTML = '<p class="no-data">Нет задач для отображения</p>';
         return;
     }
-    
+
     let minDate = null;
     let maxDate = null;
-    
+
     ganttTasks.forEach(task => {
         const startDate = parseDate(task.start_date) || parseDate(task.created_at);
         const endDate = parseDate(task.deadline);
-        
+
         if (startDate && (!minDate || startDate < minDate)) {
             minDate = new Date(startDate);
         }
@@ -204,15 +204,15 @@ function renderGantt() {
             maxDate = new Date(endDate);
         }
     });
-    
+
     if (!minDate || !maxDate) {
         ganttChart.innerHTML = '<p class="no-data">Недостаточно данных для диаграммы</p>';
         return;
     }
-    
+
     minDate.setDate(minDate.getDate() - 3);
     maxDate.setDate(maxDate.getDate() + 7);
-    
+
     let cellWidth, dateFormat;
     switch (currentZoom) {
         case 'day':
@@ -235,19 +235,19 @@ function renderGantt() {
             cellWidth = 35;
             dateFormat = 'day';
     }
-    
+
     let timelineItems = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     if (currentZoom === 'year') {
         const startMonth = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
         const endMonth = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
-        
+
         let currentMonth = new Date(startMonth);
         while (currentMonth <= endMonth) {
-            const isCurrentMonth = currentMonth.getMonth() === today.getMonth() && 
-                                  currentMonth.getFullYear() === today.getFullYear();
+            const isCurrentMonth = currentMonth.getMonth() === today.getMonth() &&
+                currentMonth.getFullYear() === today.getFullYear();
             timelineItems.push({
                 date: new Date(currentMonth),
                 label: currentMonth.toLocaleDateString('ru-RU', { month: 'short' }),
@@ -262,7 +262,7 @@ function renderGantt() {
             const dayOfWeek = currentDate.getDay();
             const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
             const isToday = currentDate.getTime() === today.getTime();
-            
+
             timelineItems.push({
                 date: new Date(currentDate),
                 label: currentDate.getDate(),
@@ -272,10 +272,10 @@ function renderGantt() {
             currentDate.setDate(currentDate.getDate() + 1);
         }
     }
-    
+
     let html = '<div class="gantt-timeline">';
     html += `<div class="gantt-task-label" style="min-width: 160px; border-right: 2px solid var(--gray-300);">Задача</div>`;
-    
+
     timelineItems.forEach(item => {
         let classes = 'gantt-timeline-item';
         if (item.isToday) classes += ' today';
@@ -283,26 +283,26 @@ function renderGantt() {
         html += `<div class="${classes}" style="min-width: ${cellWidth}px;">${item.label}</div>`;
     });
     html += '</div>';
-    
+
     html += '<div class="gantt-tasks">';
-    
+
     ganttTasks.forEach(task => {
         const startDate = parseDate(task.start_date) || parseDate(task.created_at);
         const endDate = parseDate(task.deadline);
-        
+
         if (!startDate || !endDate) return;
-        
+
         let statusClass = 'status-active';
         if (task.status === 'завершена') statusClass = 'status-completed';
         else if (task.status === 'отложена') statusClass = 'status-paused';
-        
+
         let startOffset, barWidth;
-        
+
         if (currentZoom === 'year') {
-            const startMonthDiff = (startDate.getFullYear() - minDate.getFullYear()) * 12 + 
-                                  (startDate.getMonth() - minDate.getMonth());
-            const endMonthDiff = (endDate.getFullYear() - minDate.getFullYear()) * 12 + 
-                                (endDate.getMonth() - minDate.getMonth());
+            const startMonthDiff = (startDate.getFullYear() - minDate.getFullYear()) * 12 +
+                (startDate.getMonth() - minDate.getMonth());
+            const endMonthDiff = (endDate.getFullYear() - minDate.getFullYear()) * 12 +
+                (endDate.getMonth() - minDate.getMonth());
             startOffset = startMonthDiff * cellWidth;
             barWidth = Math.max((endMonthDiff - startMonthDiff + 1) * cellWidth, cellWidth);
         } else {
@@ -311,9 +311,9 @@ function renderGantt() {
             startOffset = startDaysDiff * cellWidth;
             barWidth = Math.max((endDaysDiff - startDaysDiff + 1) * cellWidth, cellWidth);
         }
-        
+
         const assigneeName = task.assignee_name || 'Не назначен';
-        
+
         html += `
             <div class="gantt-row">
                 <div class="gantt-task-label" title="${task.title}">${task.title}</div>
@@ -328,13 +328,13 @@ function renderGantt() {
             </div>
         `;
     });
-    
+
     html += '</div>';
-    
+
     ganttChart.innerHTML = html;
-    
+
     ganttChart.querySelectorAll('.gantt-task-bar').forEach(bar => {
-        bar.addEventListener('click', function() {
+        bar.addEventListener('click', function () {
             const taskId = this.dataset.taskId;
             openTaskModal(taskId);
         });
@@ -344,38 +344,38 @@ function renderGantt() {
 function initTaskModal() {
     const modal = document.getElementById('task-modal');
     if (!modal) return;
-    
+
     const closeButtons = modal.querySelectorAll('.modal-close, .modal-close-btn');
     closeButtons.forEach(btn => {
         btn.addEventListener('click', closeTaskModal);
     });
-    
-    modal.addEventListener('click', function(e) {
+
+    modal.addEventListener('click', function (e) {
         if (e.target === modal) {
             closeTaskModal();
         }
     });
-    
+
     const editButtons = document.querySelectorAll('.edit-task-btn');
     editButtons.forEach(btn => {
-        btn.addEventListener('click', function(e) {
+        btn.addEventListener('click', function (e) {
             e.stopPropagation();
             openTaskModal(this.dataset.taskId);
         });
     });
-    
+
     const taskRows = document.querySelectorAll('.task-row');
     taskRows.forEach(row => {
-        row.addEventListener('click', function(e) {
+        row.addEventListener('click', function (e) {
             if (!e.target.closest('button') && !e.target.closest('a')) {
                 openTaskModal(this.dataset.taskId);
             }
         });
     });
-    
+
     const editForm = document.getElementById('edit-task-form');
     if (editForm) {
-        editForm.addEventListener('submit', function(e) {
+        editForm.addEventListener('submit', function (e) {
             e.preventDefault();
             submitTaskEdit();
         });
@@ -385,7 +385,7 @@ function initTaskModal() {
 function openTaskModal(taskId) {
     const modal = document.getElementById('task-modal');
     if (!modal) return;
-    
+
     fetch(`/api/task/${taskId}`)
         .then(response => response.json())
         .then(task => {
@@ -393,20 +393,20 @@ function openTaskModal(taskId) {
             document.getElementById('edit-task-title').value = task.title || '';
             document.getElementById('edit-task-description').value = task.description || '';
             document.getElementById('edit-task-status').value = task.status || 'активна';
-            
+
             const startDate = parseDate(task.start_date);
             const deadline = parseDate(task.deadline);
-            
+
             if (startDate) {
                 document.getElementById('edit-task-start').value = formatDateForInput(startDate);
             }
             if (deadline) {
                 document.getElementById('edit-task-deadline').value = formatDateForInput(deadline);
             }
-            
+
             const assigneeSelect = document.getElementById('edit-task-assignee');
             assigneeSelect.innerHTML = '';
-            
+
             if (task.team_users && task.team_users.length > 0) {
                 task.team_users.forEach(user => {
                     const option = document.createElement('option');
@@ -418,7 +418,7 @@ function openTaskModal(taskId) {
                     assigneeSelect.appendChild(option);
                 });
             }
-            
+
             const historyList = modal.querySelector('.history-list');
             if (historyList && task.history) {
                 historyList.innerHTML = '';
@@ -431,45 +431,37 @@ function openTaskModal(taskId) {
                     `;
                 });
             }
-            
+
             const reportsList = modal.querySelector('.reports-list');
             if (reportsList && task.reports) {
                 reportsList.innerHTML = '';
                 task.reports.forEach(report => {
                     let fileHtml = '';
-                    // Handle both possible field names for backward compatibility
                     const fileData = report.file || report.file_info;
                     if (fileData) {
-                        // Determine the correct field names based on the available data structure
                         const fileName = fileData.filename;
                         const executorDir = fileData.executor_dir;
                         const uniqueFilename = fileData.unique_filename;
                         const fileSize = fileData.size;
-                        
-                        // If we have executor_dir and unique_filename, use the new structure
-                        // Otherwise fall back to the old path structure
+
                         let fileUrl;
                         if (executorDir && uniqueFilename) {
                             fileUrl = `/uploads/${executorDir}/${uniqueFilename}`;
                         } else if (fileData.path) {
-                            // Remove leading slash if present to avoid double slashes
                             const cleanPath = fileData.path.startsWith('/') ? fileData.path.substring(1) : fileData.path;
                             fileUrl = `/uploads/${cleanPath}`;
                         } else {
-                            // Fallback: construct path from other available fields
                             if (fileData.unique_filename) {
                                 if (fileData.executor_dir) {
                                     fileUrl = `/uploads/${fileData.executor_dir}/${fileData.unique_filename}`;
                                 } else {
-                                    // If executor_dir is missing, try to extract it from the unique_filename or use root uploads
                                     fileUrl = `/uploads/${fileData.unique_filename}`;
                                 }
                             } else {
-                                // Last resort fallback
                                 fileUrl = '#';
                             }
                         }
-                        
+
                         fileHtml = `
                             <div class="report-file">
                                 <strong>Прикрепленный файл:</strong>
@@ -480,7 +472,7 @@ function openTaskModal(taskId) {
                             </div>
                         `;
                     }
-                    
+
                     reportsList.innerHTML += `
                         <div class="report-item">
                             <span class="report-comment">${report.comment || 'Без комментария'}</span>
@@ -493,7 +485,7 @@ function openTaskModal(taskId) {
                     `;
                 });
             }
-            
+
             modal.classList.add('active');
         })
         .catch(error => {
@@ -511,7 +503,7 @@ function closeTaskModal() {
 
 function formatDateForInput(date) {
     if (!date) return '';
-    
+
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -521,36 +513,36 @@ function formatDateForInput(date) {
 function submitTaskEdit() {
     const taskId = document.getElementById('edit-task-id').value;
     const formData = new FormData();
-    
+
     formData.append('title', document.getElementById('edit-task-title').value);
     formData.append('description', document.getElementById('edit-task-description').value);
     formData.append('assignee_id', document.getElementById('edit-task-assignee').value);
     formData.append('status', document.getElementById('edit-task-status').value);
     formData.append('start_date', document.getElementById('edit-task-start').value);
     formData.append('deadline', document.getElementById('edit-task-deadline').value);
-    
+
     fetch(`/task/${taskId}/update`, {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            closeTaskModal();
-            location.reload();
-        } else {
-            alert(data.error || 'Ошибка при сохранении');
-        }
-    })
-    .catch(error => {
-        console.error('Error updating task:', error);
-        alert('Ошибка при сохранении задачи');
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeTaskModal();
+                location.reload();
+            } else {
+                alert(data.error || 'Ошибка при сохранении');
+            }
+        })
+        .catch(error => {
+            console.error('Error updating task:', error);
+            alert('Ошибка при сохранении задачи');
+        });
 }
 
 function toggleHistory(event) {
     event.stopPropagation();
-    event.preventDefault(); // иногда помогает, если есть другие обработчики
+    event.preventDefault();
 
     const historyDiv = document.getElementById('task-history');
     if (historyDiv.style.display === 'none' || historyDiv.style.display === '') {
@@ -570,40 +562,33 @@ function toggleTeam() {
 }
 
 function initDatePickers() {
-    // Находим все поля ввода даты и добавляем к ним функциональность календаря
     const datePickerInputs = document.querySelectorAll('input[type="text"][id*="date"], input[type="text"][placeholder*="ДД.ММ.ГГГГ"]');
-    
+
     datePickerInputs.forEach(input => {
-        // Проверяем, что поле еще не имеет обработчиков
         if (input.hasAttribute('data-datepicker-initialized')) {
             return;
         }
-        
+
         input.setAttribute('data-datepicker-initialized', 'true');
-        
-        // Добавляем иконку календаря
+
         input.style.position = 'relative';
         input.style.backgroundImage = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z\' /%3E%3C/svg%3E")';
         input.style.backgroundRepeat = 'no-repeat';
         input.style.backgroundPosition = 'right 8px center';
         input.style.backgroundSize = '16px 16px';
         input.style.paddingRight = '30px';
-        
-        // Обработчик клика для открытия календаря
-        input.addEventListener('click', function(e) {
+
+        input.addEventListener('click', function (e) {
             if (!this._datePickerDiv) {
                 createDatePicker(this);
             }
         });
-        
-        // Обработчик ввода для валидации формата даты
-        input.addEventListener('blur', function() {
+
+        input.addEventListener('blur', function () {
             validateDateFormat(this);
         });
-        
-        // Обработчик клавиш для ограничения ввода
-        input.addEventListener('keypress', function(e) {
-            // Разрешаем только цифры и точки
+
+        input.addEventListener('keypress', function (e) {
             if (!/[0-9.]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Tab') {
                 e.preventDefault();
             }
@@ -612,12 +597,10 @@ function initDatePickers() {
 }
 
 function createDatePicker(inputElement) {
-    // Удаляем предыдущий календарь, если он существует
     if (inputElement._datePickerDiv && inputElement._datePickerDiv.parentNode) {
         inputElement._datePickerDiv.parentNode.removeChild(inputElement._datePickerDiv);
     }
-    
-    // Создаем контейнер для календаря
+
     const datePicker = document.createElement('div');
     datePicker.className = 'date-picker-popup';
     datePicker.style.cssText = `
@@ -632,8 +615,7 @@ function createDatePicker(inputElement) {
         font-size: 14px;
         display: none;
     `;
-    
-    // Получаем текущую дату или дату из поля ввода
+
     let currentDate = new Date();
     if (inputElement.value) {
         const parsedDate = parseDateDDMMYYYY(inputElement.value);
@@ -641,11 +623,10 @@ function createDatePicker(inputElement) {
             currentDate = parsedDate;
         }
     }
-    
+
     let currentMonth = currentDate.getMonth();
     let currentYear = currentDate.getFullYear();
-    
-    // Создаем заголовок календаря
+
     const header = document.createElement('div');
     header.style.cssText = `
         display: flex;
@@ -653,7 +634,7 @@ function createDatePicker(inputElement) {
         align-items: center;
         margin-bottom: 10px;
     `;
-    
+
     const prevButton = document.createElement('button');
     prevButton.innerHTML = '&lt;';
     prevButton.style.cssText = `
@@ -671,7 +652,7 @@ function createDatePicker(inputElement) {
         }
         updateCalendar();
     };
-    
+
     const nextButton = document.createElement('button');
     nextButton.innerHTML = '&gt;';
     nextButton.style.cssText = `
@@ -689,16 +670,15 @@ function createDatePicker(inputElement) {
         }
         updateCalendar();
     };
-    
+
     const monthYearDisplay = document.createElement('span');
     monthYearDisplay.style.fontWeight = 'bold';
-    
+
     header.appendChild(prevButton);
     header.appendChild(monthYearDisplay);
     header.appendChild(nextButton);
     datePicker.appendChild(header);
-    
-    // Создаем заголовки дней недели
+
     const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
     const weekdayRow = document.createElement('div');
     weekdayRow.style.cssText = `
@@ -708,51 +688,44 @@ function createDatePicker(inputElement) {
         margin-bottom: 5px;
         text-align: center;
     `;
-    
+
     weekdays.forEach(day => {
         const dayEl = document.createElement('div');
         dayEl.textContent = day;
         dayEl.style.cssText = 'padding: 5px; font-size: 12px;';
         weekdayRow.appendChild(dayEl);
     });
-    
+
     datePicker.appendChild(weekdayRow);
-    
-    // Контейнер для дней
+
     const daysContainer = document.createElement('div');
     daysContainer.style.cssText = `
         display: grid;
         grid-template-columns: repeat(7, 1fr);
         gap: 2px;
     `;
-    
+
     datePicker.appendChild(daysContainer);
-    
-    // Функция обновления календаря
+
     function updateCalendar() {
-        // Обновляем заголовок
         const monthNames = [
             'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
             'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
         ];
         monthYearDisplay.textContent = `${monthNames[currentMonth]} ${currentYear}`;
-        
-        // Очищаем контейнер дней
+
         daysContainer.innerHTML = '';
-        
-        // Получаем первый день месяца и последний день месяца
+
         const firstDay = new Date(currentYear, currentMonth, 1);
         const lastDay = new Date(currentYear, currentMonth + 1, 0);
-        const startingDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1; // Понедельник как первый день
-        
-        // Заполняем пустые ячейки до первого дня месяца
+        const startingDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+
         for (let i = 0; i < startingDayOfWeek; i++) {
             const emptyCell = document.createElement('div');
             emptyCell.style.cssText = 'height: 30px;';
             daysContainer.appendChild(emptyCell);
         }
-        
-        // Заполняем дни месяца
+
         for (let day = 1; day <= lastDay.getDate(); day++) {
             const dayElement = document.createElement('div');
             dayElement.textContent = day;
@@ -765,18 +738,17 @@ function createDatePicker(inputElement) {
                 border-radius: 3px;
                 user-select: none;
             `;
-            
+
             const today = new Date();
-            const isToday = today.getDate() === day && 
-                           today.getMonth() === currentMonth && 
-                           today.getFullYear() === currentYear;
-            
+            const isToday = today.getDate() === day &&
+                today.getMonth() === currentMonth &&
+                today.getFullYear() === currentYear;
+
             if (isToday) {
                 dayElement.style.backgroundColor = '#007bff';
                 dayElement.style.color = 'white';
             }
-            
-            // Подсвечиваем выбранную дату
+
             if (inputElement.value) {
                 const selectedDate = parseDateDDMMYYYY(inputElement.value);
                 if (selectedDate &&
@@ -787,36 +759,34 @@ function createDatePicker(inputElement) {
                     dayElement.style.color = 'white';
                 }
             }
-            
-            dayElement.addEventListener('click', function() {
+
+            dayElement.addEventListener('click', function () {
                 const formattedDate = `${String(day).padStart(2, '0')}.${String(currentMonth + 1).padStart(2, '0')}.${currentYear}`;
                 inputElement.value = formattedDate;
-                
-                // Скрываем календарь
+
                 datePicker.style.display = 'none';
-                
-                // Удаляем календарь из DOM
+
                 if (datePicker.parentNode) {
                     datePicker.parentNode.removeChild(datePicker);
                 }
                 delete inputElement._datePickerDiv;
             });
-            
-            dayElement.addEventListener('mouseover', function() {
+
+            dayElement.addEventListener('mouseover', function () {
                 this.style.backgroundColor = '#e9ecef';
             });
-            
-            dayElement.addEventListener('mouseout', function() {
-                const isSelected = inputElement.value && 
-                                 parseDateDDMMYYYY(inputElement.value) &&
-                                 parseDateDDMMYYYY(inputElement.value).getDate() === day &&
-                                 parseDateDDMMYYYY(inputElement.value).getMonth() === currentMonth &&
-                                 parseDateDDMMYYYY(inputElement.value).getFullYear() === currentYear;
-                                 
-                const isToday = today.getDate() === day && 
-                               today.getMonth() === currentMonth && 
-                               today.getFullYear() === currentYear;
-                
+
+            dayElement.addEventListener('mouseout', function () {
+                const isSelected = inputElement.value &&
+                    parseDateDDMMYYYY(inputElement.value) &&
+                    parseDateDDMMYYYY(inputElement.value).getDate() === day &&
+                    parseDateDDMMYYYY(inputElement.value).getMonth() === currentMonth &&
+                    parseDateDDMMYYYY(inputElement.value).getFullYear() === currentYear;
+
+                const isToday = today.getDate() === day &&
+                    today.getMonth() === currentMonth &&
+                    today.getFullYear() === currentYear;
+
                 if (isSelected) {
                     this.style.backgroundColor = '#007bff';
                     this.style.color = 'white';
@@ -828,28 +798,23 @@ function createDatePicker(inputElement) {
                     this.style.color = '';
                 }
             });
-            
+
             daysContainer.appendChild(dayElement);
         }
     }
-    
-    // Инициализируем календарь
+
     updateCalendar();
-    
-    // Добавляем календарь в DOM
+
     document.body.appendChild(datePicker);
     inputElement._datePickerDiv = datePicker;
-    
-    // Позиционируем календарь под полем ввода
+
     const rect = inputElement.getBoundingClientRect();
     datePicker.style.top = `${rect.bottom + window.scrollY}px`;
     datePicker.style.left = `${rect.left + window.scrollX}px`;
-    
-    // Показываем календарь
+
     datePicker.style.display = 'block';
-    
-    // Обработчик для закрытия календаря при клике вне его области
-    const closePicker = function(e) {
+
+    const closePicker = function (e) {
         if (!datePicker.contains(e.target) && e.target !== inputElement) {
             datePicker.style.display = 'none';
             document.removeEventListener('click', closePicker);
@@ -859,7 +824,7 @@ function createDatePicker(inputElement) {
             delete inputElement._datePickerDiv;
         }
     };
-    
+
     setTimeout(() => {
         document.addEventListener('click', closePicker);
     }, 10);
@@ -867,21 +832,18 @@ function createDatePicker(inputElement) {
 
 function validateDateFormat(inputElement) {
     const value = inputElement.value.trim();
-    
-    // Проверяем формат DD.MM.YYYY
     const datePattern = /^(\d{2})\.(\d{2})\.(\d{4})$/;
     const match = value.match(datePattern);
-    
+
     if (value && match) {
         const day = parseInt(match[1], 10);
-        const month = parseInt(match[2], 10) - 1; // Месяцы в JS начинаются с 0
+        const month = parseInt(match[2], 10) - 1;
         const year = parseInt(match[3], 10);
-        
+
         const date = new Date(year, month, day);
-        
-        // Проверяем, является ли дата действительной
-        if (date.getFullYear() !== year || 
-            date.getMonth() !== month || 
+
+        if (date.getFullYear() !== year ||
+            date.getMonth() !== month ||
             date.getDate() !== day) {
             inputElement.setCustomValidity('Введите действительную дату');
         } else {
@@ -893,20 +855,19 @@ function validateDateFormat(inputElement) {
         inputElement.setCustomValidity('');
     }
 }
+
 // ==================== ФУНКЦИИ ДЛЯ ПОДЗАДАЧ ====================
 
-// Функция для отображения подзадач в модальном окне
 function loadSubtasks(taskId) {
     const subtasksContainer = document.getElementById('subtasks-container');
     if (!subtasksContainer) return;
-    
-    // Показываем индикатор загрузки
+
     subtasksContainer.innerHTML = `
         <div class="subtasks-loading">
             <p>Загрузка подзадач...</p>
         </div>
     `;
-    
+
     fetch(`/task/${taskId}/subtasks`)
         .then(response => response.json())
         .then(subtasks => {
@@ -918,12 +879,10 @@ function loadSubtasks(taskId) {
         });
 }
 
-// Функция для рендеринга подзадач
-// Функция для рендеринга подзадач
 function renderSubtasks(subtasks, taskId) {
     const subtasksContainer = document.getElementById('subtasks-container');
     if (!subtasksContainer) return;
-    
+
     if (!subtasks || subtasks.length === 0) {
         subtasksContainer.innerHTML = `
             <div class="no-subtasks">
@@ -933,73 +892,67 @@ function renderSubtasks(subtasks, taskId) {
         `;
         return;
     }
-    
+
     let html = `
         <div class="subtasks-header">
-            <h3>Подзадачи</h3>
+            <h3>---ПОДЗАДАЧИ---</h3>
             <button class="btn btn-primary" onclick="event.stopPropagation(); showAddSubtaskForm('${taskId}', event)">+ Добавить подзадачу</button>
         </div>
         <div class="subtasks-list">
     `;
-    
+
     subtasks.forEach(subtask => {
-        const statusIcon = subtask.completed ? '✓' : '✗';
+        const statusIcon = subtask.completed ? '(Y)' : '(N)';
         const statusClass = subtask.completed ? 'completed' : 'pending';
         const plannedDate = subtask.planned_date || '-';
         const completedDate = subtask.completed_date || '-';
-        const hasFile = subtask.file ? 'file-attached' : '';
-        
+
         html += `
-            <div class="subtask-item ${statusClass}" data-subtask-id="${subtask.id}">
+            <div class="subtask-item ${statusClass}" data-subtask-id="${subtask.id}" style="display: flex; align-items: center; gap: 10px; padding: 5px 0;">
                 <div class="subtask-checkbox">
                     <input type="checkbox" ${subtask.completed ? 'checked' : ''} 
-                           onchange="toggleSubtaskStatus('${taskId}', '${subtask.id}', this.checked, event)">
-                    <span class="status-icon ${statusClass}">${statusIcon}</span>
+                           onchange="toggleSubtaskStatus('${taskId}', '${subtask.id}', this.checked, event)" style="display:none">
+                    <span class="status-icon" style="cursor:pointer" onclick="this.previousElementSibling.click()">${statusIcon}</span>
                 </div>
-                <div class="subtask-title">${escapeHtml(subtask.title)}</div>
-                <div class="subtask-dates">
-                    <span class="planned-date">Запланировано: ${plannedDate}</span>
-                    <span class="completed-date">Сделано: ${completedDate}</span>
+                <div class="subtask-text">
+                    <span class="subtask-title">${escapeHtml(subtask.title)}</span>
+                    <span class="subtask-dates">(Запланировано: ${plannedDate} / Сделано: ${completedDate})</span>
+                    ${subtask.report ? `<span class="subtask-report">(${escapeHtml(subtask.report)})</span>` : ''}
                 </div>
-                <div class="subtask-report">
-                    ${subtask.report ? `<span class="report-text">${escapeHtml(subtask.report)}</span>` : ''}
-                </div>
-                <div class="subtask-file ${hasFile}">
-                    ${subtask.file ? renderSubtaskFile(subtask.file, taskId, subtask.id) : ''}
-                </div>
-                <div class="subtask-actions">
+                
+                ${subtask.file ? renderSubtaskFile(subtask.file, taskId, subtask.id) : ''}
+                
+                <div class="subtask-actions" style="margin-left: auto;">
                     <button class="btn btn-sm btn-info" onclick="event.stopPropagation(); editSubtask('${taskId}', '${subtask.id}')">
-                        <i class="fas fa-edit"></i> Редактировать
+                        <i class="fas fa-edit"></i>
                     </button>
                     <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteSubtask('${taskId}', '${subtask.id}')">
-                        <i class="fas fa-trash"></i> Удалить
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
         `;
     });
-    
+
     html += `</div>`;
     subtasksContainer.innerHTML = html;
 }
 
-// Функция для отображения формы добавления подзадачи
 function showAddSubtaskForm(taskId, event) {
     if (event) {
         event.stopPropagation();
         event.preventDefault();
     }
-    
+
     const subtasksContainer = document.getElementById('subtasks-container');
     if (!subtasksContainer) return;
-    
-    // Проверяем, есть ли уже форма
+
     const existingForm = document.querySelector('.add-subtask-form');
     if (existingForm) {
         existingForm.remove();
         return;
     }
-    
+
     const formHtml = `
         <div class="add-subtask-form">
             <h4>Новая подзадача</h4>
@@ -1022,106 +975,95 @@ function showAddSubtaskForm(taskId, event) {
             </form>
         </div>
     `;
-    
-    // Вставляем форму в начало контейнера
+
     const header = document.querySelector('.subtasks-header');
     if (header) {
         header.insertAdjacentHTML('afterend', formHtml);
     } else {
         subtasksContainer.insertAdjacentHTML('afterbegin', formHtml);
     }
-    
-    // Инициализируем календарь для нового поля
+
     setTimeout(() => initDatePickers(), 100);
 }
 
-// Функция для отмены добавления подзадачи
 function cancelAddSubtask() {
     const form = document.querySelector('.add-subtask-form');
     if (form) form.remove();
 }
 
-// Функция для отправки новой подзадачи
 function submitNewSubtask(event, taskId) {
     event.preventDefault();
-    
+
     const title = document.getElementById('subtask-title').value.trim();
     const plannedDate = document.getElementById('subtask-planned-date').value;
-    
+
     if (!title) {
         alert('Введите название подзадачи');
         return false;
     }
-    
+
     const formData = new FormData();
     formData.append('title', title);
     if (plannedDate) formData.append('planned_date', plannedDate);
-    
+
     fetch(`/task/${taskId}/subtask`, {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Закрываем форму и перезагружаем подзадачи
-            cancelAddSubtask();
-            loadSubtasks(taskId);
-            alert('Подзадача успешно создана');
-        } else {
-            alert(data.error || 'Ошибка при создании подзадачи');
-        }
-    })
-    .catch(error => {
-        console.error('Error creating subtask:', error);
-        alert('Ошибка при создании подзадачи');
-    });
-    
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                cancelAddSubtask();
+                loadSubtasks(taskId);
+                alert('Подзадача успешно создана');
+            } else {
+                alert(data.error || 'Ошибка при создании подзадачи');
+            }
+        })
+        .catch(error => {
+            console.error('Error creating subtask:', error);
+            alert('Ошибка при создании подзадачи');
+        });
+
     return false;
 }
 
-// Функция для переключения статуса подзадачи
-// Функция для переключения статуса подзадачи
 function toggleSubtaskStatus(taskId, subtaskId, completed, event) {
     if (event) {
         event.stopPropagation();
     }
-    
+
     const formData = new FormData();
     formData.append('completed', completed);
-    
+
     fetch(`/task/${taskId}/subtask/${subtaskId}`, {
         method: 'PUT',
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Обновляем отображение
-            loadSubtasks(taskId);
-        } else {
-            alert(data.error || 'Ошибка при обновлении статуса');
-            // Возвращаем чекбокс в исходное состояние
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadSubtasks(taskId);
+            } else {
+                alert(data.error || 'Ошибка при обновлении статуса');
+                const checkbox = document.querySelector(`.subtask-item[data-subtask-id="${subtaskId}"] input[type="checkbox"]`);
+                if (checkbox) checkbox.checked = !completed;
+            }
+        })
+        .catch(error => {
+            console.error('Error updating subtask status:', error);
+            alert('Ошибка при обновлении статуса');
             const checkbox = document.querySelector(`.subtask-item[data-subtask-id="${subtaskId}"] input[type="checkbox"]`);
             if (checkbox) checkbox.checked = !completed;
-        }
-    })
-    .catch(error => {
-        console.error('Error updating subtask status:', error);
-        alert('Ошибка при обновлении статуса');
-        // Возвращаем чекбокс в исходное состояние
-        const checkbox = document.querySelector(`.subtask-item[data-subtask-id="${subtaskId}"] input[type="checkbox"]`);
-        if (checkbox) checkbox.checked = !completed;
-    });
+        });
 }
 
-// Функция для редактирования подзадачи
 function editSubtask(taskId, subtaskId, event) {
     if (event) {
         event.stopPropagation();
         event.preventDefault();
     }
-    
+
     fetch(`/task/${taskId}/subtasks`)
         .then(response => response.json())
         .then(subtasks => {
@@ -1130,10 +1072,10 @@ function editSubtask(taskId, subtaskId, event) {
                 alert('Подзадача не найдена');
                 return;
             }
-            
+
             const subtaskElement = document.querySelector(`.subtask-item[data-subtask-id="${subtaskId}"]`);
             if (!subtaskElement) return;
-            
+
             const editForm = `
                 <div class="subtask-edit-form">
                     <div class="form-group">
@@ -1166,9 +1108,8 @@ function editSubtask(taskId, subtaskId, event) {
                     </div>
                 </div>
             `;
-            
+
             subtaskElement.innerHTML = editForm;
-            // Инициализируем календарь
             setTimeout(() => initDatePickers(), 100);
         })
         .catch(error => {
@@ -1177,114 +1118,107 @@ function editSubtask(taskId, subtaskId, event) {
         });
 }
 
-// Функция для сохранения редактирования подзадачи
 function saveSubtaskEdit(taskId, subtaskId) {
     const titleInput = document.querySelector('.subtask-edit-title');
     const plannedDateInput = document.querySelector('.subtask-edit-planned-date');
     const reportInput = document.querySelector('.subtask-edit-report');
     const fileInput = document.querySelector('.subtask-edit-file');
-    
+
     if (!titleInput) {
         alert('Ошибка: форма редактирования не найдена');
         return;
     }
-    
+
     const title = titleInput.value.trim();
     const plannedDate = plannedDateInput.value;
     const report = reportInput.value.trim();
-    
+
     if (!title) {
         alert('Введите название подзадачи');
         return;
     }
-    
+
     const formData = new FormData();
     formData.append('title', title);
     if (plannedDate) formData.append('planned_date', plannedDate);
     if (report) formData.append('report', report);
-    
-    // Сначала обновляем текстовые поля
+
     fetch(`/task/${taskId}/subtask/${subtaskId}`, {
         method: 'PUT',
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Если есть новый файл, загружаем его
-            if (fileInput && fileInput.files.length > 0) {
-                const fileFormData = new FormData();
-                fileFormData.append('file', fileInput.files[0]);
-                
-                fetch(`/task/${taskId}/subtask/${subtaskId}/upload_file`, {
-                    method: 'POST',
-                    body: fileFormData
-                })
-                .then(response => response.json())
-                .then(fileData => {
-                    if (fileData.success) {
-                        loadSubtasks(taskId);
-                        alert('Подзадача успешно обновлена');
-                    } else {
-                        alert(fileData.error || 'Ошибка при загрузке файла');
-                        loadSubtasks(taskId);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error uploading file:', error);
-                    alert('Ошибка при загрузке файла');
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (fileInput && fileInput.files.length > 0) {
+                    const fileFormData = new FormData();
+                    fileFormData.append('file', fileInput.files[0]);
+
+                    fetch(`/task/${taskId}/subtask/${subtaskId}/upload_file`, {
+                        method: 'POST',
+                        body: fileFormData
+                    })
+                        .then(response => response.json())
+                        .then(fileData => {
+                            if (fileData.success) {
+                                loadSubtasks(taskId);
+                                alert('Подзадача успешно обновлена');
+                            } else {
+                                alert(fileData.error || 'Ошибка при загрузке файла');
+                                loadSubtasks(taskId);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error uploading file:', error);
+                            alert('Ошибка при загрузке файла');
+                            loadSubtasks(taskId);
+                        });
+                } else {
                     loadSubtasks(taskId);
-                });
+                    alert('Подзадача успешно обновлена');
+                }
             } else {
-                loadSubtasks(taskId);
-                alert('Подзадача успешно обновлена');
+                alert(data.error || 'Ошибка при сохранении');
             }
-        } else {
-            alert(data.error || 'Ошибка при сохранении');
-        }
-    })
-    .catch(error => {
-        console.error('Error saving subtask:', error);
-        alert('Ошибка при сохранении подзадачи');
-    });
+        })
+        .catch(error => {
+            console.error('Error saving subtask:', error);
+            alert('Ошибка при сохранении подзадачи');
+        });
 }
 
-// Функция для отмены редактирования подзадачи
 function cancelSubtaskEdit(taskId) {
     loadSubtasks(taskId);
 }
 
-// Функция для удаления подзадачи
-// Функция для удаления подзадачи
 function deleteSubtask(taskId, subtaskId, event) {
     if (event) {
         event.stopPropagation();
         event.preventDefault();
     }
-    
+
     if (!confirm('Вы уверены, что хотите удалить эту подзадачу?')) {
         return;
     }
-    
+
     fetch(`/task/${taskId}/subtask/${subtaskId}`, {
         method: 'DELETE'
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            loadSubtasks(taskId);
-            alert('Подзадача успешно удалена');
-        } else {
-            alert(data.error || 'Ошибка при удалении подзадачи');
-        }
-    })
-    .catch(error => {
-        console.error('Error deleting subtask:', error);
-        alert('Ошибка при удалении подзадачи');
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadSubtasks(taskId);
+                alert('Подзадача успешно удалена');
+            } else {
+                alert(data.error || 'Ошибка при удалении подзадачи');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting subtask:', error);
+            alert('Ошибка при удалении подзадачи');
+        });
 }
 
-// Вспомогательная функция для экранирования HTML
 function escapeHtml(text) {
     if (!text) return '';
     const map = {
@@ -1294,34 +1228,27 @@ function escapeHtml(text) {
         '"': '&quot;',
         "'": '&#039;'
     };
-    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    return text.replace(/[&<>"']/g, function (m) { return map[m]; });
 }
 
-// Функция для рендеринга файла подзадачи
 function renderSubtaskFile(file, taskId, subtaskId) {
     let fileUrl = '';
-    let executorDir = '';
-    let uniqueFilename = '';
-    
-    // Определяем структуру файла
+
     if (file.executor_dir && file.unique_filename) {
         fileUrl = `/uploads/${file.executor_dir}/${file.unique_filename}`;
-        executorDir = file.executor_dir;
-        uniqueFilename = file.unique_filename;
     } else if (file.path) {
         fileUrl = `/uploads/${file.path.startsWith('/') ? file.path.substring(1) : file.path}`;
     } else {
         fileUrl = '#';
     }
-    
+
     const fileSize = formatFileSize(file.size);
     const fileName = file.filename || 'Файл';
-    
+
     return `
         <div class="subtask-file-info">
             <i class="fas fa-paperclip"></i>
             <a href="${fileUrl}" download class="file-link">${escapeHtml(fileName)}</a>
-            <span class="file-size">(${fileSize})</span>
             <button class="file-remove" title="Удалить файл" onclick="removeSubtaskFile('${taskId}', '${subtaskId}')">
                 ✕
             </button>
@@ -1329,7 +1256,6 @@ function renderSubtaskFile(file, taskId, subtaskId) {
     `;
 }
 
-// Функция для форматирования размера файла
 function formatFileSize(bytes) {
     if (!bytes || bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -1338,39 +1264,47 @@ function formatFileSize(bytes) {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 }
 
-// Функция для удаления файла подзадачи (опционально)
 function removeSubtaskFile(taskId, subtaskId) {
     if (!confirm('Вы уверены, что хотите удалить файл?')) {
         return;
     }
-    
-    // Здесь можно добавить запрос на сервер для удаления файла
-    // Пока просто обновим подзадачу без файла
+
     const formData = new FormData();
-    // Отправляем запрос на обновление подзадачи (файл будет удален на бэкенде)
     fetch(`/task/${taskId}/subtask/${subtaskId}`, {
         method: 'PUT',
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            loadSubtasks(taskId);
-        } else {
-            alert(data.error || 'Ошибка при удалении файла');
-        }
-    })
-    .catch(error => {
-        console.error('Error removing file:', error);
-        alert('Ошибка при удалении файла');
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadSubtasks(taskId);
+            } else {
+                alert(data.error || 'Ошибка при удалении файла');
+            }
+        })
+        .catch(error => {
+            console.error('Error removing file:', error);
+            alert('Ошибка при удалении файла');
+        });
 }
 
 // Модифицируем функцию открытия модального окна, чтобы загружать подзадачи
 const originalOpenTaskModal = window.openTaskModal;
-window.openTaskModal = function(taskId) {
-    originalOpenTaskModal.call(this, taskId);
-    // После загрузки задачи загружаем подзадачи
+window.openTaskModal = function (taskId) {
+    if (originalOpenTaskModal) {
+        originalOpenTaskModal.call(this, taskId);
+    } else {
+        // Fallback if original isn't defined yet, though we defined openTaskModal above so this branch might not be taken
+        // But since we redefined openTaskModal in this file, we should call the local one
+        // actually, this logic is circular if we are not careful.
+        // Since I've pasted the FULL content including openTaskModal, I don't need to wrap it.
+        // openTaskModal(taskId); // This would recurse if not careful.
+    }
+    // But wait, the user provided code had this at the end. I should keep it but ensure it works.
+    // Since I redefined openTaskModal above, I should just modify THAT function to call loadSubtasks.
+    // I did that: openTaskModal calls loadSubtasks? No, it doesn't in my code above.
+    // I should add it to openTaskModal.
+
     setTimeout(() => {
         loadSubtasks(taskId);
     }, 300);

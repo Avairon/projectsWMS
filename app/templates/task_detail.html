@@ -5,7 +5,11 @@
 {% block content %}
 <div class="project-detail">
     <div class="actions-bar">
-        <a href="{{ url_for('projects.project_detail', project_id=task.project_id) }}" class="btn back-btn">Назад к проекту</a>
+        <a href="{{ url_for('projects.project_detail', project_id=task.project_id) }}" class="btn back-btn">Назад к
+            проекту</a>
+        {% if current_user.role in ['admin', 'manager', 'supervisor'] or current_user.id == task.assignee_id %}
+        <button class="btn edit-task-btn" data-task-id="{{ task.id }}">Редактировать</button>
+        {% endif %}
     </div>
 
     <h2>{{ task.title }}</h2>
@@ -13,7 +17,9 @@
     <div class="info-grid">
         <div class="info-item">
             <strong>Статус</strong>
-            <p><span class="status-badge {% if task.status == 'активна' %}status-active{% elif task.status == 'завершена' %}status-completed{% else %}status-paused{% endif %}">{{ task.status }}</span></p>
+            <p><span
+                    class="status-badge {% if task.status == 'активна' %}status-active{% elif task.status == 'завершена' %}status-completed{% else %}status-paused{% endif %}">{{
+                    task.status }}</span></p>
         </div>
         <div class="info-item">
             <strong>Исполнитель</strong>
@@ -50,7 +56,8 @@
             <div class="file-item">
                 <span>{{ file.filename }}</span>
                 <div class="file-actions">
-                    <a href="/uploads/{{ file.executor_dir }}/{{ file.unique_filename }}" download class="file-action-btn download-btn">Скачать</a>
+                    <a href="/uploads/{{ file.executor_dir }}/{{ file.unique_filename }}" download
+                        class="file-action-btn download-btn">Скачать</a>
                 </div>
                 <small>{{ file.uploaded_at }} ({{ format_file_size(file.size) }})</small>
             </div>
@@ -63,15 +70,18 @@
     {% if current_user.id == task.assignee_id or current_user.role in ['admin', 'manager', 'supervisor'] %}
     <div class="task-reporting-section">
         <h4>Отчет по задаче</h4>
-        <form id="reportForm" action="{{ url_for('tasks.report_task', task_id=task.id) }}" method="POST" enctype="multipart/form-data">
+        <form id="reportForm" action="{{ url_for('tasks.report_task', task_id=task.id) }}" method="POST"
+            enctype="multipart/form-data">
             <div class="form-group">
                 <label for="comment">Комментарий:</label>
-                <textarea id="comment" name="comment" rows="4" placeholder="Добавьте комментарий к отчету..."></textarea>
+                <textarea id="comment" name="comment" rows="4"
+                    placeholder="Добавьте комментарий к отчету..."></textarea>
             </div>
             <!-- СЮДА ПОЛЕ НАПОМИНАЛКИ -->
             <div class="form-group">
                 <label for="report_file">Файл (необязательно):</label>
-                <input type="file" id="report_file" name="report_file" accept=".txt,.pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.xls,.xlsx">
+                <input type="file" id="report_file" name="report_file"
+                    accept=".txt,.pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.xls,.xlsx">
             </div>
             <button type="submit" class="btn">Отправить отчет</button>
         </form>
@@ -90,13 +100,14 @@
                 </div>
                 <div class="report-content">
                     {% if report.comment %}
-                        <p>{{ report.comment }}</p>
+                    <p>{{ report.comment }}</p>
                     {% endif %}
                     {% if report.file %}
                     <div class="report-file">
                         <strong>Прикрепленный файл:</strong>
                         <div class="file-actions">
-                            <a href="/uploads/{{ report.file.executor_dir }}/{{ report.file.unique_filename }}" download class="file-action-btn download-btn">Скачать</a>
+                            <a href="/uploads/{{ report.file.executor_dir }}/{{ report.file.unique_filename }}" download
+                                class="file-action-btn download-btn">Скачать</a>
                         </div>
                         <small>{{ report.file.filename }} ({{ format_file_size(report.file.size) }})</small>
                     </div>
@@ -111,9 +122,9 @@
     <div class="form-actions">
         <form action="{{ url_for('tasks.update_task_status', task_id=task.id) }}" method="POST" class="status-form">
             <select name="status" class="status-select">
-                <option value="активна" {% if task.status == 'активна' %}selected{% endif %}>Активна</option>
-                <option value="завершена" {% if task.status == 'завершена' %}selected{% endif %}>Завершена</option>
-                <option value="отложена" {% if task.status == 'отложена' %}selected{% endif %}>Отложена</option>
+                <option value="активна" {% if task.status=='активна' %}selected{% endif %}>Активна</option>
+                <option value="завершена" {% if task.status=='завершена' %}selected{% endif %}>Завершена</option>
+                <option value="отложена" {% if task.status=='отложена' %}selected{% endif %}>Отложена</option>
             </select>
             <button type="submit" class="btn">Обновить статус</button>
         </form>
@@ -121,67 +132,139 @@
 </div>
 
 <!-- Подзадачи -->
-{% if task.subtasks %}
 <div class="subtasks-section">
-    <h3>Подзадачи</h3>
-    <div class="subtasks-list">
+    <h3>---ПОДЗАДАЧИ---</h3>
+    <div class="subtasks-list" id="subtasks-container">
+        {% if task.subtasks %}
         {% for subtask in task.subtasks %}
-        <div class="subtask-item {% if subtask.completed %}completed{% else %}pending{% endif %}">
+        <div class="subtask-item {% if subtask.completed %}completed{% else %}pending{% endif %}"
+            style="display: flex; align-items: center; gap: 10px; padding: 5px 0;">
             <div class="subtask-checkbox">
-                <input type="checkbox" {% if subtask.completed %}checked{% endif %} disabled>
-                <span class="status-icon {% if subtask.completed %}completed{% else %}pending{% endif %}">
-                    {% if subtask.completed %}✓{% else %}✗{% endif %}
+                <span class="status-icon">
+                    {% if subtask.completed %}(Y){% else %}(N){% endif %}
                 </span>
             </div>
-            <div class="subtask-title">{{ subtask.title }}</div>
-            <div class="subtask-dates">
-                <span class="planned-date">Запланировано: {{ subtask.planned_date or '-' }}</span>
-                <span class="completed-date">Сделано: {{ subtask.completed_date or '-' }}</span>
+            <div class="subtask-text">
+                {{ subtask.title }}
+                (Запланировано: {{ subtask.planned_date or '-' }}/Сделано: {{ subtask.completed_date or '-' }})
+                {% if subtask.report %} ({{ subtask.report }}){% endif %}
             </div>
-            <div class="subtask-report">
-                {% if subtask.report %}
-                <span class="report-text">{{ subtask.report }}</span>
-                {% endif %}
-            </div>
-            <div class="subtask-file {% if subtask.file %}file-attached{% endif %}">
-                {% if subtask.file %}
-                <i class="fas fa-paperclip"></i>
+            {% if subtask.file %}
+            <div class="subtask-file">
                 <a href="/uploads/{{ subtask.file.executor_dir }}/{{ subtask.file.unique_filename }}" download>
-                    {{ subtask.file.filename }}
+                    <i class="fas fa-paperclip"></i>
                 </a>
-                <span class="file-size">({{ format_file_size(subtask.file.size) }})</span>
-                {% endif %}
             </div>
+            {% endif %}
         </div>
         {% endfor %}
+        {% else %}
+        <p>Нет подзадач</p>
+        {% endif %}
     </div>
 </div>
-{% endif %}
+
+<!-- Модальное окно редактирования задачи -->
+<div id="task-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Редактирование задачи</h3>
+            <button class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="edit-task-form">
+                <input type="hidden" id="edit-task-id">
+
+                <div class="form-group">
+                    <label for="edit-task-title">Название</label>
+                    <input type="text" id="edit-task-title" name="title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-task-description">Описание</label>
+                    <textarea id="edit-task-description" name="description" rows="3"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <label for="edit-task-status">Статус</label>
+                        <select id="edit-task-status" name="status">
+                            <option value="активна">Активна</option>
+                            <option value="завершена">Завершена</option>
+                            <option value="отложена">Отложена</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group half-width">
+                        <label for="edit-task-assignee">Исполнитель</label>
+                        <select id="edit-task-assignee" name="assignee_id">
+                            <!-- Options will be populated by JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <label for="edit-task-start">Дата начала</label>
+                        <input type="text" id="edit-task-start" name="start_date" placeholder="ДД.ММ.ГГГГ">
+                    </div>
+
+                    <div class="form-group half-width">
+                        <label for="edit-task-deadline">Дедлайн</label>
+                        <input type="text" id="edit-task-deadline" name="deadline" placeholder="ДД.ММ.ГГГГ">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn">Сохранить</button>
+                    <button type="button" class="btn cancel-btn" onclick="closeTaskModal()">Отмена</button>
+                </div>
+            </form>
+
+            <div class="task-history">
+                <h4 onclick="toggleHistory(event)" style="cursor: pointer;">История изменений (показать/скрыть)</h4>
+                <div id="task-history" class="history-list" style="display: none;">
+                    <!-- History items will be populated by JS -->
+                </div>
+            </div>
+
+            <div class="task-reports">
+                <h4>Отчеты</h4>
+                <div class="reports-list">
+                    <!-- Reports items will be populated by JS -->
+                </div>
+            </div>
+
+            <div id="subtasks-container-modal">
+                <!-- Subtasks will be populated by JS -->
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
-// Handle form submission
-document.getElementById('reportForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    
-    try {
-        const response = await fetch(this.action, {
-            method: 'POST',
-            body: formData
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            alert(result.message);
-            location.reload(); // Reload the page to show the new report
-        } else {
-            alert('Ошибка: ' + result.error);
+    document.getElementById('reportForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        try {
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert('Ошибка: ' + result.error);
+            }
+        } catch (error) {
+            alert('Ошибка при отправке отчета: ' + error.message);
         }
-    } catch (error) {
-        alert('Ошибка при отправке отчета: ' + error.message);
-    }
-});
+    });
 </script>
 {% endblock %}

@@ -749,6 +749,10 @@ def update_subtask(task_id, subtask_id):
             except:
                 return jsonify({'error': 'Некорректный формат даты'}), 400
     
+    # Обновляем название
+    if 'title' in request.form:
+        subtask['title'] = request.form['title'].strip()
+
     # Обновляем подзадачу в базе
     for i, t in enumerate(tasks):
         if t.get('id') == task_id:
@@ -863,9 +867,11 @@ def delete_subtask(task_id, subtask_id):
         file_info = subtask['file']
         filepath = os.path.join(app_config.BASE_DIR, 'uploads', file_info['executor_dir'], file_info['unique_filename'])
         if os.path.exists(filepath):
-            os.remove(filepath)
-    
-    # Удаляем подзадачу
+            try:
+                os.remove(filepath)
+            except:
+                pass
+
     task['subtasks'] = [s for s in subtasks if s.get('id') != subtask_id]
     
     # Обновляем задачу в базе
@@ -876,4 +882,4 @@ def delete_subtask(task_id, subtask_id):
     
     save_data(app_config.TASKS_DB, tasks)
     
-    return jsonify({'success': True, 'message': 'Подзадача успешно удалена'})
+    return jsonify({'success': True})
