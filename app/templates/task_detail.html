@@ -120,6 +120,44 @@
     </div>
 </div>
 
+<!-- Подзадачи -->
+{% if task.subtasks %}
+<div class="subtasks-section">
+    <h3>Подзадачи</h3>
+    <div class="subtasks-list">
+        {% for subtask in task.subtasks %}
+        <div class="subtask-item {% if subtask.completed %}completed{% else %}pending{% endif %}">
+            <div class="subtask-checkbox">
+                <input type="checkbox" {% if subtask.completed %}checked{% endif %} disabled>
+                <span class="status-icon {% if subtask.completed %}completed{% else %}pending{% endif %}">
+                    {% if subtask.completed %}✓{% else %}✗{% endif %}
+                </span>
+            </div>
+            <div class="subtask-title">{{ subtask.title }}</div>
+            <div class="subtask-dates">
+                <span class="planned-date">Запланировано: {{ subtask.planned_date or '-' }}</span>
+                <span class="completed-date">Сделано: {{ subtask.completed_date or '-' }}</span>
+            </div>
+            <div class="subtask-report">
+                {% if subtask.report %}
+                <span class="report-text">{{ subtask.report }}</span>
+                {% endif %}
+            </div>
+            <div class="subtask-file {% if subtask.file %}file-attached{% endif %}">
+                {% if subtask.file %}
+                <i class="fas fa-paperclip"></i>
+                <a href="/uploads/{{ subtask.file.executor_dir }}/{{ subtask.file.unique_filename }}" download>
+                    {{ subtask.file.filename }}
+                </a>
+                <span class="file-size">({{ format_file_size(subtask.file.size) }})</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <script>
 // Handle form submission
 document.getElementById('reportForm').addEventListener('submit', async function(e) {

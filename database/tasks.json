@@ -51,6 +51,19 @@
         "reported_by": "1",
         "reported_at": "18.12.2025 17:39:08"
       }
+    ],
+    "subtasks": [
+      {
+        "id": "f15eef34",
+        "title": "Сделать Абубе",
+        "completed": false,
+        "planned_date": "02.04.2026",
+        "completed_date": "",
+        "report": "",
+        "file": null,
+        "created_at": "04.02.2026 19:32:29",
+        "created_by": "1"
+      }
     ]
   },
   {

@@ -621,3 +621,259 @@ def api_task_detail(task_id):
     task['reports'] = formatted_reports
 
     return jsonify(task)
+
+
+# Добавьте эти маршруты в конец файла tasks.py
+
+@tasks_bp.route('/task/<task_id>/subtasks', methods=['GET'])
+@login_required
+def get_subtasks(task_id):
+    """Получить все подзадачи задачи"""
+    if not can_access_task(task_id):
+        return jsonify({'error': 'У вас нет доступа к этой задаче'}), 403
+    
+    tasks = load_data(app_config.TASKS_DB)
+    task = next((t for t in tasks if t.get('id') == task_id), None)
+    
+    if not task:
+        return jsonify({'error': 'Задача не найдена'}), 404
+    
+    subtasks = task.get('subtasks', [])
+    return jsonify(subtasks)
+
+
+@tasks_bp.route('/task/<task_id>/subtask', methods=['POST'])
+@login_required
+def create_subtask(task_id):
+    """Создать новую подзадачу"""
+    if not can_access_task(task_id):
+        return jsonify({'error': 'У вас нет доступа к этой задаче'}), 403
+    
+    tasks = load_data(app_config.TASKS_DB)
+    task = next((t for t in tasks if t.get('id') == task_id), None)
+    
+    if not task:
+        return jsonify({'error': 'Задача не найдена'}), 404
+    
+    # Проверяем права на создание подзадачи
+    if current_user.role not in ['admin', 'manager', 'supervisor'] and current_user.id != task.get('assignee_id'):
+        return jsonify({'error': 'У вас нет прав на создание подзадачи'}), 403
+    
+    subtask_title = request.form.get('title', '').strip()
+    planned_date = request.form.get('planned_date', '')
+    
+    if not subtask_title:
+        return jsonify({'error': 'Название подзадачи обязательно'}), 400
+    
+    # Конвертируем дату в нужный формат
+    if planned_date:
+        try:
+            planned_dt = parse_date(planned_date)
+            planned_date = planned_dt.strftime("%d.%m.%Y")
+        except:
+            return jsonify({'error': 'Некорректный формат даты'}), 400
+    
+    subtask = {
+        'id': str(uuid.uuid4())[:8],
+        'title': subtask_title,
+        'completed': False,
+        'planned_date': planned_date,
+        'completed_date': '',
+        'report': '',
+        'file': None,
+        'created_at': datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+        'created_by': current_user.id
+    }
+    
+    if 'subtasks' not in task:
+        task['subtasks'] = []
+    
+    task['subtasks'].append(subtask)
+    
+    # Обновляем задачу в базе
+    for i, t in enumerate(tasks):
+        if t.get('id') == task_id:
+            tasks[i] = task
+            break
+    
+    save_data(app_config.TASKS_DB, tasks)
+    
+    return jsonify({'success': True, 'subtask': subtask})
+
+
+@tasks_bp.route('/task/<task_id>/subtask/<subtask_id>', methods=['PUT'])
+@login_required
+def update_subtask(task_id, subtask_id):
+    """Обновить подзадачу (чекбокс, отчет, файл)"""
+    if not can_access_task(task_id):
+        return jsonify({'error': 'У вас нет доступа к этой задаче'}), 403
+    
+    tasks = load_data(app_config.TASKS_DB)
+    task = next((t for t in tasks if t.get('id') == task_id), None)
+    
+    if not task:
+        return jsonify({'error': 'Задача не найдена'}), 404
+    
+    subtasks = task.get('subtasks', [])
+    subtask = next((s for s in subtasks if s.get('id') == subtask_id), None)
+    
+    if not subtask:
+        return jsonify({'error': 'Подзадача не найдена'}), 404
+    
+    # Проверяем права на редактирование подзадачи
+    if current_user.role not in ['admin', 'manager', 'supervisor'] and current_user.id != task.get('assignee_id'):
+        return jsonify({'error': 'У вас нет прав на редактирование подзадачи'}), 403
+    
+    # Обновляем статус выполнения
+    if 'completed' in request.form:
+        completed = request.form['completed'].lower() == 'true'
+        subtask['completed'] = completed
+        
+        # Если подзадача выполнена, устанавливаем дату завершения
+        if completed and not subtask['completed_date']:
+            subtask['completed_date'] = datetime.now().strftime("%d.%m.%Y")
+        elif not completed:
+            subtask['completed_date'] = ''
+    
+    # Обновляем отчет
+    if 'report' in request.form:
+        subtask['report'] = request.form['report'].strip()
+    
+    # Обновляем дату запланировано
+    if 'planned_date' in request.form:
+        planned_date = request.form['planned_date']
+        if planned_date:
+            try:
+                planned_dt = parse_date(planned_date)
+                subtask['planned_date'] = planned_dt.strftime("%d.%m.%Y")
+            except:
+                return jsonify({'error': 'Некорректный формат даты'}), 400
+    
+    # Обновляем подзадачу в базе
+    for i, t in enumerate(tasks):
+        if t.get('id') == task_id:
+            tasks[i] = task
+            break
+    
+    save_data(app_config.TASKS_DB, tasks)
+    
+    return jsonify({'success': True, 'subtask': subtask})
+
+
+@tasks_bp.route('/task/<task_id>/subtask/<subtask_id>/upload_file', methods=['POST'])
+@login_required
+def upload_subtask_file(task_id, subtask_id):
+    """Загрузить файл к подзадаче"""
+    if not can_access_task(task_id):
+        return jsonify({'error': 'У вас нет доступа к этой задаче'}), 403
+    
+    tasks = load_data(app_config.TASKS_DB)
+    task = next((t for t in tasks if t.get('id') == task_id), None)
+    
+    if not task:
+        return jsonify({'error': 'Задача не найдена'}), 404
+    
+    subtasks = task.get('subtasks', [])
+    subtask = next((s for s in subtasks if s.get('id') == subtask_id), None)
+    
+    if not subtask:
+        return jsonify({'error': 'Подзадача не найдена'}), 404
+    
+    # Проверяем права на загрузку файла
+    if current_user.role not in ['admin', 'manager', 'supervisor'] and current_user.id != task.get('assignee_id'):
+        return jsonify({'error': 'У вас нет прав на загрузку файла'}), 403
+    
+    if 'file' not in request.files:
+        return jsonify({'error': 'Файл не был загружен'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Файл не был выбран'}), 400
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        
+        # Получаем информацию об исполнителе задачи
+        users = load_data(app_config.USERS_DB)
+        assignee = next((u for u in users if u['id'] == task.get('assignee_id')), None)
+        if not assignee:
+            return jsonify({'error': 'Исполнитель задачи не найден'}), 404
+        
+        # Создаем директорию для исполнителя
+        executor_name = assignee.get('name', assignee.get('username', 'unknown'))
+        executor_safe_name = secure_filename(executor_name.replace("  ", "_"))
+        executor_dir = os.path.join(app_config.BASE_DIR, 'uploads', executor_safe_name)
+        os.makedirs(executor_dir, exist_ok=True)
+        
+        unique_filename = f"subtask_{subtask_id}_{uuid.uuid4().hex[:8]}_{filename}"
+        filepath = os.path.join(executor_dir, unique_filename)
+        
+        file.save(filepath)
+        
+        file_info = {
+            'filename': filename,
+            'unique_filename': unique_filename,
+            'uploaded_by': current_user.id,
+            'uploaded_at': datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+            'size': os.path.getsize(filepath),
+            'executor_dir': executor_safe_name
+        }
+        
+        # Сохраняем файл в подзадачу
+        subtask['file'] = file_info
+        
+        # Обновляем задачу в базе
+        for i, t in enumerate(tasks):
+            if t.get('id') == task_id:
+                tasks[i] = task
+                break
+        
+        save_data(app_config.TASKS_DB, tasks)
+        
+        return jsonify({'success': True, 'message': 'Файл успешно загружен', 'file': file_info})
+    else:
+        return jsonify({'error': 'Недопустимый тип файла'}), 400
+
+
+@tasks_bp.route('/task/<task_id>/subtask/<subtask_id>', methods=['DELETE'])
+@login_required
+def delete_subtask(task_id, subtask_id):
+    """Удалить подзадачу"""
+    if not can_access_task(task_id):
+        return jsonify({'error': 'У вас нет доступа к этой задаче'}), 403
+    
+    tasks = load_data(app_config.TASKS_DB)
+    task = next((t for t in tasks if t.get('id') == task_id), None)
+    
+    if not task:
+        return jsonify({'error': 'Задача не найдена'}), 404
+    
+    # Проверяем права на удаление подзадачи
+    if current_user.role not in ['admin', 'manager', 'supervisor']:
+        return jsonify({'error': 'У вас нет прав на удаление подзадачи'}), 403
+    
+    subtasks = task.get('subtasks', [])
+    subtask = next((s for s in subtasks if s.get('id') == subtask_id), None)
+    
+    if not subtask:
+        return jsonify({'error': 'Подзадача не найдена'}), 404
+    
+    # Удаляем файл, если он существует
+    if subtask.get('file'):
+        file_info = subtask['file']
+        filepath = os.path.join(app_config.BASE_DIR, 'uploads', file_info['executor_dir'], file_info['unique_filename'])
+        if os.path.exists(filepath):
+            os.remove(filepath)
+    
+    # Удаляем подзадачу
+    task['subtasks'] = [s for s in subtasks if s.get('id') != subtask_id]
+    
+    # Обновляем задачу в базе
+    for i, t in enumerate(tasks):
+        if t.get('id') == task_id:
+            tasks[i] = task
+            break
+    
+    save_data(app_config.TASKS_DB, tasks)
+    
+    return jsonify({'success': True, 'message': 'Подзадача успешно удалена'})

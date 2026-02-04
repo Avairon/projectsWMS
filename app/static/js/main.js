@@ -893,3 +893,485 @@ function validateDateFormat(inputElement) {
         inputElement.setCustomValidity('');
     }
 }
+// ==================== ФУНКЦИИ ДЛЯ ПОДЗАДАЧ ====================
+
+// Функция для отображения подзадач в модальном окне
+function loadSubtasks(taskId) {
+    const subtasksContainer = document.getElementById('subtasks-container');
+    if (!subtasksContainer) return;
+    
+    // Показываем индикатор загрузки
+    subtasksContainer.innerHTML = `
+        <div class="subtasks-loading">
+            <p>Загрузка подзадач...</p>
+        </div>
+    `;
+    
+    fetch(`/task/${taskId}/subtasks`)
+        .then(response => response.json())
+        .then(subtasks => {
+            renderSubtasks(subtasks, taskId);
+        })
+        .catch(error => {
+            console.error('Error loading subtasks:', error);
+            subtasksContainer.innerHTML = '<p class="no-subtasks">Ошибка при загрузке подзадач</p>';
+        });
+}
+
+// Функция для рендеринга подзадач
+// Функция для рендеринга подзадач
+function renderSubtasks(subtasks, taskId) {
+    const subtasksContainer = document.getElementById('subtasks-container');
+    if (!subtasksContainer) return;
+    
+    if (!subtasks || subtasks.length === 0) {
+        subtasksContainer.innerHTML = `
+            <div class="no-subtasks">
+                <p>Нет подзадач</p>
+                <button class="btn btn-primary" onclick="event.stopPropagation(); showAddSubtaskForm('${taskId}', event)">Добавить подзадачу</button>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = `
+        <div class="subtasks-header">
+            <h3>Подзадачи</h3>
+            <button class="btn btn-primary" onclick="event.stopPropagation(); showAddSubtaskForm('${taskId}', event)">+ Добавить подзадачу</button>
+        </div>
+        <div class="subtasks-list">
+    `;
+    
+    subtasks.forEach(subtask => {
+        const statusIcon = subtask.completed ? '✓' : '✗';
+        const statusClass = subtask.completed ? 'completed' : 'pending';
+        const plannedDate = subtask.planned_date || '-';
+        const completedDate = subtask.completed_date || '-';
+        const hasFile = subtask.file ? 'file-attached' : '';
+        
+        html += `
+            <div class="subtask-item ${statusClass}" data-subtask-id="${subtask.id}">
+                <div class="subtask-checkbox">
+                    <input type="checkbox" ${subtask.completed ? 'checked' : ''} 
+                           onchange="toggleSubtaskStatus('${taskId}', '${subtask.id}', this.checked, event)">
+                    <span class="status-icon ${statusClass}">${statusIcon}</span>
+                </div>
+                <div class="subtask-title">${escapeHtml(subtask.title)}</div>
+                <div class="subtask-dates">
+                    <span class="planned-date">Запланировано: ${plannedDate}</span>
+                    <span class="completed-date">Сделано: ${completedDate}</span>
+                </div>
+                <div class="subtask-report">
+                    ${subtask.report ? `<span class="report-text">${escapeHtml(subtask.report)}</span>` : ''}
+                </div>
+                <div class="subtask-file ${hasFile}">
+                    ${subtask.file ? renderSubtaskFile(subtask.file, taskId, subtask.id) : ''}
+                </div>
+                <div class="subtask-actions">
+                    <button class="btn btn-sm btn-info" onclick="event.stopPropagation(); editSubtask('${taskId}', '${subtask.id}')">
+                        <i class="fas fa-edit"></i> Редактировать
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteSubtask('${taskId}', '${subtask.id}')">
+                        <i class="fas fa-trash"></i> Удалить
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
+    subtasksContainer.innerHTML = html;
+}
+
+// Функция для отображения формы добавления подзадачи
+function showAddSubtaskForm(taskId, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    const subtasksContainer = document.getElementById('subtasks-container');
+    if (!subtasksContainer) return;
+    
+    // Проверяем, есть ли уже форма
+    const existingForm = document.querySelector('.add-subtask-form');
+    if (existingForm) {
+        existingForm.remove();
+        return;
+    }
+    
+    const formHtml = `
+        <div class="add-subtask-form">
+            <h4>Новая подзадача</h4>
+            <form id="new-subtask-form" onsubmit="return submitNewSubtask(event, '${taskId}')">
+                <div class="form-group">
+                    <label>Название подзадачи:</label>
+                    <input type="text" id="subtask-title" class="form-control" required placeholder="Введите название подзадачи">
+                </div>
+                <div class="form-group">
+                    <label>Дата запланировано:</label>
+                    <input type="text" id="subtask-planned-date" class="form-control date-input" 
+                           placeholder="ДД.ММ.ГГГГ">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success" onclick="event.stopPropagation()">Создать</button>
+                    <button type="button" class="btn btn-secondary" onclick="event.stopPropagation(); cancelAddSubtask()">
+                        Отмена
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    // Вставляем форму в начало контейнера
+    const header = document.querySelector('.subtasks-header');
+    if (header) {
+        header.insertAdjacentHTML('afterend', formHtml);
+    } else {
+        subtasksContainer.insertAdjacentHTML('afterbegin', formHtml);
+    }
+    
+    // Инициализируем календарь для нового поля
+    setTimeout(() => initDatePickers(), 100);
+}
+
+// Функция для отмены добавления подзадачи
+function cancelAddSubtask() {
+    const form = document.querySelector('.add-subtask-form');
+    if (form) form.remove();
+}
+
+// Функция для отправки новой подзадачи
+function submitNewSubtask(event, taskId) {
+    event.preventDefault();
+    
+    const title = document.getElementById('subtask-title').value.trim();
+    const plannedDate = document.getElementById('subtask-planned-date').value;
+    
+    if (!title) {
+        alert('Введите название подзадачи');
+        return false;
+    }
+    
+    const formData = new FormData();
+    formData.append('title', title);
+    if (plannedDate) formData.append('planned_date', plannedDate);
+    
+    fetch(`/task/${taskId}/subtask`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Закрываем форму и перезагружаем подзадачи
+            cancelAddSubtask();
+            loadSubtasks(taskId);
+            alert('Подзадача успешно создана');
+        } else {
+            alert(data.error || 'Ошибка при создании подзадачи');
+        }
+    })
+    .catch(error => {
+        console.error('Error creating subtask:', error);
+        alert('Ошибка при создании подзадачи');
+    });
+    
+    return false;
+}
+
+// Функция для переключения статуса подзадачи
+// Функция для переключения статуса подзадачи
+function toggleSubtaskStatus(taskId, subtaskId, completed, event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    
+    const formData = new FormData();
+    formData.append('completed', completed);
+    
+    fetch(`/task/${taskId}/subtask/${subtaskId}`, {
+        method: 'PUT',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Обновляем отображение
+            loadSubtasks(taskId);
+        } else {
+            alert(data.error || 'Ошибка при обновлении статуса');
+            // Возвращаем чекбокс в исходное состояние
+            const checkbox = document.querySelector(`.subtask-item[data-subtask-id="${subtaskId}"] input[type="checkbox"]`);
+            if (checkbox) checkbox.checked = !completed;
+        }
+    })
+    .catch(error => {
+        console.error('Error updating subtask status:', error);
+        alert('Ошибка при обновлении статуса');
+        // Возвращаем чекбокс в исходное состояние
+        const checkbox = document.querySelector(`.subtask-item[data-subtask-id="${subtaskId}"] input[type="checkbox"]`);
+        if (checkbox) checkbox.checked = !completed;
+    });
+}
+
+// Функция для редактирования подзадачи
+function editSubtask(taskId, subtaskId, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    fetch(`/task/${taskId}/subtasks`)
+        .then(response => response.json())
+        .then(subtasks => {
+            const subtask = subtasks.find(s => s.id === subtaskId);
+            if (!subtask) {
+                alert('Подзадача не найдена');
+                return;
+            }
+            
+            const subtaskElement = document.querySelector(`.subtask-item[data-subtask-id="${subtaskId}"]`);
+            if (!subtaskElement) return;
+            
+            const editForm = `
+                <div class="subtask-edit-form">
+                    <div class="form-group">
+                        <label>Название:</label>
+                        <input type="text" class="form-control subtask-edit-title" 
+                               value="${escapeHtml(subtask.title)}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Дата запланировано:</label>
+                        <input type="text" class="form-control subtask-edit-planned-date date-input" 
+                               value="${subtask.planned_date || ''}" placeholder="ДД.ММ.ГГГГ">
+                    </div>
+                    <div class="form-group">
+                        <label>Отчет:</label>
+                        <textarea class="form-control subtask-edit-report" rows="3">${escapeHtml(subtask.report || '')}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Файл:</label>
+                        <input type="file" class="form-control subtask-edit-file" 
+                               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls,.txt,.zip,.rar">
+                        ${subtask.file ? `<div class="current-file">Текущий файл: ${escapeHtml(subtask.file.filename)}</div>` : ''}
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-success" onclick="event.stopPropagation(); saveSubtaskEdit('${taskId}', '${subtaskId}')">
+                            Сохранить
+                        </button>
+                        <button class="btn btn-secondary" onclick="event.stopPropagation(); cancelSubtaskEdit('${taskId}')">
+                            Отмена
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            subtaskElement.innerHTML = editForm;
+            // Инициализируем календарь
+            setTimeout(() => initDatePickers(), 100);
+        })
+        .catch(error => {
+            console.error('Error loading subtask for edit:', error);
+            alert('Ошибка при загрузке подзадачи для редактирования');
+        });
+}
+
+// Функция для сохранения редактирования подзадачи
+function saveSubtaskEdit(taskId, subtaskId) {
+    const titleInput = document.querySelector('.subtask-edit-title');
+    const plannedDateInput = document.querySelector('.subtask-edit-planned-date');
+    const reportInput = document.querySelector('.subtask-edit-report');
+    const fileInput = document.querySelector('.subtask-edit-file');
+    
+    if (!titleInput) {
+        alert('Ошибка: форма редактирования не найдена');
+        return;
+    }
+    
+    const title = titleInput.value.trim();
+    const plannedDate = plannedDateInput.value;
+    const report = reportInput.value.trim();
+    
+    if (!title) {
+        alert('Введите название подзадачи');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('title', title);
+    if (plannedDate) formData.append('planned_date', plannedDate);
+    if (report) formData.append('report', report);
+    
+    // Сначала обновляем текстовые поля
+    fetch(`/task/${taskId}/subtask/${subtaskId}`, {
+        method: 'PUT',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Если есть новый файл, загружаем его
+            if (fileInput && fileInput.files.length > 0) {
+                const fileFormData = new FormData();
+                fileFormData.append('file', fileInput.files[0]);
+                
+                fetch(`/task/${taskId}/subtask/${subtaskId}/upload_file`, {
+                    method: 'POST',
+                    body: fileFormData
+                })
+                .then(response => response.json())
+                .then(fileData => {
+                    if (fileData.success) {
+                        loadSubtasks(taskId);
+                        alert('Подзадача успешно обновлена');
+                    } else {
+                        alert(fileData.error || 'Ошибка при загрузке файла');
+                        loadSubtasks(taskId);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error uploading file:', error);
+                    alert('Ошибка при загрузке файла');
+                    loadSubtasks(taskId);
+                });
+            } else {
+                loadSubtasks(taskId);
+                alert('Подзадача успешно обновлена');
+            }
+        } else {
+            alert(data.error || 'Ошибка при сохранении');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving subtask:', error);
+        alert('Ошибка при сохранении подзадачи');
+    });
+}
+
+// Функция для отмены редактирования подзадачи
+function cancelSubtaskEdit(taskId) {
+    loadSubtasks(taskId);
+}
+
+// Функция для удаления подзадачи
+// Функция для удаления подзадачи
+function deleteSubtask(taskId, subtaskId, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    if (!confirm('Вы уверены, что хотите удалить эту подзадачу?')) {
+        return;
+    }
+    
+    fetch(`/task/${taskId}/subtask/${subtaskId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadSubtasks(taskId);
+            alert('Подзадача успешно удалена');
+        } else {
+            alert(data.error || 'Ошибка при удалении подзадачи');
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting subtask:', error);
+        alert('Ошибка при удалении подзадачи');
+    });
+}
+
+// Вспомогательная функция для экранирования HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+// Функция для рендеринга файла подзадачи
+function renderSubtaskFile(file, taskId, subtaskId) {
+    let fileUrl = '';
+    let executorDir = '';
+    let uniqueFilename = '';
+    
+    // Определяем структуру файла
+    if (file.executor_dir && file.unique_filename) {
+        fileUrl = `/uploads/${file.executor_dir}/${file.unique_filename}`;
+        executorDir = file.executor_dir;
+        uniqueFilename = file.unique_filename;
+    } else if (file.path) {
+        fileUrl = `/uploads/${file.path.startsWith('/') ? file.path.substring(1) : file.path}`;
+    } else {
+        fileUrl = '#';
+    }
+    
+    const fileSize = formatFileSize(file.size);
+    const fileName = file.filename || 'Файл';
+    
+    return `
+        <div class="subtask-file-info">
+            <i class="fas fa-paperclip"></i>
+            <a href="${fileUrl}" download class="file-link">${escapeHtml(fileName)}</a>
+            <span class="file-size">(${fileSize})</span>
+            <button class="file-remove" title="Удалить файл" onclick="removeSubtaskFile('${taskId}', '${subtaskId}')">
+                ✕
+            </button>
+        </div>
+    `;
+}
+
+// Функция для форматирования размера файла
+function formatFileSize(bytes) {
+    if (!bytes || bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+// Функция для удаления файла подзадачи (опционально)
+function removeSubtaskFile(taskId, subtaskId) {
+    if (!confirm('Вы уверены, что хотите удалить файл?')) {
+        return;
+    }
+    
+    // Здесь можно добавить запрос на сервер для удаления файла
+    // Пока просто обновим подзадачу без файла
+    const formData = new FormData();
+    // Отправляем запрос на обновление подзадачи (файл будет удален на бэкенде)
+    fetch(`/task/${taskId}/subtask/${subtaskId}`, {
+        method: 'PUT',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadSubtasks(taskId);
+        } else {
+            alert(data.error || 'Ошибка при удалении файла');
+        }
+    })
+    .catch(error => {
+        console.error('Error removing file:', error);
+        alert('Ошибка при удалении файла');
+    });
+}
+
+// Модифицируем функцию открытия модального окна, чтобы загружать подзадачи
+const originalOpenTaskModal = window.openTaskModal;
+window.openTaskModal = function(taskId) {
+    originalOpenTaskModal.call(this, taskId);
+    // После загрузки задачи загружаем подзадачи
+    setTimeout(() => {
+        loadSubtasks(taskId);
+    }, 300);
+};

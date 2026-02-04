@@ -343,9 +343,12 @@
                     </div>
                 </div>
                 
-                <div class="task-reports" id="task-reports">
-                    <h4>Отчеты по задаче</h4>
-                    <div class="reports-list"></div>
+                <!-- Подзадачи вместо отчетов -->
+                <div class="subtasks-section" id="subtasks-container">
+                    <!-- Подзадачи будут загружаться сюда через JavaScript -->
+                    <div class="subtasks-loading">
+                        <p>Загрузка подзадач...</p>
+                    </div>
                 </div>
 
                 <button class="toggle-btn" onclick="toggleHistory(event)">Показать/скрыть историю изменений</button>
@@ -362,4 +365,328 @@
         </div>
     </div>
 </div>
+
+<style>
+.subtasks-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    min-height: 100px;
+}
+
+.subtasks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.subtasks-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.subtasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.subtask-item {
+    display: grid;
+    grid-template-columns: 60px 1fr 180px 180px 1fr 120px;
+    gap: 10px;
+    padding: 15px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.subtask-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.subtask-item.completed {
+    background: #d4edda;
+    border-left: 4px solid #28a745;
+}
+
+.subtask-item.pending {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+}
+
+.subtask-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.subtask-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #007bff;
+}
+
+.status-icon {
+    font-size: 20px;
+    font-weight: bold;
+    width: 20px;
+    text-align: center;
+}
+
+.status-icon.completed {
+    color: #28a745;
+}
+
+.status-icon.pending {
+    color: #dc3545;
+}
+
+.subtask-title {
+    font-weight: 500;
+    color: #333;
+    word-break: break-word;
+}
+
+.subtask-dates {
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+    color: #666;
+}
+
+.subtask-dates span {
+    margin: 2px 0;
+    white-space: nowrap;
+}
+
+.subtask-report {
+    font-size: 13px;
+    color: #555;
+    font-style: italic;
+    max-width: 300px;
+    word-break: break-word;
+}
+
+.subtask-file {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+}
+
+.subtask-file.file-attached {
+    color: #007bff;
+}
+
+.subtask-file i {
+    color: #007bff;
+}
+
+.subtask-actions {
+    display: flex;
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+.subtask-actions button {
+    padding: 5px 10px;
+    font-size: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+}
+
+.btn-info {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #138496;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.file-link {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.file-link:hover {
+    text-decoration: underline;
+}
+
+.file-size {
+    color: #666;
+    font-size: 11px;
+}
+
+.no-subtasks {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.no-subtasks p {
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.subtask-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    grid-column: span 6;
+}
+
+.current-file {
+    color: #28a745;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.subtasks-loading {
+    text-align: center;
+    padding: 30px;
+    color: #999;
+}
+
+.add-subtask-form {
+    background: white;
+    padding: 20px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    grid-column: span 6;
+}
+
+.add-subtask-form h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 16px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+    font-size: 13px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.subtask-file-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #e7f3ff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.file-remove {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.file-remove:hover {
+    background: #c82333;
+}
+</style>
+
+<script>
+// Загружаем подзадачи при открытии модального окна
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('task-modal');
+    if (modal) {
+        modal.addEventListener('shown.bs.modal', function() {
+            const taskId = document.getElementById('edit-task-id').value;
+            if (taskId) {
+                loadSubtasks(taskId);
+            }
+        });
+    }
+});
+</script>
+
 {% endblock %}
