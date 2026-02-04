@@ -71,5 +71,21 @@
     "supervisor_id": "1",
     "manager_id": "1",
     "team": []
+  },
+  {
+    "id": "2264216d",
+    "name": "фывфыв",
+    "description": "фывфыв",
+    "direction": "Образовательные программы",
+    "expected_result": "фывфыв",
+    "start_date": "07.02.2026",
+    "end_date": "20.02.2026",
+    "last_activity": "04.02.2026",
+    "status": "в работе",
+    "supervisor_id": "a689e28d",
+    "manager_id": "1",
+    "team": [
+      "52f91648"
+    ]
   }
 ]

@@ -127,7 +127,7 @@
                 <!-- Place curator first if exists and different from manager -->
                 {% if supervisor %}
                 <li>
-                    <span class="member-name">{{ supervisor.name }}</span>
+                    <span class="member-name">{{ manager.name }}</span>
                     <span class="role-badge role-supervisor">Куратор</span>
                 </li>
                 {% endif %}
@@ -135,7 +135,7 @@
                 <!-- Place manager second if exists -->
                 {% if manager %}
                 <li>
-                    <span class="member-name">{{ manager.name }}</span>
+                    <span class="member-name">{{ supervisor.name }}</span>
                     <span class="role-badge role-manager">Руководитель</span>
                 </li>
                 {% endif %}

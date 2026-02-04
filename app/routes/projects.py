@@ -209,6 +209,9 @@ def create_project():
                 flash('Некорректный формат даты окончания')
                 return render_template('create_project.html', users=users, managers=managers, curators=curators, directions=directions)
 
+        team_members = request.form.get('team_members', '')
+        team = team_members.split(',') if team_members else []
+
         new_project = {
             "id": project_id,
             "name": request.form['name'].strip(),
@@ -221,7 +224,7 @@ def create_project():
             "status": request.form.get('status', 'в работе'),
             "supervisor_id": request.form['supervisor_id'],
             "manager_id": request.form['manager_id'],
-            "team": request.form.getlist('team_members'),
+            "team": team,
         }
 
         projects = load_data(app_config.PROJECTS_DB)
@@ -274,10 +277,12 @@ def edit_project(project_id):
         else:
             project['end_date'] = end_date
         
+        team_members = request.form.get('team_members', '')
+        project['team'] = team_members.split(',') if team_members else []
+        
         project['status'] = request.form.get('status', 'в работе')
         project['supervisor_id'] = request.form.get('supervisor_id', None)
         project['manager_id'] = request.form.get('manager_id', None)
-        project['team'] = request.form.getlist('team_members')
         project['last_activity'] = datetime.now().strftime("%d.%m.%Y")
 
         for i, p in enumerate(projects):

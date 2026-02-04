@@ -81,18 +81,127 @@
         </div>
 
         <div class="form-group">
-            <label>Участники команды</label>
-            <div class="team-members">
-                {% for user in users %}
-                {% if user.role == 'worker' %}
-                <div class="team-member">
-                    <input type="checkbox" name="team_members" value="{{ user.id }}" id="team-{{ user.id }}">
-                    <label for="team-{{ user.id }}">{{ user.name }}</label>
+            <label for="team_search">Участники команды</label>
+            <div class="team-search-container">
+                <input type="text" id="team_search" class="form-control" placeholder="Поиск по ФИО...">
+                <div id="team_search_results" class="search-results"></div>
+                <div id="selected_team_members" class="selected-members">
+                    <!-- Сюда будут добавляться выбранные участники -->
                 </div>
-                {% endif %}
-                {% endfor %}
+                <input type="hidden" id="team_members_input" name="team_members" value="">
             </div>
+            <small>Начните вводить ФИО для поиска участников</small>
         </div>
+
+        <!-- Передаем данные о пользователях через data-атрибут -->
+    <script>
+    // Данные о пользователях передаются из бэкенда
+    const allUsers = {{ users | tojson }};
+    
+    // Фильтруем только работников
+    const workers = allUsers.filter(user => user.role === 'worker');
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const teamSearch = document.getElementById('team_search');
+        const searchResults = document.getElementById('team_search_results');
+        const selectedMembers = document.getElementById('selected_team_members');
+        const teamMembersInput = document.getElementById('team_members_input');
+        
+        let selectedUserIds = {% if project and project.team %}{{ project.team|tojson }}{% else %}[]{% endif %};
+        
+        // Инициализация выбранных участников
+        updateSelectedMembersDisplay();
+        
+        // Поиск при вводе
+        teamSearch.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            
+            if (searchTerm.length < 2) {
+                searchResults.innerHTML = '';
+                searchResults.classList.remove('show');
+                return;
+            }
+            
+            const filteredUsers = workers.filter(user => 
+                user.name.toLowerCase().includes(searchTerm) && 
+                !selectedUserIds.includes(user.id)
+            );
+            
+            displaySearchResults(filteredUsers);
+        });
+        
+        // Отображение результатов поиска
+        function displaySearchResults(users) {
+            if (users.length === 0) {
+                searchResults.innerHTML = '<div class="search-result-item no-results">Ничего не найдено</div>';
+                searchResults.classList.add('show');
+                return;
+            }
+            
+            searchResults.innerHTML = users.map(user => `
+                <div class="search-result-item" data-id="${user.id}">
+                    ${user.name}
+                </div>
+            `).join('');
+            
+            searchResults.classList.add('show');
+            
+            // Добавляем обработчики кликов
+            document.querySelectorAll('.search-result-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-id');
+                    const userName = this.textContent;
+                    selectTeamMember(userId, userName);
+                });
+            });
+        }
+        
+        // Выбор участника
+        function selectTeamMember(userId, userName) {
+            if (!selectedUserIds.includes(userId)) {
+                selectedUserIds.push(userId);
+                updateSelectedMembersDisplay();
+                teamSearch.value = '';
+                searchResults.innerHTML = '';
+                searchResults.classList.remove('show');
+            }
+        }
+        
+        // Удаление участника
+        function removeTeamMember(userId) {
+            selectedUserIds = selectedUserIds.filter(id => id !== userId);
+            updateSelectedMembersDisplay();
+        }
+        
+        // Обновление отображения выбранных участников
+        function updateSelectedMembersDisplay() {
+            if (selectedUserIds.length === 0) {
+                selectedMembers.innerHTML = '<div class="no-members">Пока нет выбранных участников</div>';
+            } else {
+                selectedMembers.innerHTML = selectedUserIds.map(id => {
+                    const user = workers.find(u => u.id === id);
+                    return user ? `
+                        <div class="selected-member" data-id="${user.id}">
+                            <span class="member-name">${user.name}</span>
+                            <button type="button" class="remove-member-btn">×</button>
+                        </div>
+                    ` : '';
+                }).join('');
+                
+                // Добавляем обработчики для кнопок удаления
+                document.querySelectorAll('.selected-member .remove-member-btn').forEach((btn, index) => {
+                    btn.addEventListener('click', function() {
+                        const memberId = selectedUserIds[index];
+                        removeTeamMember(memberId);
+                    });
+                });
+            }
+            
+            // Обновление скрытого поля
+            teamMembersInput.value = selectedUserIds.join(',');
+        }
+    });
+    </script>
 
         <div class="form-actions">
             <button type="submit">Создать проект</button>
