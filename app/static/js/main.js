@@ -1160,7 +1160,7 @@ function editSubtask(taskId, subtaskId, event) {
                         <button class="btn btn-success" onclick="event.stopPropagation(); saveSubtaskEdit('${taskId}', '${subtaskId}')">
                             Сохранить
                         </button>
-                        <button class="btn btn-secondary" onclick="event.stopPropagation(); cancelSubtaskEdit('${taskId}')">
+                        <button class="btn btn-secondary" onclick="event.stopPropagation(); cancelSubtaskEdit('${taskId}', '${subtaskId}')">
                             Отмена
                         </button>
                     </div>
@@ -1250,7 +1250,7 @@ function saveSubtaskEdit(taskId, subtaskId) {
 }
 
 // Функция для отмены редактирования подзадачи
-function cancelSubtaskEdit(taskId) {
+function cancelSubtaskEdit(taskId, subtaskId) {
     loadSubtasks(taskId);
 }
 
