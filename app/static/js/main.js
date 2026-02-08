@@ -931,7 +931,7 @@ function loadSubtasks(taskId) {
 function renderSubtasks(subtasks, taskId) {
     const subtasksContainer = document.getElementById('subtasks-container');
     if (!subtasksContainer) return;
-    
+
     if (!subtasks || subtasks.length === 0) {
         subtasksContainer.innerHTML = `
             <div class="no-subtasks">
@@ -941,7 +941,7 @@ function renderSubtasks(subtasks, taskId) {
         `;
         return;
     }
-    
+
     let html = `
         <div class="subtasks-header">
             <h3>Подзадачи</h3>
@@ -949,44 +949,50 @@ function renderSubtasks(subtasks, taskId) {
         </div>
         <div class="subtasks-list">
     `;
-    
+
     subtasks.forEach(subtask => {
         const statusIcon = subtask.completed ? '✓' : '✗';
         const statusClass = subtask.completed ? 'completed' : 'pending';
         const plannedDate = subtask.planned_date || '-';
         const completedDate = subtask.completed_date || '-';
         const hasFile = subtask.file ? 'file-attached' : '';
-        
+
         html += `
-            <div class="subtask-item ${statusClass}" data-subtask-id="${subtask.id}">
-                <div class="subtask-checkbox">
-                    <input type="checkbox" ${subtask.completed ? 'checked' : ''} 
-                           onchange="toggleSubtaskStatus('${taskId}', '${subtask.id}', this.checked, event)">
-                    <span class="status-icon ${statusClass}">${statusIcon}</span>
-                </div>
-                <div class="subtask-title">${escapeHtml(subtask.title)}</div>
-                <div class="subtask-dates">
-                    <span class="planned-date">Запланировано: ${plannedDate}</span>
-                    <span class="completed-date">Сделано: ${completedDate}</span>
-                </div>
-                <div class="subtask-report">
-                    ${subtask.report ? `<span class="report-text">${escapeHtml(subtask.report)}</span>` : ''}
-                </div>
-                <div class="subtask-file ${hasFile}">
-                    ${subtask.file ? renderSubtaskFile(subtask.file, taskId, subtask.id) : ''}
-                </div>
-                <div class="subtask-actions">
-                    <button class="btn btn-sm btn-info" onclick="event.stopPropagation(); editSubtask('${taskId}', '${subtask.id}')">
-                        <i class="fas fa-edit"></i> Редактировать
+            <div class="subtask-row" style="display: flex; align-items: center; gap: 10px; padding: 8px 0; background-color: #fff9d9; border-left: 3px solid #ffc107;">
+                <!-- Кнопки слева -->
+                <div class="subtask-actions" style="display: flex; gap: 6px; flex-shrink: 0;">
+                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); editSubtask('${taskId}', '${subtask.id}')">
+                        Редактировать
                     </button>
                     <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteSubtask('${taskId}', '${subtask.id}')">
-                        <i class="fas fa-trash"></i> Удалить
+                        Удалить
                     </button>
                 </div>
+
+                <!-- Чекбокс -->
+                <input type="checkbox" ${subtask.completed ? 'checked' : ''}
+                       onchange="toggleSubtaskStatus('${taskId}', '${subtask.id}', this.checked, event)"
+                       style="margin: 0; flex-shrink: 0;">
+
+                <!-- Название -->
+                <strong style="font-weight: bold;">${escapeHtml(subtask.title)}</strong>
+
+                <!-- Статус "Сд" (если выполнена) -->
+                ${subtask.completed ? '<span style="color: #666; font-size: 0.9em;">Сд</span>' : ''}
+
+                <!-- Даты -->
+                <span style="color: #666; font-size: 0.9em;">Запланировано: ${plannedDate}</span>
+                <span style="color: #666; font-size: 0.9em;">Сделано: ${completedDate}</span>
+
+                <!-- Отчёт (если есть) -->
+                ${subtask.report ? `<span style="color: #555; font-style: italic;">"${escapeHtml(subtask.report)}"</span>` : ''}
+
+                <!-- Файл (если есть) -->
+                ${subtask.file ? renderSubtaskFile(subtask.file, taskId, subtask.id) : ''}
             </div>
         `;
     });
-    
+
     html += `</div>`;
     subtasksContainer.innerHTML = html;
 }
