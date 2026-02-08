@@ -407,9 +407,13 @@ function openTaskModal(taskId) {
             
             if (startDate) {
                 document.getElementById('edit-task-start').value = formatDateForInput(startDate);
+            } else {
+                document.getElementById('edit-task-start').value = '';
             }
             if (deadline) {
                 document.getElementById('edit-task-deadline').value = formatDateForInput(deadline);
+            } else {
+                document.getElementById('edit-task-deadline').value = '';
             }
             
             const assigneeSelect = document.getElementById('edit-task-assignee');
