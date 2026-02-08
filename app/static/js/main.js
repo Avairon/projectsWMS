@@ -959,16 +959,6 @@ function renderSubtasks(subtasks, taskId) {
 
         html += `
             <div class="subtask-row" style="display: flex; align-items: center; gap: 10px; padding: 8px 0; background-color: #fff9d9; border-left: 3px solid #ffc107;">
-                <!-- Кнопки слева -->
-                <div class="subtask-actions" style="display: flex; gap: 6px; flex-shrink: 0;">
-                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); editSubtask('${taskId}', '${subtask.id}')">
-                        Редактировать
-                    </button>
-                    <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteSubtask('${taskId}', '${subtask.id}')">
-                        Удалить
-                    </button>
-                </div>
-
                 <!-- Чекбокс -->
                 <input type="checkbox" ${subtask.completed ? 'checked' : ''}
                        onchange="toggleSubtaskStatus('${taskId}', '${subtask.id}', this.checked, event)"
@@ -989,6 +979,15 @@ function renderSubtasks(subtasks, taskId) {
 
                 <!-- Файл (если есть) -->
                 ${subtask.file ? renderSubtaskFile(subtask.file, taskId, subtask.id) : ''}
+
+                <div class="subtask-actions" style="display: flex; gap: 6px; flex-shrink: 0;">
+                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); editSubtask('${taskId}', '${subtask.id}')">
+                        Редактировать
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteSubtask('${taskId}', '${subtask.id}')">
+                        Удалить
+                    </button>
+                </div>
             </div>
         `;
     });
