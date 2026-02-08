@@ -356,6 +356,14 @@ function initTaskModal() {
         }
     });
     
+    // Prevent closing when clicking inside modal content
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+    
     const editButtons = document.querySelectorAll('.edit-task-btn');
     editButtons.forEach(btn => {
         btn.addEventListener('click', function(e) {
