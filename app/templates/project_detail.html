@@ -294,7 +294,7 @@
 </div>
 
 <div id="task-modal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content large-modal">
         <div class="modal-header">
             <h3>Редактирование задачи</h3>
             <button class="modal-close">&times;</button>
@@ -367,6 +367,11 @@
 </div>
 
 <style>
+.modal-content.large-modal {
+    width: 75%; /* Увеличиваем ширину модального окна в 1.5 раза */
+    max-width: 1200px; /* Устанавливаем максимальную ширину */
+}
+
 .subtasks-section {
     margin-top: 20px;
     padding: 20px;

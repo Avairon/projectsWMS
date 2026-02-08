@@ -1144,7 +1144,8 @@ function editSubtask(taskId, subtaskId, event) {
                 return;
             }
             
-            const subtaskElement = document.querySelector(`.subtask-item[data-subtask-id="${subtaskId}"]`);
+            const subtaskElement = document.querySelector(`.subtask-row[data-subtask-id="${subtaskId}"]`) || 
+                                  document.querySelector(`[data-subtask-id="${subtaskId}"]`);
             if (!subtaskElement) return;
             
             const editForm = `
