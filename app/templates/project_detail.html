@@ -872,9 +872,14 @@ function showEditSubtaskForm(subtaskId) {
     // Находим элемент подзадачи
     const subtaskElement = document.querySelector(`[data-subtask-id="${subtaskId}"]`);
     const titleElement = subtaskElement.querySelector('.subtask-title');
-    const titleText = titleElement.textContent;
+    const plannedDateElement = subtaskElement.querySelector('.planned-date');
+    const reportElement = subtaskElement.querySelector('.report-text');
     
-    // Создаем форму редактирования
+    const titleText = titleElement.textContent;
+    const plannedDateText = plannedDateElement ? plannedDateElement.textContent.replace('Запланировано: ', '') : '';
+    const reportText = reportElement ? reportElement.textContent : '';
+    
+    // Создаем форму редактирования с возможностью добавления отчета
     const editForm = document.createElement('div');
     editForm.className = 'subtask-edit-form';
     editForm.innerHTML = `
@@ -884,10 +889,18 @@ function showEditSubtaskForm(subtaskId) {
         </div>
         <div class="form-group">
             <label for="edit-subtask-date-${subtaskId}">Планируемая дата выполнения (ДД.ММ.ГГГГ)</label>
-            <input type="text" id="edit-subtask-date-${subtaskId}" class="form-control" placeholder="ДД.ММ.ГГГГ">
+            <input type="text" id="edit-subtask-date-${subtaskId}" class="form-control" value="${plannedDateText}" placeholder="ДД.ММ.ГГГГ">
+        </div>
+        <div class="form-group">
+            <label for="edit-subtask-report-${subtaskId}">Отчет по подзадаче</label>
+            <textarea id="edit-subtask-report-${subtaskId}" class="form-control" rows="3" placeholder="Введите отчет по подзадаче">${reportText}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="edit-subtask-file-${subtaskId}">Файл отчета (необязательно)</label>
+            <input type="file" id="edit-subtask-file-${subtaskId}" class="form-control">
         </div>
         <div class="form-actions">
-            <button type="button" class="btn btn-success" onclick="updateSubtask('${subtaskId}')">Сохранить</button>
+            <button type="button" class="btn btn-success" onclick="updateSubtaskWithReport('${subtaskId}')">Сохранить</button>
             <button type="button" class="btn btn-secondary" onclick="cancelEditSubtask('${subtaskId}')">Отмена</button>
         </div>
     `;
@@ -896,35 +909,69 @@ function showEditSubtaskForm(subtaskId) {
     subtaskElement.innerHTML = `<div class="subtask-edit-form">${editForm.innerHTML}</div>`;
 }
 
-// Функция обновления подзадачи
-async function updateSubtask(subtaskId) {
+// Функция обновления подзадачи с отчетом
+async function updateSubtaskWithReport(subtaskId) {
     const title = document.getElementById(`edit-subtask-title-${subtaskId}`).value.trim();
     const plannedDate = document.getElementById(`edit-subtask-date-${subtaskId}`).value.trim();
+    const report = document.getElementById(`edit-subtask-report-${subtaskId}`).value.trim();
+    const fileInput = document.getElementById(`edit-subtask-file-${subtaskId}`);
+    const file = fileInput.files[0];
     
     if (!title) {
         alert('Введите название подзадачи');
         return;
     }
     
-    try {
-        const response = await fetch(`/task/${currentTaskId}/subtask/${subtaskId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `title=${encodeURIComponent(title)}&planned_date=${encodeURIComponent(plannedDate)}`
-        });
+    // Если есть файл или отчет, используем formData для отправки
+    if (file || report) {
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('planned_date', plannedDate);
+        formData.append('report', report);
         
-        const result = await response.json();
-        
-        if (result.success) {
-            loadSubtasks(currentTaskId); // Перезагружаем список подзадач
-        } else {
-            alert('Ошибка обновления подзадачи: ' + (result.error || 'Неизвестная ошибка'));
+        if (file) {
+            formData.append('file', file);
         }
-    } catch (error) {
-        console.error('Ошибка обновления подзадачи:', error);
-        alert('Ошибка обновления подзадачи: ' + error.message);
+        
+        try {
+            const response = await fetch(`/task/${currentTaskId}/subtask/${subtaskId}/upload_file`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                loadSubtasks(currentTaskId); // Перезагружаем список подзадач
+            } else {
+                alert('Ошибка обновления подзадачи: ' + (result.error || 'Неизвестная ошибка'));
+            }
+        } catch (error) {
+            console.error('Ошибка обновления подзадачи:', error);
+            alert('Ошибка обновления подзадачи: ' + error.message);
+        }
+    } else {
+        // Если нет файла и отчета, используем обычный запрос
+        try {
+            const response = await fetch(`/task/${currentTaskId}/subtask/${subtaskId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `title=${encodeURIComponent(title)}&planned_date=${encodeURIComponent(plannedDate)}`
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                loadSubtasks(currentTaskId); // Перезагружаем список подзадач
+            } else {
+                alert('Ошибка обновления подзадачи: ' + (result.error || 'Неизвестная ошибка'));
+            }
+        } catch (error) {
+            console.error('Ошибка обновления подзадачи:', error);
+            alert('Ошибка обновления подзадачи: ' + error.message);
+        }
     }
 }
 
