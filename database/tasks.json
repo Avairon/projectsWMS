@@ -62,23 +62,23 @@
       {
         "id": "f15eef34",
         "title": "Сделать Абубе",
-        "completed": false,
+        "completed": true,
         "planned_date": "02.04.2026",
-        "completed_date": "",
+        "completed_date": "09.02.2026",
         "report": "",
         "file": null,
         "created_at": "04.02.2026 19:32:29",
         "created_by": "1"
       },
       {
-        "id": "9cf548a4",
-        "title": "фывфыв",
+        "id": "094d868e",
+        "title": "сделать второе абубе",
         "completed": false,
-        "planned_date": "02.04.2026",
+        "planned_date": "02.09.2026",
         "completed_date": "",
         "report": "",
         "file": null,
-        "created_at": "09.02.2026 05:44:58",
+        "created_at": "09.02.2026 08:37:27",
         "created_by": "1"
       }
     ]

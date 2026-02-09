@@ -985,10 +985,10 @@ function renderSubtasks(subtasks, taskId) {
                 ${subtask.file ? renderSubtaskFile(subtask.file, taskId, subtask.id) : ''}
 
                 <div class="subtask-actions" style="display: flex; gap: 6px; flex-shrink: 0;">
-                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); editSubtask('${taskId}', '${subtask.id}')">
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); editSubtask('${taskId}', '${subtask.id}')">
                         Редактировать
                     </button>
-                    <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteSubtask('${taskId}', '${subtask.id}')">
+                    <button type="button" class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteSubtask('${taskId}', '${subtask.id}')">
                         Удалить
                     </button>
                 </div>
@@ -1174,10 +1174,10 @@ function editSubtask(taskId, subtaskId, event) {
                         ${subtask.file ? `<div class="current-file">Текущий файл: ${escapeHtml(subtask.file.filename)}</div>` : ''}
                     </div>
                     <div class="form-actions">
-                        <button class="btn btn-success" onclick="event.stopPropagation(); saveSubtaskEdit('${taskId}', '${subtaskId}')">
+                        <button type="button" class="btn btn-success" onclick="event.stopPropagation(); saveSubtaskEdit('${taskId}', '${subtaskId}')">
                             Сохранить
                         </button>
-                        <button class="btn btn-secondary" onclick="event.stopPropagation(); cancelSubtaskEdit('${taskId}', '${subtaskId}')">
+                        <button type="button" class="btn btn-secondary" onclick="event.stopPropagation(); cancelSubtaskEdit('${taskId}', '${subtaskId}')">
                             Отмена
                         </button>
                     </div>
