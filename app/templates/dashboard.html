@@ -425,7 +425,7 @@
                 <p><strong>Проект:</strong> {{ project.name if project else 'Неизвестно' }}</p>
                 <p><strong>Статус:</strong> <span class="status-badge {% if task.status == 'активна' %}status-active{% elif task.status == 'завершена' %}status-completed{% else %}status-paused{% endif %}">{{ task.status }}</span></p>
                 <p><strong>Дедлайн:</strong> {{ task.deadline }}</p>
-                <a href="{{ url_for('tasks.task_detail', task_id=task.id) }}" class="btn">Подробнее</a>
+                <a href="{{ url_for('projects.project_detail', project_id=task.project_id) }}" class="btn">Подробнее</a>
             </div>
             {% endfor %}
         </div>

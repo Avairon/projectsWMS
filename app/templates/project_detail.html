@@ -344,10 +344,36 @@
                 </div>
                 
                 <!-- Подзадачи вместо отчетов -->
+                <!-- Подзадачи -->
                 <div class="subtasks-section" id="subtasks-container">
-                    <!-- Подзадачи будут загружаться сюда через JavaScript -->
-                    <div class="subtasks-loading">
-                        <p>Загрузка подзадач...</p>
+                    <div class="subtasks-header">
+                        <h3>Подзадачи</h3>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="showAddSubtaskForm()">+ Добавить подзадачу</button>
+                    </div>
+                    
+                    <!-- Форма добавления подзадачи -->
+                    <div class="add-subtask-form" id="add-subtask-form" style="display: none;">
+                        <h4>Новая подзадача</h4>
+                        <div class="form-group">
+                            <label for="new-subtask-title">Название подзадачи</label>
+                            <input type="text" id="new-subtask-title" class="form-control" placeholder="Введите название подзадачи">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-subtask-date">Планируемая дата выполнения (ДД.ММ.ГГГГ)</label>
+                            <input type="text" id="new-subtask-date" class="form-control" placeholder="ДД.ММ.ГГГГ">
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-success" onclick="createSubtask()">Создать</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideAddSubtaskForm()">Отмена</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Контейнер для списка подзадач -->
+                    <div class="subtasks-list" id="subtasks-list">
+                        <!-- Подзадачи будут загружаться сюда через JavaScript -->
+                        <div class="subtasks-loading">
+                            <p>Загрузка подзадач...</p>
+                        </div>
                     </div>
                 </div>
 
@@ -684,17 +710,357 @@
 
 <script>
 // Загружаем подзадачи при открытии модального окна
+let currentTaskId = null;
+
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('task-modal');
     if (modal) {
         modal.addEventListener('shown.bs.modal', function() {
             const taskId = document.getElementById('edit-task-id').value;
             if (taskId) {
+                currentTaskId = taskId;
                 loadSubtasks(taskId);
             }
         });
     }
 });
+
+// Функция загрузки подзадач
+async function loadSubtasks(taskId) {
+    try {
+        const response = await fetch(`/task/${taskId}/subtasks`);
+        const subtasks = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(subtasks.error || 'Ошибка загрузки подзадач');
+        }
+        
+        renderSubtasks(subtasks);
+    } catch (error) {
+        console.error('Ошибка загрузки подзадач:', error);
+        document.getElementById('subtasks-list').innerHTML = `<div class="no-subtasks"><p>Ошибка загрузки подзадач: ${error.message}</p></div>`;
+    }
+}
+
+// Функция отображения подзадач
+function renderSubtasks(subtasks) {
+    const container = document.getElementById('subtasks-list');
+    
+    if (subtasks.length === 0) {
+        container.innerHTML = '<div class="no-subtasks"><p>Нет подзадач</p><p>Добавьте первую подзадачу</p></div>';
+        return;
+    }
+    
+    const subtasksHtml = subtasks.map(subtask => `
+        <div class="subtask-item ${subtask.completed ? 'completed' : 'pending'}" data-subtask-id="${subtask.id}">
+            <div class="subtask-checkbox">
+                <input type="checkbox" ${subtask.completed ? 'checked' : ''} onchange="toggleSubtaskStatus('${subtask.id}', this.checked)">
+                <span class="status-icon ${subtask.completed ? 'completed' : 'pending'}">
+                    ${subtask.completed ? '✓' : '✗'}
+                </span>
+            </div>
+            <div class="subtask-title">${subtask.title}</div>
+            <div class="subtask-dates">
+                <span class="planned-date">Запланировано: ${subtask.planned_date || '-'}</span>
+                <span class="completed-date">Сделано: ${subtask.completed_date || '-'}</span>
+            </div>
+            <div class="subtask-report">
+                ${subtask.report ? `<span class="report-text">${subtask.report}</span>` : ''}
+            </div>
+            <div class="subtask-file ${subtask.file ? 'file-attached' : ''}">
+                ${subtask.file ? `
+                    <i class="fas fa-paperclip"></i>
+                    <a href="/uploads/${subtask.file.executor_dir}/${subtask.file.unique_filename}" download class="file-link">
+                        ${subtask.file.filename}
+                    </a>
+                    <span class="file-size">(${formatFileSize(subtask.file.size)})</span>
+                ` : ''}
+            </div>
+            <div class="subtask-actions">
+                <button type="button" class="btn btn-info btn-sm" onclick="showEditSubtaskForm('${subtask.id}')">Редакт.</button>
+                <button type="button" class="btn btn-success btn-sm" onclick="showReportModal('${subtask.id}')">Отчет</button>
+                ${current_user.role in ['admin', 'manager', 'supervisor'] ? 
+                    `<button type="button" class="btn btn-danger btn-sm" onclick="deleteSubtask('${subtask.id}')">Удалить</button>` : ''}
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = subtasksHtml;
+}
+
+// Функция показа формы добавления подзадачи
+function showAddSubtaskForm() {
+    document.getElementById('add-subtask-form').style.display = 'block';
+}
+
+// Функция скрытия формы добавления подзадачи
+function hideAddSubtaskForm() {
+    document.getElementById('add-subtask-form').style.display = 'none';
+    document.getElementById('new-subtask-title').value = '';
+    document.getElementById('new-subtask-date').value = '';
+}
+
+// Функция создания подзадачи
+async function createSubtask() {
+    const title = document.getElementById('new-subtask-title').value.trim();
+    const plannedDate = document.getElementById('new-subtask-date').value.trim();
+    
+    if (!title) {
+        alert('Введите название подзадачи');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/task/${currentTaskId}/subtask`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `title=${encodeURIComponent(title)}&planned_date=${encodeURIComponent(plannedDate)}`
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            hideAddSubtaskForm();
+            loadSubtasks(currentTaskId); // Перезагружаем список подзадач
+        } else {
+            alert('Ошибка создания подзадачи: ' + (result.error || 'Неизвестная ошибка'));
+        }
+    } catch (error) {
+        console.error('Ошибка создания подзадачи:', error);
+        alert('Ошибка создания подзадачи: ' + error.message);
+    }
+}
+
+// Функция переключения статуса подзадачи
+async function toggleSubtaskStatus(subtaskId, completed) {
+    try {
+        const response = await fetch(`/task/${currentTaskId}/subtask/${subtaskId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `completed=${completed}`
+        });
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+            alert('Ошибка обновления статуса подзадачи: ' + (result.error || 'Неизвестная ошибка'));
+            // Восстановим предыдущий статус в интерфейсе
+            const checkbox = event.target;
+            checkbox.checked = !completed;
+            const icon = checkbox.nextElementSibling;
+            icon.className = `status-icon ${!completed ? 'completed' : 'pending'}`;
+            icon.textContent = !completed ? '✓' : '✗';
+        }
+    } catch (error) {
+        console.error('Ошибка обновления статуса подзадачи:', error);
+        alert('Ошибка обновления статуса подзадачи: ' + error.message);
+        // Восстановим предыдущий статус в интерфейсе
+        const checkbox = event.target;
+        checkbox.checked = !completed;
+        const icon = checkbox.nextElementSibling;
+        icon.className = `status-icon ${!completed ? 'completed' : 'pending'}`;
+        icon.textContent = !completed ? '✓' : '✗';
+    }
+}
+
+// Функция показа формы редактирования подзадачи
+function showEditSubtaskForm(subtaskId) {
+    // Находим элемент подзадачи
+    const subtaskElement = document.querySelector(`[data-subtask-id="${subtaskId}"]`);
+    const titleElement = subtaskElement.querySelector('.subtask-title');
+    const titleText = titleElement.textContent;
+    
+    // Создаем форму редактирования
+    const editForm = document.createElement('div');
+    editForm.className = 'subtask-edit-form';
+    editForm.innerHTML = `
+        <div class="form-group">
+            <label for="edit-subtask-title-${subtaskId}">Название подзадачи</label>
+            <input type="text" id="edit-subtask-title-${subtaskId}" class="form-control" value="${titleText}" placeholder="Введите название подзадачи">
+        </div>
+        <div class="form-group">
+            <label for="edit-subtask-date-${subtaskId}">Планируемая дата выполнения (ДД.ММ.ГГГГ)</label>
+            <input type="text" id="edit-subtask-date-${subtaskId}" class="form-control" placeholder="ДД.ММ.ГГГГ">
+        </div>
+        <div class="form-actions">
+            <button type="button" class="btn btn-success" onclick="updateSubtask('${subtaskId}')">Сохранить</button>
+            <button type="button" class="btn btn-secondary" onclick="cancelEditSubtask('${subtaskId}')">Отмена</button>
+        </div>
+    `;
+    
+    // Заменяем содержимое элемента подзадачи на форму редактирования
+    subtaskElement.innerHTML = `<div class="subtask-edit-form">${editForm.innerHTML}</div>`;
+}
+
+// Функция обновления подзадачи
+async function updateSubtask(subtaskId) {
+    const title = document.getElementById(`edit-subtask-title-${subtaskId}`).value.trim();
+    const plannedDate = document.getElementById(`edit-subtask-date-${subtaskId}`).value.trim();
+    
+    if (!title) {
+        alert('Введите название подзадачи');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/task/${currentTaskId}/subtask/${subtaskId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `title=${encodeURIComponent(title)}&planned_date=${encodeURIComponent(plannedDate)}`
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            loadSubtasks(currentTaskId); // Перезагружаем список подзадач
+        } else {
+            alert('Ошибка обновления подзадачи: ' + (result.error || 'Неизвестная ошибка'));
+        }
+    } catch (error) {
+        console.error('Ошибка обновления подзадачи:', error);
+        alert('Ошибка обновления подзадачи: ' + error.message);
+    }
+}
+
+// Функция отмены редактирования подзадачи
+function cancelEditSubtask(subtaskId) {
+    loadSubtasks(currentTaskId); // Просто перезагружаем список подзадач
+}
+
+// Функция удаления подзадачи
+async function deleteSubtask(subtaskId) {
+    if (!confirm('Вы уверены, что хотите удалить эту подзадачу?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/task/${currentTaskId}/subtask/${subtaskId}`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            loadSubtasks(currentTaskId); // Перезагружаем список подзадач
+        } else {
+            alert('Ошибка удаления подзадачи: ' + (result.error || 'Неизвестная ошибка'));
+        }
+    } catch (error) {
+        console.error('Ошибка удаления подзадачи:', error);
+        alert('Ошибка удаления подзадачи: ' + error.message);
+    }
+}
+
+// Функция показа модального окна отчета
+function showReportModal(subtaskId) {
+    // Создаем модальное окно для добавления отчета
+    const modalOverlay = document.createElement('div');
+    modalOverlay.style.position = 'fixed';
+    modalOverlay.style.top = '0';
+    modalOverlay.style.left = '0';
+    modalOverlay.style.width = '100%';
+    modalOverlay.style.height = '100%';
+    modalOverlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    modalOverlay.style.zIndex = '9999';
+    modalOverlay.style.display = 'flex';
+    modalOverlay.style.justifyContent = 'center';
+    modalOverlay.style.alignItems = 'center';
+
+    const modalContent = document.createElement('div');
+    modalContent.style.backgroundColor = 'white';
+    modalContent.style.padding = '20px';
+    modalContent.style.borderRadius = '8px';
+    modalContent.style.width = '500px';
+    modalContent.style.maxWidth = '90%';
+    modalContent.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+
+    modalContent.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3>Отчет по подзадаче</h3>
+            <button id="close-report-modal" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <div class="form-group">
+            <label for="report-comment">Комментарий:</label>
+            <textarea id="report-comment" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;" placeholder="Добавьте комментарий к отчету..."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="report-file">Файл (необязательно):</label>
+            <input type="file" id="report-file" style="width: 100%;">
+        </div>
+        <div class="form-actions" style="margin-top: 15px;">
+            <button type="button" class="btn btn-success" onclick="submitSubtaskReport('${subtaskId}')">Отправить отчет</button>
+            <button type="button" class="btn btn-secondary" onclick="closeReportModal()">Отмена</button>
+        </div>
+    `;
+
+    modalOverlay.appendChild(modalContent);
+    document.body.appendChild(modalOverlay);
+
+    // Обработчик закрытия модального окна
+    document.getElementById('close-report-modal').onclick = closeReportModal;
+    modalOverlay.onclick = function(event) {
+        if (event.target === modalOverlay) {
+            closeReportModal();
+        }
+    };
+}
+
+// Функция отправки отчета по подзадаче
+async function submitSubtaskReport(subtaskId) {
+    const comment = document.getElementById('report-comment').value.trim();
+    const fileInput = document.getElementById('report-file');
+    const file = fileInput.files[0];
+    
+    const formData = new FormData();
+    formData.append('report', comment);
+    
+    if (file) {
+        formData.append('file', file);
+    }
+
+    try {
+        const response = await fetch(`/task/${currentTaskId}/subtask/${subtaskId}/upload_file`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            closeReportModal();
+            loadSubtasks(currentTaskId); // Перезагружаем список подзадач
+            alert('Отчет успешно отправлен');
+        } else {
+            alert('Ошибка отправки отчета: ' + (result.error || 'Неизвестная ошибка'));
+        }
+    } catch (error) {
+        console.error('Ошибка отправки отчета:', error);
+        alert('Ошибка отправки отчета: ' + error.message);
+    }
+}
+
+// Функция закрытия модального окна отчета
+function closeReportModal() {
+    const modalOverlay = document.querySelector('[style*="position: fixed"]');
+    if (modalOverlay) {
+        modalOverlay.remove();
+    }
+}
+
+// Функция форматирования размера файла
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
 </script>
 
 {% endblock %}
