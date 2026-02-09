@@ -344,10 +344,35 @@
                 </div>
                 
                 <!-- Подзадачи вместо отчетов -->
+                <!-- Подзадачи -->
                 <div class="subtasks-section" id="subtasks-container">
                     <!-- Подзадачи будут загружаться сюда через JavaScript -->
                     <div class="subtasks-loading">
                         <p>Загрузка подзадач...</p>
+                    </div>
+                </div>
+                
+                <!-- Отчеты задачи -->
+                <div class="task-reporting-section" id="task-reporting-section">
+                    <h4>Отчет по задаче</h4>
+                    <form id="reportForm" method="POST" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="comment">Комментарий:</label>
+                            <textarea id="comment" name="comment" rows="4" placeholder="Добавьте комментарий к отчету..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="report_file">Файл (необязательно):</label>
+                            <input type="file" id="report_file" name="report_file" accept=".txt,.pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.xls,.xlsx">
+                        </div>
+                        <button type="submit" class="btn">Отправить отчет</button>
+                    </form>
+                    
+                    <!-- Отчеты задачи -->
+                    <div class="task-reports-section" id="task-reports-section">
+                        <h4>Отчеты по задаче</h4>
+                        <div class="reports-list" id="reports-list">
+                            <!-- Отчеты будут загружаться сюда через JavaScript -->
+                        </div>
                     </div>
                 </div>
 
