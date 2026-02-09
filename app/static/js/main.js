@@ -1148,7 +1148,7 @@ function editSubtask(taskId, subtaskId, event) {
                 return;
             }
             
-            const subtaskElement = document.querySelector(`.subtask-item[data-subtask-id="${subtaskId}"]`);
+            const subtaskElement = document.querySelector(`.subtask-row[data-subtask-id="${subtaskId}"]`);
             if (!subtaskElement) return;
             
             const editForm = `
@@ -1184,7 +1184,18 @@ function editSubtask(taskId, subtaskId, event) {
                 </div>
             `;
             
-            subtaskElement.innerHTML = editForm;
+            // Update the entire subtask-row content
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = editForm;
+            
+            // Copy all attributes from the original element to preserve data
+            for (let attr of subtaskElement.attributes) {
+                if (attr.name !== 'class' && attr.name !== 'style') {
+                    tempDiv.firstElementChild.setAttribute(attr.name, attr.value);
+                }
+            }
+            
+            subtaskElement.innerHTML = tempDiv.firstElementChild.innerHTML;
             // Инициализируем календарь
             setTimeout(() => initDatePickers(), 100);
         })
