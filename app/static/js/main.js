@@ -1384,3 +1384,4 @@ window.openTaskModal = function(taskId) {
         loadSubtasks(taskId);
     }, 300);
 };
+
