@@ -1072,6 +1072,20 @@ small {
     padding: 20px;
 }
 
+/* Ensure date picker appears above other elements */
+.date-picker-popup {
+    position: absolute;
+    z-index: 10000 !important; /* Higher than modal overlay */
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    display: none;
+}
+
 .modal.active {
     display: flex;
 }
