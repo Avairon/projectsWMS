@@ -1152,50 +1152,31 @@ function editSubtask(taskId, subtaskId, event) {
             if (!subtaskElement) return;
             
             const editForm = `
-                <div class="subtask-edit-form">
-                    <div class="form-group">
-                        <label>Название:</label>
-                        <input type="text" class="form-control subtask-edit-title" 
-                               value="${escapeHtml(subtask.title)}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Дата запланировано:</label>
-                        <input type="text" class="form-control subtask-edit-planned-date date-input" 
-                               value="${subtask.planned_date || ''}" placeholder="ДД.ММ.ГГГГ">
-                    </div>
-                    <div class="form-group">
-                        <label>Отчет:</label>
-                        <textarea class="form-control subtask-edit-report" rows="3">${escapeHtml(subtask.report || '')}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Файл:</label>
-                        <input type="file" class="form-control subtask-edit-file" 
-                               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls,.txt,.zip,.rar">
-                        ${subtask.file ? `<div class="current-file">Текущий файл: ${escapeHtml(subtask.file.filename)}</div>` : ''}
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-success" onclick="event.stopPropagation(); saveSubtaskEdit('${taskId}', '${subtaskId}')">
-                            Сохранить
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="event.stopPropagation(); cancelSubtaskEdit('${taskId}', '${subtaskId}')">
-                            Отмена
-                        </button>
+                <div class="subtask-row" data-subtask-id="${subtask.id}">
+                    <div class="subtask-edit-form" style="display: flex; align-items: center; gap: 10px; padding: 8px 0; background-color: #fff9d9; border-left: 3px solid #ffc107;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1;">
+                            <input type="text" class="form-control subtask-edit-title" 
+                                   value="${escapeHtml(subtask.title)}" required style="flex-grow: 1; margin: 0;">
+                            <input type="text" class="form-control subtask-edit-planned-date date-input" 
+                                   value="${subtask.planned_date || ''}" placeholder="ДД.ММ.ГГГГ" style="width: 120px; margin: 0;">
+                            <textarea class="form-control subtask-edit-report" rows="2" style="flex-grow: 1; margin: 0;">${escapeHtml(subtask.report || '')}</textarea>
+                        </div>
+                        <div class="subtask-actions" style="display: flex; gap: 6px; flex-shrink: 0;">
+                            <input type="file" class="form-control subtask-edit-file" 
+                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls,.txt,.zip,.rar" style="margin: 0;">
+                            ${subtask.file ? `<div class="current-file" style="font-size: 0.8em; margin: 0 10px;">Текущий файл: ${escapeHtml(subtask.file.filename)}</div>` : ''}
+                            <button type="button" class="btn btn-sm btn-success" onclick="event.stopPropagation(); saveSubtaskEdit('${taskId}', '${subtaskId}')">
+                                ✓
+                            </button>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); cancelSubtaskEdit('${taskId}', '${subtaskId}')">
+                                ✕
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
             
-            // Update the entire subtask-row content
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = editForm;
-            
-            // Copy all attributes from the original element to preserve data
-            for (let attr of subtaskElement.attributes) {
-                if (attr.name !== 'class' && attr.name !== 'style') {
-                    tempDiv.firstElementChild.setAttribute(attr.name, attr.value);
-                }
-            }
-            
-            subtaskElement.innerHTML = tempDiv.firstElementChild.innerHTML;
+            subtaskElement.outerHTML = editForm;
             // Инициализируем календарь
             setTimeout(() => initDatePickers(), 100);
         })
