@@ -76,16 +76,56 @@ def init_database(force_recreate=False):
         print("Файл направлений создан успешно")
 
 
-def load_data(file_path):
-    if not os.path.exists(file_path):
+def load_data(filepath):
+    """Загрузка данных из JSON с обработкой ошибок"""
+    try:
+        if not os.path.exists(filepath):
+            return []
+        
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
+            
+            # Проверка на пустой файл
+            if not content.strip():
+                return []
+            
+            return json.loads(content)
+    
+    except json.JSONDecodeError as e:
+        # Логирование ошибки
+        print(f"JSON decode error in {filepath}: {e}")
+        
+        # Создание резервной копии повреждённого файла
+        backup_path = f"{filepath}.backup.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        os.rename(filepath, backup_path)
+        print(f"Corrupted file backed up to: {backup_path}")
+        
+        # Возврат пустого списка вместо падения
         return []
-    with open(file_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    
+    except Exception as e:
+        print(f"Error loading {filepath}: {e}")
+        return []
 
 
-def save_data(file_path, data):
-    with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+def save_data(filepath, data):
+    """Сохранение данных в JSON с атомарной записью"""
+    try:
+        # Запись во временный файл
+        temp_path = f"{filepath}.tmp"
+        
+        with open(temp_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        
+        # Атомарная замена
+        os.replace(temp_path, filepath)
+        
+    except Exception as e:
+        print(f"Error saving {filepath}: {e}")
+        # Удаление временного файла если остался
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        raise
 
 
 def load_directions():
