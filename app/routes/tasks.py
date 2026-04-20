@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import login_required, current_user
+from functools import wraps
 from app.utils import load_data, save_data, can_access_project, can_access_task, add_task_history, allowed_file
 from config import Config
 import uuid
@@ -10,6 +11,16 @@ import os
 
 app_config = Config()
 tasks_bp = Blueprint('tasks', __name__)
+
+
+def api_login_required(f):
+    """Декоратор для API endpoints, возвращающий JSON ошибку вместо редиректа"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'Требуется авторизация'}), 401
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @tasks_bp.route('/project/<project_id>/create_task', methods=['GET', 'POST'])
@@ -590,7 +601,7 @@ def api_task_detail(task_id):
 # Добавьте эти маршруты в конец файла tasks.py
 
 @tasks_bp.route('/task/<task_id>/subtasks', methods=['GET'])
-@login_required
+@api_login_required
 def get_subtasks(task_id):
     """Получить все подзадачи задачи"""
     if not can_access_task(task_id):
@@ -607,7 +618,7 @@ def get_subtasks(task_id):
 
 
 @tasks_bp.route('/task/<task_id>/subtask', methods=['POST'])
-@login_required
+@api_login_required
 def create_subtask(task_id):
     """Создать новую подзадачу"""
     if not can_access_task(task_id):
@@ -666,7 +677,7 @@ def create_subtask(task_id):
 
 
 @tasks_bp.route('/task/<task_id>/subtask/<subtask_id>', methods=['PUT'])
-@login_required
+@api_login_required
 def update_subtask(task_id, subtask_id):
     """Обновить подзадачу (чекбокс, отчет, файл)"""
     if not can_access_task(task_id):
@@ -725,7 +736,7 @@ def update_subtask(task_id, subtask_id):
 
 
 @tasks_bp.route('/task/<task_id>/subtask/<subtask_id>/upload_file', methods=['POST'])
-@login_required
+@api_login_required
 def upload_subtask_file(task_id, subtask_id):
     """Загрузить файл к подзадаче или обновить отчет"""
     if not can_access_task(task_id):
@@ -799,7 +810,7 @@ def upload_subtask_file(task_id, subtask_id):
 
 
 @tasks_bp.route('/task/<task_id>/subtask/<subtask_id>', methods=['DELETE'])
-@login_required
+@api_login_required
 def delete_subtask(task_id, subtask_id):
     """Удалить подзадачу"""
     if not can_access_task(task_id):

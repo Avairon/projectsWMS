@@ -439,7 +439,18 @@
     async function loadSubtasks(taskId) {
         console.log('Loading subtasks for:', taskId);
         try {
-            const response = await fetch(`/task/${taskId}/subtasks`);
+            const response = await fetch(`/task/${taskId}/subtasks`, {
+                credentials: 'same-origin'
+            });
+            
+            // Проверяем, что ответ действительно JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Non-JSON response for loadSubtasks:', text.substring(0, 200));
+                throw new Error('Сервер вернул некорректный ответ. Проверьте логи сервера.');
+            }
+            
             const subtasks = await response.json();
             
             console.log('Subtasks response:', response.status, subtasks);
@@ -529,10 +540,20 @@
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: formData.toString()
+                body: formData.toString(),
+                credentials: 'same-origin'
             });
             
-            console.log('Create subtask response:', response.status);
+            console.log('Create subtask response:', response.status, response.headers.get('content-type'));
+            
+            // Проверяем, что ответ действительно JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Non-JSON response:', text.substring(0, 200));
+                throw new Error('Сервер вернул некорректный ответ. Проверьте логи сервера.');
+            }
+            
             const result = await response.json();
             
             if (result.success) {
@@ -557,8 +578,17 @@
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `completed=${completed}`
+                body: `completed=${completed}`,
+                credentials: 'same-origin'
             });
+            
+            // Проверяем, что ответ действительно JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Non-JSON response for toggleSubtaskStatus:', text.substring(0, 200));
+                throw new Error('Сервер вернул некорректный ответ. Проверьте логи сервера.');
+            }
             
             const result = await response.json();
             
@@ -576,8 +606,17 @@
         
         try {
             const response = await fetch(`/task/${currentTaskId}/subtask/${subtaskId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                credentials: 'same-origin'
             });
+            
+            // Проверяем, что ответ действительно JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Non-JSON response for deleteSubtask:', text.substring(0, 200));
+                throw new Error('Сервер вернул некорректный ответ. Проверьте логи сервера.');
+            }
             
             const result = await response.json();
             
@@ -632,8 +671,17 @@
         try {
             const response = await fetch(`/task/${currentTaskId}/subtask/${subtaskId}/upload_file`, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             });
+            
+            // Проверяем, что ответ действительно JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Non-JSON response for upload_file:', text.substring(0, 200));
+                throw new Error('Сервер вернул некорректный ответ. Проверьте логи сервера.');
+            }
             
             const result = await response.json();
             
@@ -691,8 +739,17 @@
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `title=${encodeURIComponent(title)}&planned_date=${encodeURIComponent(plannedDate)}`
+                body: `title=${encodeURIComponent(title)}&planned_date=${encodeURIComponent(plannedDate)}`,
+                credentials: 'same-origin'
             });
+            
+            // Проверяем, что ответ действительно JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Non-JSON response for updateSubtask:', text.substring(0, 200));
+                throw new Error('Сервер вернул некорректный ответ. Проверьте логи сервера.');
+            }
             
             const result = await response.json();
             
