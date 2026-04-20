@@ -520,12 +520,16 @@
         }
         
         try {
+            const formData = new URLSearchParams();
+            formData.append('title', title);
+            formData.append('planned_date', plannedDate);
+            
             const response = await fetch(`/task/${currentTaskId}/subtask`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `title=${encodeURIComponent(title)}&planned_date=${encodeURIComponent(plannedDate)}`
+                body: formData.toString()
             });
             
             console.log('Create subtask response:', response.status);
