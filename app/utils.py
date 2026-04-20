@@ -137,6 +137,9 @@ def save_directions(directions):
 
 
 def can_access_task(task_id):
+    if not current_user.is_authenticated:
+        return False
+    
     if current_user.role == 'admin':
         return True
     
@@ -153,6 +156,9 @@ def can_access_task(task_id):
 
 
 def can_access_project(project_id):
+    if not current_user.is_authenticated:
+        return False
+    
     if current_user.role == 'admin':
         return True
     
