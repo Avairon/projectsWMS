@@ -621,59 +621,67 @@ def get_subtasks(task_id):
 @api_login_required
 def create_subtask(task_id):
     """Создать новую подзадачу"""
-    if not can_access_task(task_id):
-        return jsonify({'error': 'У вас нет доступа к этой задаче'}), 403
+    try:
+        if not can_access_task(task_id):
+            return jsonify({'error': 'У вас нет доступа к этой задаче'}), 403
+        
+        tasks = load_data(app_config.TASKS_DB)
+        task = next((t for t in tasks if t.get('id') == task_id), None)
+        
+        if not task:
+            return jsonify({'error': 'Задача не найдена'}), 404
+        
+        # Проверяем права на создание подзадачи
+        if current_user.role not in ['admin', 'manager', 'supervisor'] and current_user.id != task.get('assignee_id'):
+            return jsonify({'error': 'У вас нет прав на создание подзадачи'}), 403
+        
+        subtask_title = request.form.get('title', '').strip()
+        planned_date = request.form.get('planned_date', '')
+        
+        if not subtask_title:
+            return jsonify({'error': 'Название подзадачи обязательно'}), 400
+        
+        # Конвертируем дату в нужный формат
+        if planned_date:
+            try:
+                planned_dt = parse_date(planned_date)
+                planned_date = planned_dt.strftime("%d.%m.%Y")
+            except Exception as e:
+                print(f"Ошибка парсинга даты: {e}")
+                return jsonify({'error': 'Некорректный формат даты'}), 400
+        
+        subtask = {
+            'id': str(uuid.uuid4())[:8],
+            'title': subtask_title,
+            'completed': False,
+            'planned_date': planned_date,
+            'completed_date': '',
+            'report': '',
+            'file': None,
+            'created_at': datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+            'created_by': current_user.id
+        }
+        
+        if 'subtasks' not in task:
+            task['subtasks'] = []
+        
+        task['subtasks'].append(subtask)
+        
+        # Обновляем задачу в базе
+        for i, t in enumerate(tasks):
+            if t.get('id') == task_id:
+                tasks[i] = task
+                break
+        
+        save_data(app_config.TASKS_DB, tasks)
+        
+        return jsonify({'success': True, 'subtask': subtask})
     
-    tasks = load_data(app_config.TASKS_DB)
-    task = next((t for t in tasks if t.get('id') == task_id), None)
-    
-    if not task:
-        return jsonify({'error': 'Задача не найдена'}), 404
-    
-    # Проверяем права на создание подзадачи
-    if current_user.role not in ['admin', 'manager', 'supervisor'] and current_user.id != task.get('assignee_id'):
-        return jsonify({'error': 'У вас нет прав на создание подзадачи'}), 403
-    
-    subtask_title = request.form.get('title', '').strip()
-    planned_date = request.form.get('planned_date', '')
-    
-    if not subtask_title:
-        return jsonify({'error': 'Название подзадачи обязательно'}), 400
-    
-    # Конвертируем дату в нужный формат
-    if planned_date:
-        try:
-            planned_dt = parse_date(planned_date)
-            planned_date = planned_dt.strftime("%d.%m.%Y")
-        except:
-            return jsonify({'error': 'Некорректный формат даты'}), 400
-    
-    subtask = {
-        'id': str(uuid.uuid4())[:8],
-        'title': subtask_title,
-        'completed': False,
-        'planned_date': planned_date,
-        'completed_date': '',
-        'report': '',
-        'file': None,
-        'created_at': datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
-        'created_by': current_user.id
-    }
-    
-    if 'subtasks' not in task:
-        task['subtasks'] = []
-    
-    task['subtasks'].append(subtask)
-    
-    # Обновляем задачу в базе
-    for i, t in enumerate(tasks):
-        if t.get('id') == task_id:
-            tasks[i] = task
-            break
-    
-    save_data(app_config.TASKS_DB, tasks)
-    
-    return jsonify({'success': True, 'subtask': subtask})
+    except Exception as e:
+        print(f"Ошибка при создании подзадачи: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Внутренняя ошибка сервера: {str(e)}'}), 500
 
 
 @tasks_bp.route('/task/<task_id>/subtask/<subtask_id>', methods=['PUT'])

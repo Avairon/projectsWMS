@@ -111,11 +111,22 @@ def load_data(filepath):
 def save_data(filepath, data):
     """Сохранение данных в JSON с атомарной записью"""
     try:
+        # Убедимся, что директория существует
+        directory = os.path.dirname(filepath)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory, exist_ok=True)
+        
         # Запись во временный файл
         temp_path = f"{filepath}.tmp"
         
         with open(temp_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        
+        # Проверка существования временного файла перед заменой
+        if not os.path.exists(temp_path):
+            raise FileNotFoundError(f"Временный файл не создан: {temp_path}")
         
         # Атомарная замена
         os.replace(temp_path, filepath)
