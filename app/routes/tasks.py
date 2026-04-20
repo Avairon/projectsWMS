@@ -601,9 +601,12 @@ def api_task_detail(task_id):
 # Добавьте эти маршруты в конец файла tasks.py
 
 @tasks_bp.route('/task/<task_id>/subtasks', methods=['GET'])
-@api_login_required
 def get_subtasks(task_id):
     """Получить все подзадачи задачи"""
+    from flask_login import current_user
+    if not current_user.is_authenticated:
+        return jsonify({'error': 'Требуется авторизация'}), 401
+    
     if not can_access_task(task_id):
         return jsonify({'error': 'У вас нет доступа к этой задаче'}), 403
     
