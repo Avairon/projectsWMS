@@ -12,6 +12,10 @@ def create_app():
                 static_folder='static')
     app.config.from_object(Config)
 
+    # Настройки cookie для совместимости с Chrome
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['SESSION_COOKIE_SECURE'] = False  # Установите True при использовании HTTPS
+    
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
