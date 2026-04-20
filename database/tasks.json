@@ -60,25 +60,36 @@
     ],
     "subtasks": [
       {
-        "id": "f15eef34",
-        "title": "Сделать Абубе",
-        "completed": true,
-        "planned_date": "02.04.2026",
-        "completed_date": "09.02.2026",
-        "report": "",
-        "file": null,
-        "created_at": "04.02.2026 19:32:29",
-        "created_by": "1"
-      },
-      {
-        "id": "094d868e",
-        "title": "сделать второе абубе",
+        "id": "5d7c6920",
+        "title": "dddd",
         "completed": false,
-        "planned_date": "02.09.2026",
+        "planned_date": "14.04.2026",
         "completed_date": "",
         "report": "",
         "file": null,
-        "created_at": "09.02.2026 08:37:27",
+        "created_at": "20.04.2026 13:52:07",
+        "created_by": "1"
+      },
+      {
+        "id": "28616f60",
+        "title": "абубе",
+        "completed": false,
+        "planned_date": "04.12.2026",
+        "completed_date": "",
+        "report": "",
+        "file": null,
+        "created_at": "20.04.2026 13:52:27",
+        "created_by": "1"
+      },
+      {
+        "id": "5b034613",
+        "title": "ааааааррррррр",
+        "completed": false,
+        "planned_date": "29.04.2026",
+        "completed_date": "",
+        "report": "",
+        "file": null,
+        "created_at": "20.04.2026 13:52:36",
         "created_by": "1"
       }
     ]

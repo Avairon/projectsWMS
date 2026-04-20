@@ -1017,10 +1017,12 @@ function showAddSubtaskForm(taskId, event) {
         return;
     }
     
+    // ИСПРАВЛЕНИЕ: Заменили <form> на <div id="new-subtask-form"> 
+    // и изменили type="submit" на type="button" с прямым вызовом функции
     const formHtml = `
         <div class="add-subtask-form">
             <h4>Новая подзадача</h4>
-            <form id="new-subtask-form" onsubmit="return submitNewSubtask(event, '${taskId}')">
+            <div id="new-subtask-form">
                 <div class="form-group">
                     <label>Название подзадачи:</label>
                     <input type="text" id="subtask-title" class="form-control" required placeholder="Введите название подзадачи">
@@ -1031,12 +1033,12 @@ function showAddSubtaskForm(taskId, event) {
                            placeholder="ДД.ММ.ГГГГ">
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-success" onclick="event.stopPropagation()">Создать</button>
+                    <button type="button" class="btn btn-success" onclick="event.stopPropagation(); submitNewSubtask(event, '${taskId}')">Создать</button>
                     <button type="button" class="btn btn-secondary" onclick="event.stopPropagation(); cancelAddSubtask()">
                         Отмена
                     </button>
                 </div>
-            </form>
+            </div>
         </div>
     `;
     
