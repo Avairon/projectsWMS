@@ -118,7 +118,7 @@ def save_data(filepath, data):
             os.makedirs(directory, exist_ok=True)
         
         # Запись во временный файл
-        temp_path = f"{filepath}.tmp"
+        temp_path = f"{filepath}.tmp.{os.getpid()}"
         
         with open(temp_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -131,12 +131,16 @@ def save_data(filepath, data):
         
         # Атомарная замена
         os.replace(temp_path, filepath)
+        return True
         
     except Exception as e:
         print(f"Error saving {filepath}: {e}")
         # Удаление временного файла если остался
         if temp_path and os.path.exists(temp_path):
-            os.remove(temp_path)
+            try:
+                os.remove(temp_path)
+            except:
+                pass
         raise
 
 
