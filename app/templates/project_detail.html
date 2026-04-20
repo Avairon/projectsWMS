@@ -465,6 +465,8 @@
             return;
         }
         
+        const canManageSubtasks = {{ 'true' if current_user.role in ['admin', 'manager', 'supervisor'] else 'false' }};
+        
         const subtasksHtml = subtasks.map(subtask => `
             <div class="subtask-item ${subtask.completed ? 'completed' : 'pending'}" data-subtask-id="${subtask.id}">
                 <div class="subtask-checkbox">
@@ -482,8 +484,7 @@
                 <div class="subtask-actions">
                     <button type="button" class="btn btn-info btn-sm" onclick="showEditSubtaskForm('${subtask.id}')">Редакт.</button>
                     <button type="button" class="btn btn-success btn-sm" onclick="showReportModal('${subtask.id}')">Отчет</button>
-                    ${current_user.role in ['admin', 'manager', 'supervisor'] ? 
-                        `<button type="button" class="btn btn-danger btn-sm" onclick="deleteSubtask('${subtask.id}')">Удалить</button>` : ''}
+                    ${canManageSubtasks ? `<button type="button" class="btn btn-danger btn-sm" onclick="deleteSubtask('${subtask.id}')">Удалить</button>` : ''}
                 </div>
             </div>
         `).join('');
