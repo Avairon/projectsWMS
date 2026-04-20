@@ -110,10 +110,11 @@ def load_data(filepath):
 
 def save_data(filepath, data):
     """Сохранение данных в JSON с атомарной записью"""
+    temp_path = None
     try:
         # Убедимся, что директория существует
         directory = os.path.dirname(filepath)
-        if directory and not os.path.exists(directory):
+        if directory:
             os.makedirs(directory, exist_ok=True)
         
         # Запись во временный файл
@@ -134,7 +135,7 @@ def save_data(filepath, data):
     except Exception as e:
         print(f"Error saving {filepath}: {e}")
         # Удаление временного файла если остался
-        if os.path.exists(temp_path):
+        if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
         raise
 
