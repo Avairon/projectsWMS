@@ -121,8 +121,8 @@
     // Данные о пользователях передаются из бэкенда
     const allUsers = {{ users | tojson }};
     
-    // Фильтруем только работников
-    const workers = allUsers.filter(user => user.role === 'worker');
+    // Фильтруем всех пользователей (не только работников) - теперь можно добавлять всех как исполнителей
+    const availableUsers = allUsers.filter(user => user.role !== 'admin');
     
     document.addEventListener('DOMContentLoaded', function() {
         const teamSearch = document.getElementById('team_search');
@@ -145,7 +145,7 @@
                 return;
             }
             
-            const filteredUsers = workers.filter(user => 
+            const filteredUsers = availableUsers.filter(user => 
                 user.name.toLowerCase().includes(searchTerm) && 
                 !selectedUserIds.includes(user.id)
             );
@@ -202,7 +202,7 @@
                 selectedMembers.innerHTML = '<div class="no-members">Пока нет выбранных участников</div>';
             } else {
                 selectedMembers.innerHTML = selectedUserIds.map(id => {
-                    const user = workers.find(u => u.id === id);
+                    const user = availableUsers.find(u => u.id === id);
                     return user ? `
                         <div class="selected-member" data-id="${user.id}">
                             <span class="member-name">${user.name}</span>
