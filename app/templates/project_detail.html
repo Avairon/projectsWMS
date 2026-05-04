@@ -61,6 +61,12 @@
         {% if current_user.role in ['admin', 'manager'] %}
         <a href="{{ url_for('projects.edit_project', project_id=project.id) }}" class="btn">Редактировать</a>
         {% endif %}
+        {% if current_user.role in ['admin', 'manager'] and project.status != 'завершен' %}
+        <button type="button" class="btn btn-success" onclick="showCompleteProjectModal()">Завершить проект</button>
+        {% endif %}
+        {% if current_user.role == 'admin' %}
+        <button type="button" class="btn btn-danger" onclick="deleteProject()">Удалить проект</button>
+        {% endif %}
     </div>
 
     <h2>{{ project.name }}</h2>
@@ -792,6 +798,85 @@
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function showCompleteProjectModal() {
+        const modal = document.createElement('div');
+        modal.innerHTML = `
+            <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-width:500px; width:90%;">
+                    <h3>Завершение проекта</h3>
+                    <p>Для завершения проекта необходимо предоставить отчет.</p>
+                    <form id="complete-project-form" onsubmit="return completeProject(event)">
+                        <div class="form-group">
+                            <label for="project-report">Отчет по проекту (обязательно)</label>
+                            <textarea id="project-report" name="report" rows="5" required style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-success">Завершить проект</button>
+                            <button type="button" class="btn cancel-btn" onclick="this.parentElement.parentElement.parentElement.remove()">Отмена</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    async function completeProject(event) {
+        event.preventDefault();
+        const report = document.getElementById('project-report').value.trim();
+        if (!report) {
+            alert('Пожалуйста, заполните отчет по проекту');
+            return false;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('report', report);
+
+            const response = await fetch('/project/{{ project.id }}/complete', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Проект успешно завершен!');
+                location.reload();
+            } else {
+                alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert('Ошибка: ' + error.message);
+        }
+        return false;
+    }
+
+    async function deleteProject() {
+        if (!confirm('Вы уверены, что хотите удалить этот проект? Это действие нельзя отменить!')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/project/{{ project.id }}/delete', {
+                method: 'POST'
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Проект успешно удален!');
+                window.location.href = '/dashboard';
+            } else {
+                alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert('Ошибка: ' + error.message);
+        }
     }
 </script>
 
