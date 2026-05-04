@@ -147,6 +147,22 @@ class DataTable:
         """Получить количество отфильтрованных записей"""
         return len(self.filtered_data)
     
+    def filter_by_task_id(self, task_id: str) -> 'DataTable':
+        """
+        Фильтр по ID задачи
+        
+        Args:
+            task_id: ID задачи для фильтрации
+        """
+        result = []
+        for item in self.filtered_data:
+            if item.get('task_id') == task_id:
+                result.append(item)
+        
+        self.filters['task_id'] = task_id
+        self.filtered_data = result
+        return self
+    
     def to_html_table(self, add_numbering: bool = True) -> str:
         """
         Преобразовать данные в HTML таблицу
@@ -309,9 +325,63 @@ def create_tasks_table(tasks: List[Dict[str, Any]],
     return DataTable(table_data, fields)
 
 
+def create_subtasks_table(subtasks: List[Dict[str, Any]], 
+                          users: List[Dict[str, Any]],
+                          tasks: List[Dict[str, Any]]) -> DataTable:
+    """
+    Создает таблицу подзадач с обогащенными данными
+    
+    Args:
+        subtasks: Список подзадач (с полями task_id, task_title, project_id)
+        users: Список пользователей
+        tasks: Список задач для получения дополнительной информации
+        
+    Returns:
+        DataTable с подзадачами
+    """
+    # Подготовка данных
+    table_data = []
+    
+    for subtask in subtasks:
+        # Найти исполнителя задачи
+        task = next((t for t in tasks if t.get('id') == subtask.get('task_id')), None)
+        executor_name = ''
+        if task:
+            assignee = next((u for u in users if u.get('id') == task.get('assignee_id')), None)
+            executor_name = assignee.get('name', '') if assignee else ''
+        
+        table_data.append({
+            'executor': executor_name,
+            'task_title': subtask.get('task_title', ''),
+            'title': subtask.get('title', ''),
+            'planned_date': subtask.get('planned_date', ''),
+            'completed_date': subtask.get('completed_date', ''),
+            'completed': subtask.get('completed', False),
+            'report': subtask.get('report', ''),
+            'file': subtask.get('file'),
+            'task_id': subtask.get('task_id', ''),
+            'project_id': subtask.get('project_id', '')
+        })
+    
+    # Определение полей таблицы
+    fields = [
+        {'name': 'executor', 'label': 'Исполнитель задачи', 'type': 'text'},
+        {'name': 'task_title', 'label': 'Задача', 'type': 'text'},
+        {'name': 'title', 'label': 'Подзадача', 'type': 'text'},
+        {'name': 'planned_date', 'label': 'Плановая дата', 'type': 'date'},
+        {'name': 'completed_date', 'label': 'Дата выполнения', 'type': 'date'},
+        {'name': 'completed', 'label': 'Статус', 'type': 'text'},
+        {'name': 'report', 'label': 'Отчет', 'type': 'text'},
+        {'name': 'file', 'label': 'Файл', 'type': 'text'}
+    ]
+    
+    return DataTable(table_data, fields)
+
+
 # Экспортируемые функции
 __all__ = [
     'DataTable',
     'create_projects_table',
-    'create_tasks_table'
+    'create_tasks_table',
+    'create_subtasks_table'
 ]
