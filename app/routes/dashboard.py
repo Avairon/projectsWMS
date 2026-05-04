@@ -317,3 +317,316 @@ def api_overdue_executor_tasks():
         })
     
     return jsonify(result)
+
+
+# API эндпоинты для отображения списков при клике на карточки статистики
+
+@dashboard_bp.route('/api/active_projects')
+@login_required
+def api_active_projects():
+    """API для получения списка проектов в работе"""
+    projects = load_data(app_config.PROJECTS_DB)
+    active_projects = [p for p in projects if p.get('status') == 'в работе']
+    
+    result = []
+    for project in active_projects:
+        result.append({
+            'id': project['id'],
+            'name': project['name']
+        })
+    
+    return jsonify(result)
+
+
+@dashboard_bp.route('/api/paused_projects')
+@login_required
+def api_paused_projects():
+    """API для получения списка отложенных проектов"""
+    projects = load_data(app_config.PROJECTS_DB)
+    paused_projects = [p for p in projects if p.get('status') in ['приостановлен', 'отложен']]
+    
+    result = []
+    for project in paused_projects:
+        result.append({
+            'id': project['id'],
+            'name': project['name']
+        })
+    
+    return jsonify(result)
+
+
+@dashboard_bp.route('/api/managers_list')
+@login_required
+def api_managers_list():
+    """API для получения списка руководителей"""
+    users = load_data(app_config.USERS_DB)
+    projects = load_data(app_config.PROJECTS_DB)
+    
+    # Получаем ID руководителей из проектов
+    manager_ids = set([p['supervisor_id'] for p in projects if p.get('supervisor_id')])
+    
+    # Находим информацию о руководителях
+    managers = []
+    for user in users:
+        if user['id'] in manager_ids:
+            managers.append({
+                'id': user['id'],
+                'name': user.get('name', user.get('full_name', 'Не указано')),
+                'username': user.get('username', ''),
+                'email': user.get('email', '')
+            })
+    
+    return jsonify(managers)
+
+
+@dashboard_bp.route('/api/executors_list')
+@login_required
+def api_executors_list():
+    """API для получения списка исполнителей"""
+    users = load_data(app_config.USERS_DB)
+    projects = load_data(app_config.PROJECTS_DB)
+    
+    # Получаем ID исполнителей из проектов
+    executor_ids = set([uid for p in projects for uid in p.get('team', [])])
+    
+    # Находим информацию об исполнителях
+    executors = []
+    for user in users:
+        if user['id'] in executor_ids:
+            executors.append({
+                'id': user['id'],
+                'name': user.get('name', user.get('full_name', 'Не указано')),
+                'username': user.get('username', ''),
+                'email': user.get('email', '')
+            })
+    
+    return jsonify(executors)
+
+
+@dashboard_bp.route('/api/my_active_projects')
+@login_required
+def api_my_active_projects():
+    """API для получения списка активных проектов куратора"""
+    projects = load_data(app_config.PROJECTS_DB)
+    
+    # Фильтруем проекты, принадлежащие текущему куратору
+    my_projects = [p for p in projects if p.get('supervisor_id', '') == current_user.id or p.get('manager_id', '') == current_user.id]
+    active_projects = [p for p in my_projects if p.get('status') == 'в работе']
+    
+    result = []
+    for project in active_projects:
+        result.append({
+            'id': project['id'],
+            'name': project['name']
+        })
+    
+    return jsonify(result)
+
+
+@dashboard_bp.route('/api/my_paused_projects')
+@login_required
+def api_my_paused_projects():
+    """API для получения списка отложенных проектов куратора"""
+    projects = load_data(app_config.PROJECTS_DB)
+    
+    # Фильтруем проекты, принадлежащие текущему куратору
+    my_projects = [p for p in projects if p.get('supervisor_id', '') == current_user.id or p.get('manager_id', '') == current_user.id]
+    paused_projects = [p for p in my_projects if p.get('status') in ['приостановлен', 'отложен']]
+    
+    result = []
+    for project in paused_projects:
+        result.append({
+            'id': project['id'],
+            'name': project['name']
+        })
+    
+    return jsonify(result)
+
+
+@dashboard_bp.route('/api/my_managers_list')
+@login_required
+def api_my_managers_list():
+    """API для получения списка руководителей в проектах куратора"""
+    users = load_data(app_config.USERS_DB)
+    projects = load_data(app_config.PROJECTS_DB)
+    
+    # Фильтруем проекты, принадлежащие текущему куратору
+    my_project_ids = [p['id'] for p in projects if p.get('supervisor_id', '') == current_user.id or p.get('manager_id', '') == current_user.id]
+    
+    # Получаем ID руководителей из этих проектов
+    manager_ids = set([p['supervisor_id'] for p in projects if p.get('supervisor_id') and p['id'] in my_project_ids])
+    
+    # Находим информацию о руководителях
+    managers = []
+    for user in users:
+        if user['id'] in manager_ids:
+            managers.append({
+                'id': user['id'],
+                'name': user.get('name', user.get('full_name', 'Не указано')),
+                'username': user.get('username', ''),
+                'email': user.get('email', '')
+            })
+    
+    return jsonify(managers)
+
+
+@dashboard_bp.route('/api/my_executors_list')
+@login_required
+def api_my_executors_list():
+    """API для получения списка исполнителей в проектах куратора"""
+    users = load_data(app_config.USERS_DB)
+    projects = load_data(app_config.PROJECTS_DB)
+    
+    # Фильтруем проекты, принадлежащие текущему куратору
+    my_project_ids = [p['id'] for p in projects if p.get('supervisor_id', '') == current_user.id or p.get('manager_id', '') == current_user.id]
+    
+    # Получаем ID исполнителей из этих проектов
+    executor_ids = set([uid for p in projects if p['id'] in my_project_ids for uid in p.get('team', [])])
+    
+    # Находим информацию об исполнителях
+    executors = []
+    for user in users:
+        if user['id'] in executor_ids:
+            executors.append({
+                'id': user['id'],
+                'name': user.get('name', user.get('full_name', 'Не указано')),
+                'username': user.get('username', ''),
+                'email': user.get('email', '')
+            })
+    
+    return jsonify(executors)
+
+
+@dashboard_bp.route('/api/manager_active_projects')
+@login_required
+def api_manager_active_projects():
+    """API для получения списка активных проектов менеджера"""
+    projects = load_data(app_config.PROJECTS_DB)
+    
+    # Фильтруем проекты, принадлежащие текущему менеджеру
+    my_projects = [p for p in projects if p.get('manager_id', '') == current_user.id or p.get('supervisor_id', '') == current_user.id]
+    active_projects = [p for p in my_projects if p.get('status') == 'в работе']
+    
+    result = []
+    for project in active_projects:
+        result.append({
+            'id': project['id'],
+            'name': project['name']
+        })
+    
+    return jsonify(result)
+
+
+@dashboard_bp.route('/api/manager_paused_projects')
+@login_required
+def api_manager_paused_projects():
+    """API для получения списка отложенных проектов менеджера"""
+    projects = load_data(app_config.PROJECTS_DB)
+    
+    # Фильтруем проекты, принадлежащие текущему менеджеру
+    my_projects = [p for p in projects if p.get('manager_id', '') == current_user.id or p.get('supervisor_id', '') == current_user.id]
+    paused_projects = [p for p in my_projects if p.get('status') in ['приостановлен', 'отложен']]
+    
+    result = []
+    for project in paused_projects:
+        result.append({
+            'id': project['id'],
+            'name': project['name']
+        })
+    
+    return jsonify(result)
+
+
+@dashboard_bp.route('/api/manager_executors_list')
+@login_required
+def api_manager_executors_list():
+    """API для получения списка исполнителей в проектах менеджера"""
+    users = load_data(app_config.USERS_DB)
+    projects = load_data(app_config.PROJECTS_DB)
+    
+    # Фильтруем проекты, принадлежащие текущему менеджеру
+    my_project_ids = [p['id'] for p in projects if p.get('manager_id', '') == current_user.id or p.get('supervisor_id', '') == current_user.id]
+    
+    # Получаем ID исполнителей из этих проектов
+    executor_ids = set([uid for p in projects if p['id'] in my_project_ids for uid in p.get('team', [])])
+    
+    # Находим информацию об исполнителях
+    executors = []
+    for user in users:
+        if user['id'] in executor_ids:
+            executors.append({
+                'id': user['id'],
+                'name': user.get('name', user.get('full_name', 'Не указано')),
+                'username': user.get('username', ''),
+                'email': user.get('email', '')
+            })
+    
+    return jsonify(executors)
+
+
+@dashboard_bp.route('/api/executor_total_tasks')
+@login_required
+def api_executor_total_tasks():
+    """API для получения всех задач исполнителя"""
+    tasks = load_data(app_config.TASKS_DB)
+    my_tasks = [t for t in tasks if t.get('assignee_id') == current_user.id]
+    
+    result = []
+    for task in my_tasks:
+        result.append({
+            'id': task['id'],
+            'title': task['title']
+        })
+    
+    return jsonify(result)
+
+
+@dashboard_bp.route('/api/executor_active_tasks')
+@login_required
+def api_executor_active_tasks():
+    """API для получения активных задач исполнителя"""
+    tasks = load_data(app_config.TASKS_DB)
+    my_tasks = [t for t in tasks if t.get('assignee_id') == current_user.id and t.get('status') == 'активна']
+    
+    result = []
+    for task in my_tasks:
+        result.append({
+            'id': task['id'],
+            'title': task['title']
+        })
+    
+    return jsonify(result)
+
+
+@dashboard_bp.route('/api/executor_completed_tasks')
+@login_required
+def api_executor_completed_tasks():
+    """API для получения завершенных задач исполнителя"""
+    tasks = load_data(app_config.TASKS_DB)
+    my_tasks = [t for t in tasks if t.get('assignee_id') == current_user.id and t.get('status') == 'завершена']
+    
+    result = []
+    for task in my_tasks:
+        result.append({
+            'id': task['id'],
+            'title': task['title']
+        })
+    
+    return jsonify(result)
+
+
+@dashboard_bp.route('/api/executor_paused_tasks')
+@login_required
+def api_executor_paused_tasks():
+    """API для получения отложенных задач исполнителя"""
+    tasks = load_data(app_config.TASKS_DB)
+    my_tasks = [t for t in tasks if t.get('assignee_id') == current_user.id and t.get('status') == 'отложена']
+    
+    result = []
+    for task in my_tasks:
+        result.append({
+            'id': task['id'],
+            'title': task['title']
+        })
+    
+    return jsonify(result)

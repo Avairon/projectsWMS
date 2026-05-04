@@ -141,6 +141,11 @@ def admin_users():
         return redirect(url_for('dashboard.dashboard'))
     
     users = load_data(app_config.USERS_DB)
+    
+    # Если пользователь - куратор, показываем только исполнителей и руководителей проектов
+    if current_user.role == 'manager':
+        users = [u for u in users if u['role'] in ['worker', 'supervisor']]
+    
     return render_template('admin_users.html', users=users)
 
 

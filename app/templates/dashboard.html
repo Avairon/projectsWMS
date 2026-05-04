@@ -9,11 +9,11 @@
     <div class="stats-grid">
         {% if current_user.role == 'admin' %}
         <!-- Статистика для администратора -->
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showActiveProjects()">
             <h3>Всего проектов в работе</h3>
             <span class="stat-number">{{ stats.total_active_projects }}</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showPausedProjects()">
             <h3>Всего проектов отложенных</h3>
             <span class="stat-number">{{ stats.total_paused_projects }}</span>
         </div>
@@ -25,21 +25,21 @@
             <h3>Количество кураторов</h3>
             <span class="stat-number">{{ stats.curators_count }}</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showManagersList()">
             <h3>Количество руководителей</h3>
             <span class="stat-number">{{ stats.managers_count }}</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showExecutorsList()">
             <h3>Количество исполнителей</h3>
             <span class="stat-number">{{ stats.executors_count }}</span>
         </div>
         {% elif current_user.role == 'curator' or current_user.role == 'supervisor' %}
         <!-- Статистика для куратора направления -->
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showMyActiveProjects()">
             <h3>Всего проектов в работе (мои)</h3>
             <span class="stat-number">{{ stats.my_active_projects }}</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showMyPausedProjects()">
             <h3>Всего приостановленных проектов (мои)</h3>
             <span class="stat-number">{{ stats.my_paused_projects }}</span>
         </div>
@@ -47,21 +47,21 @@
             <h3>Проекты с просроченным дедлайном (мои)</h3>
             <span class="stat-number">{{ stats.my_overdue_projects_count }}</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showMyManagersList()">
             <h3>Количество руководителей (в моих проектах)</h3>
             <span class="stat-number">{{ stats.my_managers_count }}</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showMyExecutorsList()">
             <h3>Количество исполнителей (в моих проектах)</h3>
             <span class="stat-number">{{ stats.my_executors_count }}</span>
         </div>
         {% elif current_user.role == 'manager' %}
         <!-- Статистика для руководителя -->
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showManagerActiveProjects()">
             <h3>Всего проектов в работе (мои)</h3>
             <span class="stat-number">{{ stats.my_manager_active_projects }}</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showManagerPausedProjects()">
             <h3>Всего приостановленных проектов (мои)</h3>
             <span class="stat-number">{{ stats.my_manager_paused_projects }}</span>
         </div>
@@ -69,25 +69,25 @@
             <h3>Проекты с просроченными задачами</h3>
             <span class="stat-number">{{ stats.projects_with_overdue_tasks_count }}</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showManagerExecutorsList()">
             <h3>Количество исполнителей (в моих проектах)</h3>
             <span class="stat-number">{{ stats.my_manager_executors_count }}</span>
         </div>
         {% elif current_user.role == 'executor' or current_user.role == 'worker' %}
         <!-- Статистика для исполнителя -->
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showExecutorTotalTasks()">
             <h3>Общее количество задач</h3>
             <span class="stat-number">{{ stats.executor_total_tasks }}</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showExecutorActiveTasks()">
             <h3>Активные задачи</h3>
             <span class="stat-number">{{ stats.executor_active_tasks }}</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showExecutorCompletedTasks()">
             <h3>Завершенные задачи</h3>
             <span class="stat-number">{{ stats.executor_completed_tasks }}</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showExecutorPausedTasks()">
             <h3>Отложенные задачи</h3>
             <span class="stat-number">{{ stats.executor_paused_tasks }}</span>
         </div>
@@ -225,6 +225,382 @@
                         <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
                             <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
                                 <h3>Просроченные задачи</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        // Новые функции для отображения статистики по клику
+        function showActiveProjects() {
+            fetch('/api/active_projects')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(project => {
+                        listHTML += `<li><a href="/project/${project.id}">${project.name}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Проекты в работе</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showPausedProjects() {
+            fetch('/api/paused_projects')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(project => {
+                        listHTML += `<li><a href="/project/${project.id}">${project.name}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Отложенные проекты</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showManagersList() {
+            fetch('/api/managers_list')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(manager => {
+                        listHTML += `<li>${manager.name} (${manager.email || manager.username})</li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Список руководителей</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showExecutorsList() {
+            fetch('/api/executors_list')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(executor => {
+                        listHTML += `<li>${executor.name} (${executor.email || executor.username})</li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Список исполнителей</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showMyActiveProjects() {
+            fetch('/api/my_active_projects')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(project => {
+                        listHTML += `<li><a href="/project/${project.id}">${project.name}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Мои проекты в работе</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showMyPausedProjects() {
+            fetch('/api/my_paused_projects')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(project => {
+                        listHTML += `<li><a href="/project/${project.id}">${project.name}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Мои отложенные проекты</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showMyManagersList() {
+            fetch('/api/my_managers_list')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(manager => {
+                        listHTML += `<li>${manager.name} (${manager.email || manager.username})</li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Руководители в моих проектах</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showMyExecutorsList() {
+            fetch('/api/my_executors_list')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(executor => {
+                        listHTML += `<li>${executor.name} (${executor.email || executor.username})</li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Исполнители в моих проектах</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showManagerActiveProjects() {
+            fetch('/api/manager_active_projects')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(project => {
+                        listHTML += `<li><a href="/project/${project.id}">${project.name}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Мои проекты в работе</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showManagerPausedProjects() {
+            fetch('/api/manager_paused_projects')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(project => {
+                        listHTML += `<li><a href="/project/${project.id}">${project.name}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Мои отложенные проекты</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showManagerExecutorsList() {
+            fetch('/api/manager_executors_list')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(executor => {
+                        listHTML += `<li>${executor.name} (${executor.email || executor.username})</li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Исполнители в моих проектах</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showExecutorTotalTasks() {
+            fetch('/api/executor_total_tasks')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(task => {
+                        listHTML += `<li><a href="/tasks/${task.id}">${task.title}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Все задачи</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showExecutorActiveTasks() {
+            fetch('/api/executor_active_tasks')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(task => {
+                        listHTML += `<li><a href="/tasks/${task.id}">${task.title}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Активные задачи</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showExecutorCompletedTasks() {
+            fetch('/api/executor_completed_tasks')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(task => {
+                        listHTML += `<li><a href="/tasks/${task.id}">${task.title}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Завершенные задачи</h3>
+                                ${listHTML}
+                                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        
+        function showExecutorPausedTasks() {
+            fetch('/api/executor_paused_tasks')
+                .then(response => response.json())
+                .then(data => {
+                    let listHTML = '<ul>';
+                    data.forEach(task => {
+                        listHTML += `<li><a href="/tasks/${task.id}">${task.title}</a></li>`;
+                    });
+                    listHTML += '</ul>';
+                    
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-height:70vh; overflow-y:auto;">
+                                <h3>Отложенные задачи</h3>
                                 ${listHTML}
                                 <button onclick="this.parentElement.parentElement.remove()" style="margin-top:10px;">Закрыть</button>
                             </div>
