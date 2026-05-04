@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Логи системы - НХТК{% endblock %}
+
+{% block content %}
+<div class="admin-logs">
+    <h2>Логи системы</h2>
+
+    <div class="table-wrapper desktop-only">
+        <table class="logs-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Тип операции</th>
+                    <th>Пользователь</th>
+                    <th>Объект</th>
+                    <th>Описание</th>
+                    <th>Дата и время</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.id }}</td>
+                    <td>
+                        <span class="log-type log-type-{{ log.operation_type|lower }}">
+                            {{ log.operation_type }}
+                        </span>
+                    </td>
+                    <td>{{ log.user_name or 'Неизвестно' }}</td>
+                    <td>{{ log.object_name or '-' }}</td>
+                    <td>{{ log.description }}</td>
+                    <td>{{ log.timestamp }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="logs-cards mobile-only">
+        {% for log in logs %}
+        <div class="log-card">
+            <div class="log-card-header">
+                <span class="log-type log-type-{{ log.operation_type|lower }}">{{ log.operation_type }}</span>
+                <span class="log-timestamp">{{ log.timestamp }}</span>
+            </div>
+            <div class="log-card-body">
+                <p><strong>Пользователь:</strong> {{ log.user_name or 'Неизвестно' }}</p>
+                <p><strong>Объект:</strong> {{ log.object_name or '-' }}</p>
+                <p><strong>Описание:</strong> {{ log.description }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if not logs %}
+    <p class="no-data">Нет записей в логах</p>
+    {% endif %}
+</div>
+
+<style>
+.admin-logs {
+    padding: 20px;
+}
+
+.logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.logs-table th,
+.logs-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.logs-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+.log-type {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.log-type-create {
+    background: #d4edda;
+    color: #155724;
+}
+
+.log-type-update {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.log-type-delete {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.log-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.log-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.log-timestamp {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.log-card-body p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-only {
+        display: none;
+    }
+}
+</style>
+{% endblock %}
