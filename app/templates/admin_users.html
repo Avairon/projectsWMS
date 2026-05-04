@@ -38,8 +38,10 @@
                     </td>
                     <td>{{ user.token or '-' }}</td>
                     <td>
+                        {% if current_user.role == 'admin' or (current_user.role == 'manager' and user.role in ['worker', 'supervisor']) %}
                         <a href="{{ url_for('auth.edit_user', user_id=user.id) }}" class="btn small-btn">Редактировать</a>
-                        {% if user.id != current_user.id %}
+                        {% endif %}
+                        {% if user.id != current_user.id and (current_user.role == 'admin' or (current_user.role == 'manager' and user.role in ['worker', 'supervisor'])) %}
                         <form action="{{ url_for('auth.delete_user', user_id=user.id) }}" method="POST" class="inline-form">
                             <button type="submit" class="btn small-btn delete-btn" onclick="return confirm('Удалить пользователя?')">Удалить</button>
                         </form>
@@ -78,8 +80,10 @@
                 </div>
             </div>
             <div class="user-card-actions">
+                {% if current_user.role == 'admin' or (current_user.role == 'manager' and user.role in ['worker', 'supervisor']) %}
                 <a href="{{ url_for('auth.edit_user', user_id=user.id) }}" class="btn small-btn">Редактировать</a>
-                {% if user.id != current_user.id %}
+                {% endif %}
+                {% if user.id != current_user.id and (current_user.role == 'admin' or (current_user.role == 'manager' and user.role in ['worker', 'supervisor'])) %}
                 <form action="{{ url_for('auth.delete_user', user_id=user.id) }}" method="POST" class="inline-form">
                     <button type="submit" class="btn small-btn delete-btn" onclick="return confirm('Удалить пользователя?')">Удалить</button>
                 </form>
