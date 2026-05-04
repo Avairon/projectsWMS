@@ -448,7 +448,8 @@ button:active,
 .tasks-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
+    gap: 2rem;
+    margin: 2rem 0;
 }
 
 .project-card,
@@ -1294,6 +1295,16 @@ small {
 .profile-project-item .project-name {
     font-weight: 500;
     color: var(--gray-800);
+    flex: 1;
+    min-width: 200px;
+}
+
+.profile-project-item .status-badge {
+    flex-shrink: 0;
+}
+
+.profile-project-item .btn {
+    flex-shrink: 0;
 }
 
 .directions-list {

@@ -39,9 +39,9 @@ def dashboard():
     if role == 'admin':
         visible_projects = projects
     elif role == 'curator':
-        visible_projects = [p for p in projects if p.get('supervisor_id', '') == current_user.id]
+        visible_projects = [p for p in projects if p.get('supervisor_id', '') == current_user.id or p.get('manager_id', '') == current_user.id]
     elif role == 'manager':
-        visible_projects = [p for p in projects if p.get('manager_id', '') == current_user.id]
+        visible_projects = [p for p in projects if p.get('manager_id', '') == current_user.id or p.get('supervisor_id', '') == current_user.id]
     else:  # executor
         visible_projects = [p for p in projects if current_user.id in p.get('team', [])]
 

@@ -260,9 +260,9 @@
             <label for="project-supervisor">Руководитель:</label>
             <select id="project-supervisor" class="form-control">
                 <option value="">Все руководители</option>
-                {% for user in users if user.role == 'supervisor' %}
+                {% for user in users if user.role == 'supervisor' or user.role == 'admin' %}
                 <option value="{{ user.id }}" {% if supervisor_filter == user.id %}selected{% endif %}>
-                    {{ user.full_name or user.name or user.username }}
+                    {{ user.name or user.username }}
                 </option>
                 {% endfor %}
             </select>
@@ -272,9 +272,9 @@
             <label for="project-manager">Куратор:</label>
             <select id="project-manager" class="form-control">
                 <option value="">Все кураторы</option>
-                {% for user in users if user.role == 'manager' %}
+                {% for user in users if user.role == 'manager' or user.role == 'admin' %}
                 <option value="{{ user.id }}" {% if manager_filter == user.id %}selected{% endif %}>
-                    {{ user.full_name or user.name or user.username }}
+                    {{ user.name or user.username }}
                 </option>
                 {% endfor %}
             </select>
