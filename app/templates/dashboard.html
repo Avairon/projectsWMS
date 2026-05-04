@@ -284,68 +284,22 @@
         <button id="clear-filters-btn" class="btn cancel-btn" style="padding: 8px 14px; font-size: 0.85rem;">Сбросить</button>
     </div>
 
-    <div class="projects-list" id="projects-container">
+     <div class="projects-list" id="projects-container">
         {% if projects %}
-            <!-- Карточки проектов по статусам -->
-            <h3>Активные проекты</h3>
-            <div class="projects-grid">
             {% for project in projects %}
-                {% if project.status == 'в работе' %}
-                <div class="project-card status-active" data-name="{{ project.name|lower }}" 
-                     data-supervisor="{{ project.supervisor_info.id if project.supervisor_info else '' }}" 
-                     data-manager="{{ project.manager_info.id if project.manager_info else '' }}" 
-                     data-status="{{ project.status }}">
-                    <h4>{{ project.name }}</h4>
-                    <p><strong>Направление:</strong> {{ project.direction or 'Не указано' }}</p>
-                    <p><strong>Куратор Направления:</strong> {{ project.manager_info.name if project.manager_info else 'Не указано' }}</p>
-                    <p><strong>Руководитель Проекта:</strong> {{ project.supervisor_info.name if project.supervisor_info else 'Не указано' }}</p>
-                    <p><strong>Статус:</strong> <span class="status-badge status-{{ project.status }}">{{ project.status }}</span></p>
-                    <p><strong>Последняя активность:</strong> {{ project.last_activity }}</p>
-                    <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn">Подробнее</a>
-                </div>
-                {% endif %}
-            {% endfor %}
+            <div class="project-card status-{% if project.status == 'в работе' %}active{% elif project.status == 'завершен' %}completed{% else %}paused{% endif %}" data-name="{{ project.name|lower }}" 
+                 data-supervisor="{{ project.supervisor_info.id if project.supervisor_info else '' }}" 
+                 data-manager="{{ project.manager_info.id if project.manager_info else '' }}" 
+                 data-status="{{ project.status }}">
+                <h4>{{ project.name }}</h4>
+                <p><strong>Направление:</strong> {{ project.direction or 'Не указано' }}</p>
+                <p><strong>Куратор Направления:</strong> {{ project.manager_info.name if project.manager_info else 'Не указано' }}</p>
+                <p><strong>Руководитель Проекта:</strong> {{ project.supervisor_info.name if project.supervisor_info else 'Не указано' }}</p>
+                <p><strong>Статус:</strong> <span class="status-badge status-{{ project.status }}">{{ project.status }}</span></p>
+                <p><strong>Последняя активность:</strong> {{ project.last_activity }}</p>
+                <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn">Подробнее</a>
             </div>
-            
-            <h3>Приостановленные проекты</h3>
-            <div class="projects-grid">
-            {% for project in projects %}
-                {% if project.status in ['приостановлен', 'отложен'] %}
-                <div class="project-card status-paused" data-name="{{ project.name|lower }}" 
-                     data-supervisor="{{ project.supervisor_info.id if project.supervisor_info else '' }}" 
-                     data-manager="{{ project.manager_info.id if project.manager_info else '' }}" 
-                     data-status="{{ project.status }}">
-                    <h4>{{ project.name }}</h4>
-                    <p><strong>Направление:</strong> {{ project.direction or 'Не указано' }}</p>
-                    <p><strong>Куратор Направления:</strong> {{ project.manager_info.name if project.manager_info else 'Не указано' }}</p>
-                    <p><strong>Руководитель Проекта:</strong> {{ project.supervisor_info.name if project.supervisor_info else 'Не указано' }}</p>
-                    <p><strong>Статус:</strong> <span class="status-badge status-{{ project.status }}">{{ project.status }}</span></p>
-                    <p><strong>Последняя активность:</strong> {{ project.last_activity }}</p>
-                    <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn">Подробнее</a>
-                </div>
-                {% endif %}
             {% endfor %}
-            </div>
-            
-            <h3>Завершенные проекты</h3>
-            <div class="projects-grid">
-            {% for project in projects %}
-                {% if project.status == 'завершен' %}
-                <div class="project-card status-completed" data-name="{{ project.name|lower }}" 
-                     data-supervisor="{{ project.supervisor_info.id if project.supervisor_info else '' }}" 
-                     data-manager="{{ project.manager_info.id if project.manager_info else '' }}" 
-                     data-status="{{ project.status }}">
-                    <h4>{{ project.name }}</h4>
-                    <p><strong>Направление:</strong> {{ project.direction or 'Не указано' }}</p>
-                    <p><strong>Куратор Направления:</strong> {{ project.manager_info.name if project.manager_info else 'Не указано' }}</p>
-                    <p><strong>Руководитель Проекта:</strong> {{ project.supervisor_info.name if project.supervisor_info else 'Не указано' }}</p>
-                    <p><strong>Статус:</strong> <span class="status-badge status-{{ project.status }}">{{ project.status }}</span></p>
-                    <p><strong>Последняя активность:</strong> {{ project.last_activity }}</p>
-                    <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn">Подробнее</a>
-                </div>
-                {% endif %}
-            {% endfor %}
-            </div>
         {% else %}
         <p class="no-data">Нет доступных проектов</p>
         {% endif %}

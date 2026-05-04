@@ -122,7 +122,7 @@
     const allUsers = {{ users | tojson }};
     
     // Фильтруем всех пользователей (не только работников) - теперь можно добавлять всех как исполнителей
-    const availableUsers = allUsers.filter(user => user.role !== 'admin');
+    const availableUsers = allUsers; //.filter(user => user.role !== 'admin');
     
     document.addEventListener('DOMContentLoaded', function() {
         const teamSearch = document.getElementById('team_search');
