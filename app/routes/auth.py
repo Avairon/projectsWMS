@@ -136,7 +136,7 @@ def profile():
 @auth_bp.route('/admin/users')
 @login_required
 def admin_users():
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'manager']:
         flash('У вас нет доступа к этой странице')
         return redirect(url_for('dashboard.dashboard'))
     
@@ -153,6 +153,49 @@ def admin_directions():
     
     directions = load_directions()
     return render_template('admin_directions.html', directions=directions)
+
+
+@auth_bp.route('/admin/logs')
+@login_required
+def admin_logs():
+    if current_user.role != 'admin':
+        flash('У вас нет доступа к этой странице')
+        return redirect(url_for('dashboard.dashboard'))
+    
+    # Загружаем все транзакции из всех баз данных
+    logs = []
+    log_id = 0
+    
+    # Загружаем логи проектов
+    projects = load_data(app_config.PROJECTS_DB)
+    for project in projects:
+        log_id += 1
+        logs.append({
+            'id': log_id,
+            'operation_type': 'CREATE' if 'created_at' in project else 'UPDATE',
+            'user_name': project.get('manager_info', {}).get('name', 'Неизвестно') if isinstance(project.get('manager_info'), dict) else 'Неизвестно',
+            'object_name': project.get('name', ''),
+            'description': f"Проект: {project.get('name', '')}",
+            'timestamp': project.get('created_at', project.get('last_activity', ''))
+        })
+    
+    # Загружаем логи задач
+    tasks = load_data(app_config.TASKS_DB)
+    for task in tasks:
+        log_id += 1
+        logs.append({
+            'id': log_id,
+            'operation_type': 'CREATE' if 'created_at' in task else 'UPDATE',
+            'user_name': 'Неизвестно',
+            'object_name': task.get('title', ''),
+            'description': f"Задача: {task.get('title', '')}",
+            'timestamp': task.get('created_at', '')
+        })
+    
+    # Сортируем по времени (новые сначала)
+    logs.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+    
+    return render_template('logs.html', logs=logs)
 
 
 @auth_bp.route('/admin/directions/add', methods=['POST'])
@@ -192,7 +235,7 @@ def delete_direction(direction_id):
 @auth_bp.route('/admin/users/edit/<user_id>', methods=['GET', 'POST'])
 @login_required
 def edit_user(user_id):
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'manager']:
         flash('У вас нет доступа к этой странице')
         return redirect(url_for('dashboard.dashboard'))
     
@@ -203,9 +246,17 @@ def edit_user(user_id):
         flash('Пользователь не найден')
         return redirect(url_for('auth.admin_users'))
     
+    # Кураторы могут редактировать только исполнителей
+    if current_user.role == 'manager' and user['role'] not in ['worker', 'supervisor']:
+        flash('Куратор может редактировать только исполнителей и руководителей проектов')
+        return redirect(url_for('auth.admin_users'))
+    
     if request.method == 'POST':
         user['name'] = request.form['name'].strip()
-        user['role'] = request.form['role']
+        
+        # Кураторы не могут менять роль, только админы
+        if current_user.role == 'admin':
+            user['role'] = request.form['role']
         
         if request.form['password']:
             user['password'] = generate_password_hash(request.form['password'])
@@ -225,7 +276,7 @@ def edit_user(user_id):
 @auth_bp.route('/admin/users/delete/<user_id>', methods=['POST'])
 @login_required
 def delete_user(user_id):
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'manager']:
         flash('У вас нет доступа к этой странице')
         return redirect(url_for('dashboard.dashboard'))
     
@@ -238,6 +289,11 @@ def delete_user(user_id):
     
     if user_id == current_user.id:
         flash('Нельзя удалить самого себя')
+        return redirect(url_for('auth.admin_users'))
+    
+    # Кураторы могут удалять только исполнителей
+    if current_user.role == 'manager' and user['role'] not in ['worker', 'supervisor']:
+        flash('Куратор может удалять только исполнителей и руководителей проектов')
         return redirect(url_for('auth.admin_users'))
     
     users = [u for u in users if u['id'] != user_id]
