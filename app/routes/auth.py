@@ -75,7 +75,7 @@ def login():
         return redirect(url_for('dashboard.dashboard'))
     
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['username'].strip()
         password = request.form['password']
         
         users = load_data(app_config.USERS_DB)
@@ -91,13 +91,18 @@ def login():
                 break
         
         if user and check_password_hash(user['password'], password):
-            user_id = user.get('id', str(uuid.uuid4())[:8])
-            username = user.get('username', 'unknown')
-            name = user.get('name', username)
-            role = user.get('role', 'user')
+            user_id = user.get('id')
+            if not user_id:
+                # Если у пользователя нет ID, это проблема - создаем новый
+                user_id = str(uuid.uuid4())[:8]
+                print(f"Warning: User {username} had no ID, generated new one: {user_id}")
+            
+            username_val = user.get('username', 'unknown')
+            name = user.get('name', username_val)
+            role = user.get('role', 'worker')  # По умолчанию worker вместо 'user'
             token = user.get('token')
             
-            user_obj = User(user_id, username, name, role, token)
+            user_obj = User(user_id, username_val, name, role, token)
             login_user(user_obj)
             flash(f'Добро пожаловать, {name}!')
             return redirect(url_for('dashboard.dashboard'))
