@@ -77,19 +77,26 @@ def init_database(force_recreate=False):
 
 
 def load_data(filepath):
-    """Загрузка данных из JSON с обработкой ошибок"""
+    """Загрузка данных из JSON с обработкой ошибок и блокировками"""
+    import fcntl
+    
     try:
         if not os.path.exists(filepath):
             return []
         
         with open(filepath, 'r', encoding='utf-8') as f:
-            content = f.read()
-            
-            # Проверка на пустой файл
-            if not content.strip():
-                return []
-            
-            return json.loads(content)
+            # Используем разделяемую блокировку для чтения
+            fcntl.flock(f.fileno(), fcntl.LOCK_SH)
+            try:
+                content = f.read()
+                
+                # Проверка на пустой файл
+                if not content.strip():
+                    return []
+                
+                return json.loads(content)
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
     
     except json.JSONDecodeError as e:
         # Логирование ошибки
@@ -97,8 +104,11 @@ def load_data(filepath):
         
         # Создание резервной копии повреждённого файла
         backup_path = f"{filepath}.backup.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        os.rename(filepath, backup_path)
-        print(f"Corrupted file backed up to: {backup_path}")
+        try:
+            os.rename(filepath, backup_path)
+            print(f"Corrupted file backed up to: {backup_path}")
+        except Exception as rename_err:
+            print(f"Failed to create backup: {rename_err}")
         
         # Возврат пустого списка вместо падения
         return []
@@ -109,7 +119,10 @@ def load_data(filepath):
 
 
 def save_data(filepath, data):
-    """Сохранение данных в JSON с атомарной записью"""
+    """Сохранение данных в JSON с атомарной записью и блокировками"""
+    import fcntl
+    import tempfile
+    
     temp_path = None
     try:
         # Убедимся, что директория существует
@@ -117,17 +130,18 @@ def save_data(filepath, data):
         if directory:
             os.makedirs(directory, exist_ok=True)
         
-        # Запись во временный файл
-        temp_path = f"{filepath}.tmp.{os.getpid()}"
+        # Создаем временный файл в той же директории для атомарной замены
+        fd, temp_path = tempfile.mkstemp(dir=directory, suffix='.tmp')
         
-        with open(temp_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-            f.flush()
-            os.fsync(f.fileno())
-        
-        # Проверка существования временного файла перед заменой
-        if not os.path.exists(temp_path):
-            raise FileNotFoundError(f"Временный файл не создан: {temp_path}")
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            # Получаем эксклюзивную блокировку
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            try:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+                f.flush()
+                os.fsync(f.fileno())
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         
         # Атомарная замена
         os.replace(temp_path, filepath)
