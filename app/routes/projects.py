@@ -439,3 +439,104 @@ def remove_project_member(project_id, user_id):
         return jsonify({'success': True, 'message': 'Участник успешно удален из проекта'})
     else:
         return jsonify({'error': 'Пользователь не является участником проекта'}), 400
+
+@projects_bp.route('/project/<project_id>/delete', methods=['POST'])
+@login_required
+def delete_project(project_id):
+    # Проверка прав: удалять проект может только администратор
+    if current_user.role != 'admin':
+        # Если запрос пришел через AJAX/fetch, возвращаем JSON
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.accept_mimetypes.accept_json:
+            return jsonify({'error': 'У вас нет прав на удаление проектов'}), 403
+        flash('У вас нет прав на удаление проектов')
+        return redirect(url_for('dashboard.dashboard'))
+    
+    projects = load_data(app_config.PROJECTS_DB)
+    project = next((p for p in projects if p.get('id') == project_id), None)
+    
+    if not project:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.accept_mimetypes.accept_json:
+            return jsonify({'error': 'Проект не найден'}), 404
+        flash('Проект не найден')
+        return redirect(url_for('dashboard.dashboard'))
+    
+    # 1. Удаляем сам проект из списка
+    projects = [p for p in projects if p.get('id') != project_id]
+    save_data(app_config.PROJECTS_DB, projects)
+    
+    # 2. Удаляем все задачи, связанные с этим проектом, чтобы не было "висячих" записей
+    tasks = load_data(app_config.TASKS_DB)
+    tasks = [t for t in tasks if t.get('project_id') != project_id]
+    save_data(app_config.TASKS_DB, tasks)
+    
+    # Возвращаем ответ в зависимости от типа запроса (поддерживает и обычные формы, и fetch/AJAX)
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.accept_mimetypes.accept_json:
+        return jsonify({'success': True, 'message': 'Проект успешно удален'})
+    
+    flash('Проект и все связанные задачи успешно удалены')
+    return redirect(url_for('dashboard.dashboard'))
+
+
+@projects_bp.route('/api/project/<project_id>/tasks', methods=['GET'])
+@login_required
+def api_get_project_tasks(project_id):
+    """API endpoint для получения списка задач проекта (нужен для Диаграммы Ганта в main.js)"""
+    if not can_access_project(project_id):
+        return jsonify({'error': 'У вас нет доступа к этому проекту'}), 403
+    
+    tasks = load_data(app_config.TASKS_DB)
+    users = load_data(app_config.USERS_DB)
+    
+    # Фильтруем задачи только текущего проекта
+    project_tasks = [t for t in tasks if t.get('project_id') == project_id]
+    
+    # Добавляем имя исполнителя для корректной работы рендеринга в main.js
+    for task in project_tasks:
+        assignee = next((u for u in users if u.get('id') == task.get('assignee_id')), None)
+        task['assignee_name'] = assignee.get('name', 'Не назначен') if assignee else 'Не назначен'
+    
+    return jsonify(project_tasks)
+
+@projects_bp.route('/project/<project_id>/complete', methods=['POST'])
+@login_required
+def complete_project(project_id):
+    # Проверка прав: завершать проект могут только администратор или руководитель
+    if current_user.role not in ['admin', 'manager']:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.accept_mimetypes.accept_json:
+            return jsonify({'error': 'У вас нет прав на завершение проектов'}), 403
+        flash('У вас нет прав на завершение проектов')
+        return redirect(url_for('dashboard.dashboard'))
+    
+    projects = load_data(app_config.PROJECTS_DB)
+    project = next((p for p in projects if p.get('id') == project_id), None)
+    
+    if not project:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.accept_mimetypes.accept_json:
+            return jsonify({'error': 'Проект не найден'}), 404
+        flash('Проект не найден')
+        return redirect(url_for('dashboard.dashboard'))
+    
+    # Обновляем статус проекта
+    project['status'] = 'завершен'
+    project['last_activity'] = datetime.now().strftime("%d.%m.%Y")
+    project['completion_date'] = datetime.now().strftime("%d.%m.%Y")
+    
+    # Сохраняем комментарий о завершении, если он был передан из формы
+    completion_comment = request.form.get('completion_comment', '').strip()
+    if completion_comment:
+        project['completion_comment'] = completion_comment
+    
+    # Обновляем проект в списке
+    for i, p in enumerate(projects):
+        if p['id'] == project_id:
+            projects[i] = project
+            break
+            
+    save_data(app_config.PROJECTS_DB, projects)
+    
+    # Возвращаем ответ в зависимости от типа запроса (поддерживает и обычные формы, и fetch/AJAX)
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.accept_mimetypes.accept_json:
+        return jsonify({'success': True, 'message': 'Проект успешно завершен'})
+    
+    flash('Проект успешно завершен')
+    return redirect(url_for('projects.project_detail', project_id=project_id))

@@ -61,55 +61,5 @@
     "team": [],
     "initiator_type": "national_project",
     "initiator_name": null
-  },
-  {
-    "id": "9a04141a",
-    "name": "asddas",
-    "description": "asds",
-    "direction": "Промталанты",
-    "expected_result": "adasdd",
-    "start_date": "01.01.2026",
-    "end_date": "02.01.2026",
-    "last_activity": "20.01.2026",
-    "status": "в работе",
-    "supervisor_id": "1",
-    "manager_id": "1",
-    "team": []
-  },
-  {
-    "id": "2264216d",
-    "name": "фывфыв",
-    "description": "фывфыв",
-    "direction": "Образовательные программы",
-    "expected_result": "фывфыв",
-    "start_date": "07.02.2026",
-    "end_date": "20.02.2026",
-    "last_activity": "04.02.2026",
-    "status": "в работе",
-    "supervisor_id": "a689e28d",
-    "manager_id": "1",
-    "team": [
-      "52f91648"
-    ],
-    "initiator_type": "deputy_director",
-    "initiator_name": "Абубе"
-  },
-  {
-    "id": "6e2c5f31",
-    "name": "8888888",
-    "description": "asdasdasd",
-    "direction": "Работодатели",
-    "expected_result": "asdasd",
-    "start_date": "05.02.2026",
-    "end_date": "28.02.2026",
-    "last_activity": "04.02.2026",
-    "status": "приостановлен",
-    "supervisor_id": "bd5eafa7",
-    "manager_id": "bd5eafa7",
-    "team": [
-      "12e7652a"
-    ],
-    "initiator_type": "ministry",
-    "initiator_name": null
   }
 ]
