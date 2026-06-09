@@ -60,17 +60,6 @@
     ],
     "subtasks": [
       {
-        "id": "5d7c6920",
-        "title": "dddd",
-        "completed": false,
-        "planned_date": "14.04.2026",
-        "completed_date": "",
-        "report": "",
-        "file": null,
-        "created_at": "20.04.2026 13:52:07",
-        "created_by": "1"
-      },
-      {
         "id": "28616f60",
         "title": "абубе",
         "completed": false,
@@ -273,7 +262,7 @@
     "created_by": "d40bd07c",
     "created_at": "19.12.2025",
     "start_date": "18.12.2025",
-    "deadline": "10.01.2026",
+    "deadline": "01.10.2026",
     "status": "активна",
     "completion_date": "",
     "history": [
@@ -282,8 +271,15 @@
         "date": "19.12.2025 10:41:17",
         "user_id": "d40bd07c",
         "user_name": "Наталья Викторовна Кромм"
+      },
+      {
+        "action": "Изменен дедлайн",
+        "date": "09.06.2026 13:47:22",
+        "user_id": "1",
+        "user_name": "Администратор системы"
       }
-    ]
+    ],
+    "subtasks": []
   },
   {
     "id": "82320e39",

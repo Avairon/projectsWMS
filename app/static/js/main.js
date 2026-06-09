@@ -939,8 +939,12 @@ function renderSubtasks(subtasks, taskId) {
     if (!subtasks || subtasks.length === 0) {
         subtasksContainer.innerHTML = `
             <div class="no-subtasks">
+                <div class="subtasks-header">
+                    <h3>Подзадачи   </h3>
+                    <button class="btn btn-primary" onclick="event.stopPropagation(); showAddSubtaskForm('${taskId}', event)">+ Добавить подзадачу</button>
+                </div>
+
                 <p>Нет подзадач</p>
-                <button class="btn add-subtask-btn" onclick="event.stopPropagation(); showAddSubtaskForm('${taskId}', event)">Добавить подзадачу</button>
             </div>
         `;
         return;
@@ -948,7 +952,7 @@ function renderSubtasks(subtasks, taskId) {
 
     let html = `
         <div class="subtasks-header">
-            <h3>Подзадачи</h3>
+            <h3>Подзадачи    </h3>
             <button class="btn btn-primary" onclick="event.stopPropagation(); showAddSubtaskForm('${taskId}', event)">+ Добавить подзадачу</button>
         </div>
         <div class="subtasks-list">

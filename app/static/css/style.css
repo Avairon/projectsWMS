@@ -252,6 +252,7 @@ button,
     transition: var(--transition);
     box-shadow: var(--shadow);
     min-height: 44px;
+    max-width: max-content;
 }
 
 button:hover,
@@ -1117,9 +1118,13 @@ small {
 }
 
 .modal-close {
-    grid-column: 3; /* кнопка в правой колонке */
-    width: 32px;
-    height: 32px;
+    grid-column: 6; /* кнопка в правой колонке */
+    /* width: 32px;
+    height: 32px; */
+
+    min-width: 48;
+    min-height: 48;
+
     display: flex;
     align-items: right;
     justify-content: center;
@@ -1129,6 +1134,8 @@ small {
     font-size: 1.5rem;
     cursor: pointer;
     border-radius: 0; /* квадратная */
+
+    
 }
 
 .modal-close:hover {
