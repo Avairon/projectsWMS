@@ -4,7 +4,6 @@ class Config:
     SECRET_KEY = os.environ.get('SESSION_SECRET') or os.environ.get('SECRET_KEY') or 'dev-secret-key-for-project-registry-123456'
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     DATABASE_PATH = os.path.join(BASE_DIR, 'database')
-    
     os.makedirs(DATABASE_PATH, exist_ok=True)
     
     USERS_DB = os.path.join(DATABASE_PATH, 'users.json')
@@ -12,3 +11,7 @@ class Config:
     TASKS_DB = os.path.join(DATABASE_PATH, 'tasks.json')
     TOKENS_DB = os.path.join(DATABASE_PATH, 'tokens.json')
     DIRECTIONS_DB = os.path.join(DATABASE_PATH, 'directions.json')
+    PROJECT_FILES_DB = os.path.join(DATABASE_PATH, 'project_files.json')
+    
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)

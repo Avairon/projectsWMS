@@ -3,6 +3,8 @@ from flask_login import LoginManager
 import os
 from config import Config
 
+
+
 app = None
 
 def create_app():
@@ -33,6 +35,7 @@ def create_app():
     from app.routes.projects import projects_bp
     from app.routes.tasks import tasks_bp
     from app.routes.reports import reports_bp
+    from app.routes.project_files import project_files_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -113,4 +116,6 @@ def create_app():
         
         return send_from_directory(directory, filename, as_attachment=True)
 
+    app.register_blueprint(project_files_bp)
+    
     return app
