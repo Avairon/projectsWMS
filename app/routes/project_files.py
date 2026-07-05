@@ -27,6 +27,63 @@ def get_project_files(project_id):
     
     return jsonify(files)
 
+@project_files_bp.route('/project/<project_id>/files/subtasks', methods=['GET'])
+@login_required
+def get_project_subtasks(project_id):
+    """Получить список всех подзадач проекта для dropdown"""
+    if not can_access_project(project_id):
+        return jsonify({'error': 'У вас нет доступа к этому проекту'}), 403
+    
+    tasks = load_data(app_config.TASKS_DB)
+    project_tasks = [t for t in tasks if t.get('project_id') == project_id]
+    
+    subtasks_list = []
+    for task in project_tasks:
+        task_id = task.get('id')
+        task_title = task.get('title')
+        
+        # Добавляем саму задачу как опцию
+        subtasks_list.append({
+            'id': f'task_{task_id}',
+            'title': f'📋 {task_title}',
+            'type': 'task',
+            'task_id': task_id
+        })
+        
+        # Добавляем подзадачи
+        for subtask in task.get('subtasks', []):
+            subtasks_list.append({
+                'id': f'subtask_{task_id}_{subtask.get("id")}',
+                'title': f'  ↳ {subtask.get("title")}',
+                'type': 'subtask',
+                'task_id': task_id,
+                'subtask_id': subtask.get('id')
+            })
+    
+    return jsonify(subtasks_list)
+
+@project_files_bp.route('/project/<project_id>/files/task/<task_id>/subtask/<subtask_id>', methods=['GET'])
+@login_required
+def get_subtask_files(project_id, task_id, subtask_id):
+    """Получить список файлов конкретной подзадачи"""
+    if not can_access_project(project_id):
+        return jsonify({'error': 'У вас нет доступа к этому проекту'}), 403
+    
+    project_files = load_data(app_config.PROJECT_FILES_DB)
+    
+    # Фильтруем файлы по project_id, task_id и subtask_id
+    files = [
+        f for f in project_files 
+        if f.get('project_id') == project_id 
+        and f.get('task_id') == task_id 
+        and f.get('subtask_id') == subtask_id
+    ]
+    
+    # Сортируем по дате (новые сверху)
+    files.sort(key=lambda x: x.get('uploaded_at', ''), reverse=True)
+    
+    return jsonify(files)
+
 @project_files_bp.route('/project/<project_id>/files/upload', methods=['POST'])
 @login_required
 def upload_project_file(project_id):
@@ -53,6 +110,8 @@ def upload_project_file(project_id):
     # Получаем данные из формы
     title = request.form.get('title', '').strip()
     description = request.form.get('description', '').strip()
+    task_id = request.form.get('task_id', '').strip()
+    subtask_id = request.form.get('subtask_id', '').strip()
     
     if not title:
         return jsonify({'error': 'Название файла обязательно'}), 400
@@ -80,6 +139,8 @@ def upload_project_file(project_id):
     file_record = {
         'id': str(uuid.uuid4())[:8],
         'project_id': project_id,
+        'task_id': task_id if task_id else None,
+        'subtask_id': subtask_id if subtask_id else None,
         'title': title,
         'description': description,
         'original_filename': original_filename,

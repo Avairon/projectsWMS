@@ -10,7 +10,6 @@
     gap: 20px;
     margin: 20px 0;
 }
-
 .stat-card {
     background: #f8f9fa;
     border: 1px solid #dee2e6;
@@ -18,38 +17,407 @@
     padding: 15px;
     text-align: center;
 }
-
 .stat-card h4 {
     margin: 0 0 10px 0;
     color: #495057;
     font-size: 14px;
 }
-
 .stat-value {
     font-size: 24px;
     font-weight: bold;
     color: #0d6efd;
     margin: 0;
 }
-
 .employee-stats-table {
     margin-top: 20px;
 }
-
 .employee-stats-table table {
     width: 100%;
     border-collapse: collapse;
 }
-
 .employee-stats-table th,
 .employee-stats-table td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #dee2e6;
 }
-
 .statistics-container {
     padding: 20px 0;
+}
+
+/* Multi-select dropdown для исполнителей */
+.multi-select-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 10px;
+}
+.multi-select-dropdown {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 8px 12px;
+    background: white;
+    cursor: pointer;
+    min-height: 38px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+}
+.multi-select-dropdown:hover {
+    border-color: #0d6efd;
+}
+.multi-select-tag {
+    background: #0d6efd;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.multi-select-tag-remove {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+}
+.multi-select-tag-remove:hover {
+    color: #ffc107;
+}
+.multi-select-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.multi-select-options.show {
+    display: block;
+}
+.multi-select-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+.multi-select-option:hover {
+    background: #f8f9fa;
+}
+.multi-select-option.selected {
+    background: #e7f1ff;
+}
+.multi-select-placeholder {
+    color: #6c757d;
+}
+
+/* Кнопка отчётов в подзадаче */
+.btn-reports {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+.btn-reports:hover {
+    background: #138496;
+}
+
+/* Модальное окно отчётов подзадачи */
+.reports-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+}
+.reports-modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 700px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+@keyframes modalSlideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.reports-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+.reports-modal-header h3 {
+    margin: 0;
+    color: #212529;
+    font-size: 20px;
+}
+.reports-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #6c757d;
+    line-height: 1;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+.reports-modal-close:hover {
+    background: #f8f9fa;
+    color: #212529;
+}
+.reports-list {
+    margin-top: 15px;
+}
+.report-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+}
+.report-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: #0d6efd;
+}
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.report-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: #212529;
+}
+.report-date {
+    color: #6c757d;
+    font-size: 12px;
+}
+.report-description {
+    color: #495057;
+    font-size: 14px;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+.report-files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+.report-file-link {
+    background: #0d6efd;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+}
+.report-file-link:hover {
+    background: #0b5ed7;
+    transform: translateY(-1px);
+}
+.no-reports {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+    font-size: 15px;
+}
+
+/* Стили для файлов */
+.files-container {
+    padding: 20px 0;
+}
+.files-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.files-search {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.files-search input {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    min-width: 250px;
+}
+.files-list {
+    margin-top: 20px;
+}
+.file-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.file-info {
+    flex: 1;
+    min-width: 200px;
+}
+.file-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: #212529;
+}
+.file-description {
+    color: #6c757d;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+.file-meta {
+    color: #6c757d;
+    font-size: 12px;
+}
+.file-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.file-actions button,
+.file-actions a {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+.btn-download {
+    background: #0d6efd;
+    color: white;
+    border: none;
+}
+.btn-download:hover {
+    background: #0b5ed7;
+}
+.no-files {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+}
+
+/* Модальное окно загрузки файла */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-content-custom {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+.modal-content-custom h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+}
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.btn-cancel:hover {
+    background: #5c636a;
+}
+.btn-submit {
+    background: #0d6efd;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.btn-submit:hover {
+    background: #0b5ed7;
 }
 </style>
 {% endblock %}
@@ -123,44 +491,17 @@
         <h3>Команда проекта</h3>
         {% if team_members %}
         <ul class="team-list">
-            <!-- Handle case where supervisor and manager are the same person -->
-            {% if supervisor and manager and supervisor.id == manager.id %}
-            <li>
-                <span class="member-name">{{ supervisor.name }}</span>
-                <span class="role-badge role-supervisor">Куратор и Руководитель</span>
-            </li>
-            {% else %}
-                <!-- Place curator first if exists and different from manager -->
-                {% if supervisor %}
-                <li>
-                    <span class="member-name">{{ manager.name }}</span>
-                    <span class="role-badge role-supervisor">Куратор</span>
-                </li>
-                {% endif %}
-                
-                <!-- Place manager second if exists -->
-                {% if manager %}
-                <li>
-                    <span class="member-name">{{ supervisor.name }}</span>
-                    <span class="role-badge role-manager">Руководитель</span>
-                </li>
-                {% endif %}
-            {% endif %}
-            
-            <!-- Add remaining team members -->
             {% for member in team_members %}
-                {% if member.id != (supervisor.id if supervisor else 'none') and member.id != (manager.id if manager else 'none') %}
-                <li>
-                    <span class="member-name">{{ member.name }}</span>
-                    <span class="role-badge role-{{ member.role }}">
-                        {% if member.role == 'admin' %}Администратор
-                        {% elif member.role == 'manager' %}Руководитель
-                        {% elif member.role == 'supervisor' %}Куратор
-                        {% else %}Исполнитель
-                        {% endif %}
-                    </span>
-                </li>
-                {% endif %}
+            <li>
+                <span class="member-name">{{ member.name }}</span>
+                <span class="role-badge role-{{ member.role }}">
+                    {% if member.role == 'admin' %}Администратор
+                    {% elif member.role == 'manager' %}Руководитель
+                    {% elif member.role == 'supervisor' %}Куратор
+                    {% else %}Исполнитель
+                    {% endif %}
+                </span>
+            </li>
             {% endfor %}
         </ul>
         {% else %}
@@ -190,7 +531,7 @@
                         <tr>
                             <th>#</th>
                             <th>Название</th>
-                            <th>Исполнитель</th>
+                            <th>Исполнители</th>
                             <th>Дата начала</th>
                             <th>Дедлайн</th>
                             <th>Статус</th>
@@ -199,11 +540,19 @@
                     </thead>
                     <tbody>
                         {% for task in tasks %}
-                        {% set assignee = users | selectattr('id', 'equalto', task.assignee_id) | first %}
                         <tr class="task-row" data-task-id="{{ task.id }}">
                             <td>{{ loop.index }}</td>
                             <td>{{ task.title }}</td>
-                            <td>{{ assignee.name if assignee else 'Не назначен' }}</td>
+                            <td>
+                                {% set assignee_names = [] %}
+                                {% for user_id in task.assignee_ids %}
+                                    {% set user = users | selectattr('id', 'equalto', user_id) | first %}
+                                    {% if user %}
+                                        {% if assignee_names.append(user.name) %}{% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ assignee_names | join(', ') if assignee_names else 'Не назначен' }}
+                            </td>
                             <td>{{ task.start_date or '-' }}</td>
                             <td>{{ task.deadline }}</td>
                             <td>
@@ -220,6 +569,21 @@
             {% else %}
             <p class="no-data">Нет задач в проекте</p>
             {% endif %}
+        </div>
+    </div>
+
+    <div id="files-tab" class="tab-content">
+        <div class="files-container">
+            <div class="files-header">
+                <h3>Файлы проекта</h3>
+                <div class="files-search">
+                    <input type="text" id="file-search-input" placeholder="Поиск по названию..." onkeyup="filterFiles()">
+                    <button class="btn" onclick="showUploadFileModal()">Прикрепить файл</button>
+                </div>
+            </div>
+            <div class="files-list" id="files-list">
+                <div class="no-files">Нажмите для загрузки файлов</div>
+            </div>
         </div>
     </div>
 
@@ -300,26 +664,12 @@
     </div>
 </div>
 
-<div id="files-tab" class="tab-content">
-    <div class="files-container">
-        <div class="files-header">
-            <h3>Файлы проекта</h3>
-            <div class="files-search">
-                <input type="text" id="file-search-input" placeholder="Поиск по названию..." onkeyup="filterFiles()">
-                <button class="btn" onclick="showUploadFileModal()">Прикрепить файл</button>
-            </div>
-        </div>
-        <div class="files-list" id="files-list">
-            <div class="no-files">Загрузка файлов...</div>
-        </div>
-    </div>
-</div>
-
+<!-- Модальное окно редактирования задачи (упрощённое, основная логика в main.js) -->
 <div id="task-modal" class="modal">
     <div class="modal-content large-modal">
         <div class="modal-header">
             <h3>Редактирование задачи</h3>
-            <button class="modal-close">-&times;-</button>
+            <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
             <form id="edit-task-form">
@@ -335,8 +685,8 @@
                 <div class="form-row">
                     <div class="half-width">
                         <div class="form-group">
-                            <label for="edit-task-assignee">Исполнитель</label>
-                            <select id="edit-task-assignee" name="assignee_id"></select>
+                            <label>Исполнители</label>
+                            <div id="edit-task-assignees" class="multi-select-container"></div>
                         </div>
                     </div>
                     <div class="half-width">
@@ -365,37 +715,10 @@
                     </div>
                 </div>
                 
-                <!-- Подзадачи вместо отчетов -->
                 <!-- Подзадачи -->
                 <div class="subtasks-section" id="subtasks-container">
-                    <div class="subtasks-header">
-                        <h3>Подзадачи</h3>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="showAddSubtaskForm()">+ Добавить подзадачу</button>
-                    </div>
-                    
-                    <!-- Форма добавления подзадачи -->
-                    <div class="add-subtask-form" id="add-subtask-form" style="display: none;" onsubmit="return false;">
-                        <h4>Новая подзадача</h4>
-                        <div class="form-group">
-                            <label for="new-subtask-title">Название подзадачи</label>
-                            <input type="text" id="new-subtask-title" class="form-control" placeholder="Введите название подзадачи">
-                        </div>
-                        <div class="form-group">
-                            <label for="new-subtask-date">Планируемая дата выполнения (ДД.ММ.ГГГГ)</label>
-                            <input type="text" id="new-subtask-date" class="form-control" placeholder="ДД.ММ.ГГГГ">
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-success" onclick="createSubtask(); return false;">Создать</button>
-                            <button type="button" class="btn btn-secondary" onclick="hideAddSubtaskForm(); return false;">Отмена</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Контейнер для списка подзадач -->
-                    <div class="subtasks-list" id="subtasks-list">
-                        <!-- Подзадачи будут загружаться сюда через JavaScript -->
-                        <div class="subtasks-loading">
-                            <p>Загрузка подзадач...</p>
-                        </div>
+                    <div class="subtasks-loading">
+                        <p>Загрузка подзадач...</p>
                     </div>
                 </div>
 
@@ -409,504 +732,224 @@
 </div>
 
 <script>
-    let currentTaskId = null;
+// ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
+let projectFiles = [];
+let projectTeamMembers = [];
+const PROJECT_ID = '{{ project.id }}';
+
+// ==================== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ====================
+document.addEventListener('DOMContentLoaded', async function() {
+    // Загружаем команду проекта для multi-select
+    await loadProjectTeam();
     
-    document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('task-modal');
-        const editForm = document.getElementById('edit-task-form');
-        
-        if (modal) {
-            // Пробуем Bootstrap событие
-            modal.addEventListener('shown.bs.modal', function() {
-                initializeTaskModal();
-            });
+    // Загружаем список подзадач для dropdown загрузки файлов
+    loadSubtasksForFileUpload(PROJECT_ID);
+    
+    // Добавляем обработчик для вкладки "Файлы" - загружаем файлы при первом открытии
+    const filesTabBtn = document.querySelector('.tab-btn[data-tab="files-tab"]');
+    if (filesTabBtn) {
+        filesTabBtn.addEventListener('click', function() {
+            if (projectFiles.length === 0) {
+                loadProjectFiles();
+            }
+        });
+    }
+});
+
+// ==================== ЗАГРУЗКА КОМАНДЫ ПРОЕКТА ====================
+async function loadProjectTeam() {
+    try {
+        const response = await fetch(`/project/${PROJECT_ID}/team`);
+        if (response.ok) {
+            projectTeamMembers = await response.json();
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки команды проекта:', error);
+    }
+}
+
+// ==================== МОДАЛЬНОЕ ОКНО ЗАДАЧИ (расширение main.js) ====================
+// Переопределяем openTaskModal из main.js для добавления multi-select
+const _originalOpenTaskModal = window.openTaskModal;
+window.openTaskModal = function(taskId) {
+    // Вызываем оригинальную функцию из main.js
+    if (_originalOpenTaskModal) {
+        _originalOpenTaskModal.call(this, taskId);
+    }
+    
+    // После загрузки задачи инициализируем multi-select
+    setTimeout(async () => {
+        try {
+            const response = await fetch(`/api/task/${taskId}`);
+            const task = await response.json();
             
-            // Фоллбэк - клик по кнопке редактирования
-            document.querySelectorAll('.edit-task-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const taskId = this.getAttribute('data-task-id');
-                    document.getElementById('edit-task-id').value = taskId;
-                    setTimeout(() => initializeTaskModal(), 100);
-                });
-            });
+            // Инициализируем multi-select для исполнителей
+            const assigneeIds = task.assignee_ids || [];
+            if (projectTeamMembers.length > 0) {
+                initMultiSelect('edit-task-assignees', projectTeamMembers, assigneeIds);
+            }
+        } catch (error) {
+            console.error('Ошибка инициализации multi-select:', error);
         }
-        
-        // Предотвращаем сабмит основной формы при работе с подзадачами
-        if (editForm) {
-            editForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                saveMainTask();
-            });
+    }, 400);
+};
+
+// Переопределяем submitTaskEdit для отправки assignee_ids
+const _originalSubmitTaskEdit = window.submitTaskEdit;
+window.submitTaskEdit = function() {
+    const taskId = document.getElementById('edit-task-id').value;
+    const formData = new FormData();
+    
+    formData.append('title', document.getElementById('edit-task-title').value);
+    formData.append('description', document.getElementById('edit-task-description').value);
+    formData.append('status', document.getElementById('edit-task-status').value);
+    formData.append('start_date', document.getElementById('edit-task-start').value);
+    formData.append('deadline', document.getElementById('edit-task-deadline').value);
+    
+    // Добавляем нескольких исполнителей из multi-select
+    const instance = multiSelectInstances['edit-task-assignees'];
+    if (instance) {
+        instance.selected.forEach(userId => {
+            formData.append('assignee_ids', userId);
+        });
+    }
+    
+    fetch(`/task/${taskId}/update`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeTaskModal();
+            location.reload();
+        } else {
+            alert(data.error || 'Ошибка при сохранении');
         }
+    })
+    .catch(error => {
+        console.error('Error updating task:', error);
+        alert('Ошибка при сохранении задачи');
+    });
+};
+
+// ==================== MULTI-SELECT ДЛЯ ИСПОЛНИТЕЛЕЙ ====================
+let multiSelectInstances = {};
+
+function initMultiSelect(elementId, options, selectedValues = []) {
+    const container = document.getElementById(elementId);
+    if (!container) return;
+    
+    multiSelectInstances[elementId] = {
+        options: options,
+        selected: selectedValues,
+        container: container
+    };
+    
+    renderMultiSelect(elementId);
+}
+
+function renderMultiSelect(instanceId) {
+    const instance = multiSelectInstances[instanceId];
+    if (!instance) return;
+    
+    const container = instance.container;
+    container.innerHTML = '';
+    
+    const dropdown = document.createElement('div');
+    dropdown.className = 'multi-select-dropdown';
+    dropdown.onclick = (e) => {
+        e.stopPropagation();
+        toggleMultiSelectOptions(instanceId);
+    };
+    
+    if (instance.selected.length === 0) {
+        const placeholder = document.createElement('span');
+        placeholder.className = 'multi-select-placeholder';
+        placeholder.textContent = 'Выберите исполнителей...';
+        dropdown.appendChild(placeholder);
+    } else {
+        instance.selected.forEach(userId => {
+            const user = instance.options.find(u => u.id === userId);
+            if (user) {
+                const tag = document.createElement('span');
+                tag.className = 'multi-select-tag';
+                tag.innerHTML = `
+                    ${user.name}
+                    <span class="multi-select-tag-remove" onclick="removeMultiSelectValue(event, '${instanceId}', '${userId}')">&times;</span>
+                `;
+                dropdown.appendChild(tag);
+            }
+        });
+    }
+    
+    container.appendChild(dropdown);
+    
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'multi-select-options';
+    optionsDiv.id = `${instanceId}-options`;
+    
+    instance.options.forEach(option => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'multi-select-option';
+        if (instance.selected.includes(option.id)) {
+            optionDiv.classList.add('selected');
+        }
+        optionDiv.textContent = option.name;
+        optionDiv.onclick = (e) => {
+            e.stopPropagation();
+            toggleMultiSelectValue(instanceId, option.id);
+        };
+        optionsDiv.appendChild(optionDiv);
     });
     
-    function initializeTaskModal() {
-        const taskId = document.getElementById('edit-task-id').value;
-        console.log('Initializing modal for task:', taskId);
-        
-        if (taskId) {
-            currentTaskId = taskId;
-            loadSubtasks(taskId);
-        } else {
-            console.error('Task ID not found in modal!');
-        }
-    }
-    
-    async function loadSubtasks(taskId) {
-        console.log('Loading subtasks for:', taskId);
-        try {
-            const response = await fetch(`/task/${taskId}/subtasks`, {
-                credentials: 'same-origin'
-            });
-            
-            // Проверяем, что ответ действительно JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                console.error('Non-JSON response for loadSubtasks:', text.substring(0, 200));
-                throw new Error('Сервер вернул некорректный ответ. Проверьте логи сервера.');
-            }
-            
-            const subtasks = await response.json();
-            
-            console.log('Subtasks response:', response.status, subtasks);
-            
-            if (!response.ok) {
-                throw new Error(subtasks.error || 'Ошибка загрузки подзадач');
-            }
-            
-            renderSubtasks(subtasks);
-        } catch (error) {
-            console.error('Ошибка загрузки подзадач:', error);
-            document.getElementById('subtasks-list').innerHTML = 
-                `<div class="no-subtasks"><p>Ошибка: ${error.message}</p></div>`;
-        }
-    }
-    
-    function renderSubtasks(subtasks) {
-        const container = document.getElementById('subtasks-list');
-        console.log('Rendering subtasks:', subtasks.length);
-        
-        if (subtasks.length === 0) {
-            container.innerHTML = '<div class="no-subtasks"><p>Нет подзадач</p></div>';
-            return;
-        }
-        
-        const canManageSubtasks = {{ 'true' if current_user.role in ['admin', 'manager', 'supervisor'] else 'false' }};
-        
-        const subtasksHtml = subtasks.map(subtask => `
-            <div class="subtask-item ${subtask.completed ? 'completed' : 'pending'}" data-subtask-id="${subtask.id}">
-                <div class="subtask-checkbox">
-                    <input type="checkbox" ${subtask.completed ? 'checked' : ''} 
-                           onchange="toggleSubtaskStatus('${subtask.id}', this.checked)"
-                           title="отметить как выполнено">
-                    <span class="status-icon ${subtask.completed ? 'completed' : 'pending'}">
-                        ${subtask.completed ? '✓' : '✗'}
-                    </span>
-                </div>
-                <div class="subtask-title">${subtask.title}</div>
-                <div class="subtask-dates">
-                    <span class="planned-date">Запланировано: ${subtask.planned_date || '-'}</span>
-                    <span class="completed-date">Сделано: ${subtask.completed_date || '-'}</span>
-                </div>
-                <div class="subtask-actions">
-                    <button type="button" class="btn btn-success btn-sm" onclick="showReportModal('${subtask.id}')">Отчет</button>
-                    ${canManageSubtasks ? `<button type="button" class="btn btn-danger btn-sm" onclick="deleteSubtask('${subtask.id}')">Удалить</button>` : ''}
-                </div>
-            </div>
-        `).join('');
-        
-        container.innerHTML = subtasksHtml;
-    }
-    
-    function showAddSubtaskForm() {
-        console.log('Showing add subtask form');
-        document.getElementById('add-subtask-form').style.display = 'block';
-    }
-    
-    function hideAddSubtaskForm() {
-        document.getElementById('add-subtask-form').style.display = 'none';
-        document.getElementById('new-subtask-title').value = '';
-        document.getElementById('new-subtask-date').value = '';
-    }
-    
-    async function createSubtask() {
-        console.log('Creating subtask for task:', currentTaskId);
-        
-        const title = document.getElementById('new-subtask-title').value.trim();
-        const plannedDate = document.getElementById('new-subtask-date').value.trim();
-        
-        if (!title) {
-            alert('Введите название подзадачи');
-            return;
-        }
-        
-        if (!currentTaskId) {
-            alert('Ошибка: ID задачи не установлен');
-            return;
-        }
-        
-        try {
-            const formData = new URLSearchParams();
-            formData.append('title', title);
-            formData.append('planned_date', plannedDate);
-            
-            const response = await fetch(`/task/${currentTaskId}/subtask`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: formData.toString(),
-                credentials: 'same-origin'
-            });
-            
-            console.log('Create subtask response:', response.status, response.headers.get('content-type'));
-            
-            // Проверяем, что ответ действительно JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                console.error('Non-JSON response:', text.substring(0, 200));
-                throw new Error('Сервер вернул некорректный ответ. Проверьте логи сервера.');
-            }
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                hideAddSubtaskForm();
-                loadSubtasks(currentTaskId);
-                alert('Подзадача создана!');
-            } else {
-                alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
-            }
-        } catch (error) {
-            console.error('Ошибка создания подзадачи:', error);
-            alert('Ошибка: ' + error.message);
-        }
-    }
-    
-    async function toggleSubtaskStatus(subtaskId, completed) {
-        console.log('Toggling subtask:', subtaskId, completed);
-        
-        try {
-            const response = await fetch(`/task/${currentTaskId}/subtask/${subtaskId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `completed=${completed}`,
-                credentials: 'same-origin'
-            });
-            
-            // Проверяем, что ответ действительно JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                console.error('Non-JSON response for toggleSubtaskStatus:', text.substring(0, 200));
-                throw new Error('Сервер вернул некорректный ответ. Проверьте логи сервера.');
-            }
-            
-            const result = await response.json();
-            
-            if (!result.success) {
-                alert('Ошибка обновления: ' + (result.error || 'Неизвестная ошибка'));
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            alert('Ошибка: ' + error.message);
-        }
-    }
-    
-    async function deleteSubtask(subtaskId) {
-        if (!confirm('Удалить подзадачу?')) return;
-        
-        try {
-            const response = await fetch(`/task/${currentTaskId}/subtask/${subtaskId}`, {
-                method: 'DELETE',
-                credentials: 'same-origin'
-            });
-            
-            // Проверяем, что ответ действительно JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                console.error('Non-JSON response for deleteSubtask:', text.substring(0, 200));
-                throw new Error('Сервер вернул некорректный ответ. Проверьте логи сервера.');
-            }
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                loadSubtasks(currentTaskId);
-            } else {
-                alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            alert('Ошибка: ' + error.message);
-        }
-    }
-    
-    function showReportModal(subtaskId) {
-        const modalOverlay = document.createElement('div');
-        modalOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:center;align-items:center;';
-        
-        modalOverlay.innerHTML = `
-            <div style="background:white;padding:20px;border-radius:8px;width:500px;max-width:90%;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-                    <h3>Отчет по подзадаче</h3>
-                    <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;font-size:24px;cursor:pointer;">&times;</button>
-                </div>
-                <div class="form-group">
-                    <label>Комментарий:</label>
-                    <textarea id="report-comment" rows="4" style="width:100%;padding:8px;"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Файл:</label>
-                    <input type="file" id="report-file">
-                </div>
-                <div style="margin-top:15px;">
-                    <button class="btn btn-success" onclick="submitSubtaskReport('${subtaskId}')">Отправить</button>
-                    <button class="btn btn-secondary" onclick="this.closest('div[style*=fixed]').remove()">Отмена</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modalOverlay);
-    }
-    
-    async function submitSubtaskReport(subtaskId) {
-        const comment = document.getElementById('report-comment').value.trim();
-        const fileInput = document.getElementById('report-file');
-        const file = fileInput.files[0];
-        
-        const formData = new FormData();
-        formData.append('report', comment);
-        if (file) formData.append('file', file);
-        
-        try {
-            const response = await fetch(`/task/${currentTaskId}/subtask/${subtaskId}/upload_file`, {
-                method: 'POST',
-                body: formData,
-                credentials: 'same-origin'
-            });
-            
-            // Проверяем, что ответ действительно JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                console.error('Non-JSON response for upload_file:', text.substring(0, 200));
-                throw new Error('Сервер вернул некорректный ответ. Проверьте логи сервера.');
-            }
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                document.querySelector('div[style*=fixed]').remove();
-                loadSubtasks(currentTaskId);
-                alert('Отчет отправлен!');
-            } else {
-                alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            alert('Ошибка: ' + error.message);
-        }
-    }
-    
-    function showEditSubtaskForm(subtaskId) {
-        const subtaskElement = document.querySelector(`[data-subtask-id="${subtaskId}"]`);
-        const titleElement = subtaskElement.querySelector('.subtask-title');
-        const plannedDateElement = subtaskElement.querySelector('.planned-date');
-        
-        const titleText = titleElement.textContent;
-        const plannedDateText = plannedDateElement ? plannedDateElement.textContent.replace('Запланировано: ', '') : '';
-        
-        subtaskElement.innerHTML = `
-            <div class="subtask-edit-form">
-                <div class="form-group">
-                    <label>Название</label>
-                    <input type="text" id="edit-subtask-title-${subtaskId}" class="form-control" value="${titleText}">
-                </div>
-                <div class="form-group">
-                    <label>Дата (ДД.ММ.ГГГГ)</label>
-                    <input type="text" id="edit-subtask-date-${subtaskId}" class="form-control" value="${plannedDateText}">
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-success" onclick="updateSubtask('${subtaskId}')">Сохранить</button>
-                    <button type="button" class="btn btn-secondary" onclick="loadSubtasks(currentTaskId)">Отмена</button>
-                </div>
-            </div>
-        `;
-    }
-    
-    async function updateSubtask(subtaskId) {
-        const title = document.getElementById(`edit-subtask-title-${subtaskId}`).value.trim();
-        const plannedDate = document.getElementById(`edit-subtask-date-${subtaskId}`).value.trim();
-        
-        if (!title) {
-            alert('Введите название');
-            return;
-        }
-        
-        try {
-            const response = await fetch(`/task/${currentTaskId}/subtask/${subtaskId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `title=${encodeURIComponent(title)}&planned_date=${encodeURIComponent(plannedDate)}`,
-                credentials: 'same-origin'
-            });
-            
-            // Проверяем, что ответ действительно JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                console.error('Non-JSON response for updateSubtask:', text.substring(0, 200));
-                throw new Error('Сервер вернул некорректный ответ. Проверьте логи сервера.');
-            }
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                loadSubtasks(currentTaskId);
-            } else {
-                alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            alert('Ошибка: ' + error.message);
-        }
-    }
-    
-    async function saveMainTask() {
-        const formData = new FormData(document.getElementById('edit-task-form'));
-        
-        try {
-            const response = await fetch(`/task/${currentTaskId}/update`, {
-                method: 'POST',
-                body: formData
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                location.reload();
-            } else {
-                alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            alert('Ошибка: ' + error.message);
-        }
-    }
-    
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
+    container.appendChild(optionsDiv);
+}
 
-    function showCompleteProjectModal() {
-        const modal = document.createElement('div');
-        modal.innerHTML = `
-            <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
-                <div class="modal-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:5px; max-width:500px; width:90%;">
-                    <h3>Завершение проекта</h3>
-                    <p>Для завершения проекта необходимо предоставить отчет.</p>
-                    <form id="complete-project-form" onsubmit="return completeProject(event)">
-                        <div class="form-group">
-                            <label for="project-report">Отчет по проекту (обязательно)</label>
-                            <textarea id="project-report" name="report" rows="5" required style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;"></textarea>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-success">Завершить проект</button>
-                            <button type="button" class="btn cancel-btn" onclick="this.parentElement.parentElement.parentElement.remove()">Отмена</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
+function toggleMultiSelectOptions(instanceId) {
+    const options = document.getElementById(`${instanceId}-options`);
+    if (options) {
+        options.classList.toggle('show');
     }
+}
 
-    async function completeProject(event) {
-        event.preventDefault();
-        const report = document.getElementById('project-report').value.trim();
-        if (!report) {
-            alert('Пожалуйста, заполните отчет по проекту');
-            return false;
-        }
-
-        try {
-            const formData = new FormData();
-            formData.append('report', report);
-
-            const response = await fetch('/project/{{ project.id }}/complete', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                alert('Проект успешно завершен!');
-                location.reload();
-            } else {
-                alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            alert('Ошибка: ' + error.message);
-        }
-        return false;
+function toggleMultiSelectValue(instanceId, value) {
+    const instance = multiSelectInstances[instanceId];
+    if (!instance) return;
+    
+    const index = instance.selected.indexOf(value);
+    if (index > -1) {
+        instance.selected.splice(index, 1);
+    } else {
+        instance.selected.push(value);
     }
+    
+    renderMultiSelect(instanceId);
+}
 
-    async function deleteProject() {
-        if (!confirm('Вы уверены, что хотите удалить этот проект? Это действие нельзя отменить!')) {
-            return;
-        }
+function removeMultiSelectValue(event, instanceId, value) {
+    event.stopPropagation();
+    const instance = multiSelectInstances[instanceId];
+    if (!instance) return;
+    
+    instance.selected = instance.selected.filter(v => v !== value);
+    renderMultiSelect(instanceId);
+}
 
-        try {
-            const response = await fetch('/project/{{ project.id }}/delete', {
-                method: 'POST'
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                alert('Проект успешно удален!');
-                window.location.href = '/dashboard';
-            } else {
-                alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            alert('Ошибка: ' + error.message);
-        }
-    }
-
-    let projectFiles = [];
-
-// В обработчике DOMContentLoaded добавить:
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const tabId = this.getAttribute('data-tab');
-        
-        // Загружаем файлы при первом открытии вкладки
-        if (tabId === 'files-tab' && projectFiles.length === 0) {
-            loadProjectFiles();
+// Закрытие dropdown при клике вне
+document.addEventListener('click', () => {
+    Object.keys(multiSelectInstances).forEach(instanceId => {
+        const options = document.getElementById(`${instanceId}-options`);
+        if (options) {
+            options.classList.remove('show');
         }
     });
 });
 
-// Загрузка файлов проекта
+// ==================== ФАЙЛЫ ПРОЕКТА ====================
 async function loadProjectFiles() {
     try {
-        const response = await fetch(`/project/{{ project.id }}/files`);
+        const response = await fetch(`/project/${PROJECT_ID}/files`);
         const files = await response.json();
         projectFiles = files;
         renderFiles(files);
@@ -916,7 +959,6 @@ async function loadProjectFiles() {
     }
 }
 
-// Отображение списка файлов
 function renderFiles(files) {
     const filesList = document.getElementById('files-list');
     
@@ -932,21 +974,20 @@ function renderFiles(files) {
                 ${file.description ? `<div class="file-description">${file.description}</div>` : ''}
                 <div class="file-meta">
                     <span>${file.original_filename}</span> • 
-                    <span>${formatFileSize(file.file_size)}</span> • 
+                    <span>${formatFileSizeLocal(file.file_size)}</span> • 
                     <span>${file.uploaded_at}</span>
                 </div>
             </div>
             <div class="file-actions">
-                <a href="/project/{{ project.id }}/files/${file.id}/download" class="btn-download">Скачать</a>
+                <a href="/project/${PROJECT_ID}/files/${file.id}/download" class="btn-download">Скачать</a>
                 {% if current_user.role in ['admin', 'manager', 'supervisor'] %}
-                    <button class="btn-delete" onclick="deleteFile('${file.id}')">Удалить</button>
+                    <button class="btn-delete" style="background:#dc3545;color:white;border:none;" onclick="deleteFile('${file.id}')">Удалить</button>
                 {% endif %}
             </div>
         </div>
     `).join('');
 }
 
-// Фильтрация файлов по поиску
 function filterFiles() {
     const searchTerm = document.getElementById('file-search-input').value.toLowerCase();
     const filteredFiles = projectFiles.filter(file => 
@@ -955,8 +996,7 @@ function filterFiles() {
     renderFiles(filteredFiles);
 }
 
-// Форматирование размера файла
-function formatFileSize(bytes) {
+function formatFileSizeLocal(bytes) {
     if (bytes === 0) return '0 Байт';
     const k = 1024;
     const sizes = ['Байт', 'KB', 'MB', 'GB'];
@@ -964,13 +1004,12 @@ function formatFileSize(bytes) {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 }
 
-// Показать модальное окно для загрузки файла
 function showUploadFileModal() {
     const modal = document.createElement('div');
     modal.id = 'upload-file-modal';
     modal.innerHTML = `
         <div class="modal-overlay">
-            <div class="modal-content">
+            <div class="modal-content-custom">
                 <h3>Прикрепить файл</h3>
                 <form id="upload-file-form" onsubmit="return uploadFile(event)">
                     <div class="form-group">
@@ -980,6 +1019,14 @@ function showUploadFileModal() {
                     <div class="form-group">
                         <label for="file-description">Описание</label>
                         <textarea id="file-description" name="description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="file-task-select">Привязать к задаче/подзадаче (необязательно)</label>
+                        <select id="file-task-select" name="task_select" onchange="updateTaskSubtaskIds()">
+                            <option value="">-- Не привязывать --</option>
+                        </select>
+                        <input type="hidden" id="file-task-id" name="task_id">
+                        <input type="hidden" id="file-subtask-id" name="subtask_id">
                     </div>
                     <div class="form-group">
                         <label for="file-input">Файл *</label>
@@ -996,15 +1043,11 @@ function showUploadFileModal() {
     document.body.appendChild(modal);
 }
 
-// Закрыть модальное окно
 function closeUploadModal() {
     const modal = document.getElementById('upload-file-modal');
-    if (modal) {
-        modal.remove();
-    }
+    if (modal) modal.remove();
 }
 
-// Загрузка файла
 async function uploadFile(event) {
     event.preventDefault();
     
@@ -1012,7 +1055,7 @@ async function uploadFile(event) {
     const formData = new FormData(form);
     
     try {
-        const response = await fetch(`/project/{{ project.id }}/files/upload`, {
+        const response = await fetch(`/project/${PROJECT_ID}/files/upload`, {
             method: 'POST',
             body: formData
         });
@@ -1034,14 +1077,11 @@ async function uploadFile(event) {
     return false;
 }
 
-// Удаление файла
 async function deleteFile(fileId) {
-    if (!confirm('Вы уверены, что хотите удалить этот файл?')) {
-        return;
-    }
+    if (!confirm('Вы уверены, что хотите удалить этот файл?')) return;
     
     try {
-        const response = await fetch(`/project/{{ project.id }}/files/${fileId}`, {
+        const response = await fetch(`/project/${PROJECT_ID}/files/${fileId}`, {
             method: 'DELETE'
         });
         
@@ -1056,6 +1096,229 @@ async function deleteFile(fileId) {
     } catch (error) {
         console.error('Ошибка удаления:', error);
         alert('Ошибка удаления файла');
+    }
+}
+
+// ==================== DROPDOWN ПОДЗАДАЧ ДЛЯ ФАЙЛОВ ====================
+async function loadSubtasksForFileUpload(projectId) {
+    try {
+        const response = await fetch(`/project/${projectId}/files/subtasks`);
+        if (!response.ok) return;
+        
+        const subtasks = await response.json();
+        const select = document.getElementById('file-task-select');
+        if (!select) return;
+        
+        select.innerHTML = '<option value="">-- Не привязывать --</option>';
+        
+        subtasks.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.title;
+            option.dataset.taskId = item.task_id;
+            if (item.subtask_id) {
+                option.dataset.subtaskId = item.subtask_id;
+            }
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Ошибка загрузки подзадач:', error);
+    }
+}
+
+function updateTaskSubtaskIds() {
+    const select = document.getElementById('file-task-select');
+    const taskIdInput = document.getElementById('file-task-id');
+    const subtaskIdInput = document.getElementById('file-subtask-id');
+    
+    if (!select || !taskIdInput || !subtaskIdInput) return;
+    
+    const selectedOption = select.options[select.selectedIndex];
+    
+    if (!selectedOption || !selectedOption.value) {
+        taskIdInput.value = '';
+        subtaskIdInput.value = '';
+        return;
+    }
+    
+    taskIdInput.value = selectedOption.dataset.taskId || '';
+    subtaskIdInput.value = selectedOption.dataset.subtaskId || '';
+}
+
+// ==================== МОДАЛЬНОЕ ОКНО ОТЧЁТОВ ПОДЗАДАЧИ ====================
+function showSubtaskReports(taskId, subtaskId, subtaskTitle) {
+    const modal = document.createElement('div');
+    modal.id = 'subtask-reports-modal';
+    modal.className = 'reports-modal-overlay';
+    modal.innerHTML = `
+        <div class="reports-modal-content">
+            <div class="reports-modal-header">
+                <h3>📎 Отчёты: ${subtaskTitle}</h3>
+                <button class="reports-modal-close" onclick="closeSubtaskReportsModal()">&times;</button>
+            </div>
+            <div class="reports-list" id="subtask-reports-list">
+                <div class="no-reports">Загрузка отчётов...</div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    loadSubtaskReports(taskId, subtaskId);
+}
+
+function closeSubtaskReportsModal() {
+    const modal = document.getElementById('subtask-reports-modal');
+    if (modal) modal.remove();
+}
+
+async function loadSubtaskReports(taskId, subtaskId) {
+    try {
+        const taskResponse = await fetch(`/api/task/${taskId}`);
+        const task = await taskResponse.json();
+        
+        const subtask = task.subtasks ? task.subtasks.find(s => s.id === subtaskId) : null;
+        
+        if (!subtask) {
+            document.getElementById('subtask-reports-list').innerHTML = 
+                '<div class="no-reports">Подзадача не найдена</div>';
+            return;
+        }
+        
+        const projectId = task.project_id;
+        const filesResponse = await fetch(`/project/${projectId}/files/task/${taskId}/subtask/${subtaskId}`);
+        const files = filesResponse.ok ? await filesResponse.json() : [];
+        
+        const reportsList = document.getElementById('subtask-reports-list');
+        
+        if ((!subtask.reports || subtask.reports.length === 0) && files.length === 0) {
+            reportsList.innerHTML = '<div class="no-reports">Нет отчётов для этой подзадачи</div>';
+            return;
+        }
+        
+        let html = '';
+        
+        if (subtask.reports && subtask.reports.length > 0) {
+            subtask.reports.forEach(report => {
+                html += `
+                    <div class="report-item">
+                        <div class="report-header">
+                            <div class="report-title">${report.comment || 'Отчёт'}</div>
+                            <div class="report-date">${report.date || ''}</div>
+                        </div>
+                        ${report.file ? `
+                            <div class="report-files">
+                                <a href="/uploads/${report.file.executor_dir}/${report.file.unique_filename}" class="report-file-link" download>
+                                    📄 ${report.file.filename}
+                                </a>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+        }
+        
+        if (files.length > 0) {
+            html += `
+                <div class="report-item">
+                    <div class="report-header">
+                        <div class="report-title">Прикреплённые файлы</div>
+                    </div>
+                    <div class="report-files">
+                        ${files.map(file => `
+                            <a href="/project/${projectId}/files/${file.id}/download" class="report-file-link">
+                                📄 ${file.original_filename}
+                                <span style="font-size: 11px; opacity: 0.8;">(${formatFileSizeLocal(file.file_size)})</span>
+                            </a>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        reportsList.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Ошибка загрузки отчётов:', error);
+        document.getElementById('subtask-reports-list').innerHTML = 
+            '<div class="no-reports">Ошибка загрузки отчётов</div>';
+    }
+}
+
+// ==================== ЗАВЕРШЕНИЕ И УДАЛЕНИЕ ПРОЕКТА ====================
+function showCompleteProjectModal() {
+    const modal = document.createElement('div');
+    modal.innerHTML = `
+        <div class="modal-overlay">
+            <div class="modal-content-custom">
+                <h3>Завершение проекта</h3>
+                <p>Для завершения проекта необходимо предоставить отчет.</p>
+                <form id="complete-project-form" onsubmit="return completeProject(event)">
+                    <div class="form-group">
+                        <label for="project-report">Отчет по проекту (обязательно)</label>
+                        <textarea id="project-report" name="report" rows="5" required></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-submit">Завершить проект</button>
+                        <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').parentElement.remove()">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+async function completeProject(event) {
+    event.preventDefault();
+    const report = document.getElementById('project-report').value.trim();
+    if (!report) {
+        alert('Пожалуйста, заполните отчет по проекту');
+        return false;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('report', report);
+
+        const response = await fetch('/project/{{ project.id }}/complete', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Проект успешно завершен!');
+            location.reload();
+        } else {
+            alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка: ' + error.message);
+    }
+    return false;
+}
+
+async function deleteProject() {
+    if (!confirm('Вы уверены, что хотите удалить этот проект? Это действие нельзя отменить!')) return;
+
+    try {
+        const response = await fetch('/project/{{ project.id }}/delete', {
+            method: 'POST'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Проект успешно удален!');
+            window.location.href = '/dashboard';
+        } else {
+            alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка: ' + error.message);
     }
 }
 </script>

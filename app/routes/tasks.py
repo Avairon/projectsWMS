@@ -88,7 +88,7 @@ def create_task(project_id):
             "project_id": project_id,
             "title": request.form['title'].strip(),
             "description": request.form['description'].strip(),
-            "assignee_id": request.form['assignee_id'],
+            "assignee_ids": request.form.getlist('assignee_ids'),  # ← ИЗМЕНЕНО
             "created_by": current_user.id,
             "created_at": datetime.now().strftime("%d.%m.%Y"),
             "start_date": start_date,
@@ -127,15 +127,20 @@ def api_get_tasks_by_project(project_id):
     user_map = {u['id']: u for u in users}
 
     for task in project_tasks:
-        assignee = user_map.get(task.get('assignee_id'))
-        if assignee:
-            from app.utils import get_user_token
-            token = get_user_token(task.get('assignee_id'), project_id)
-            task['assignee_token'] = token
-            task['assignee_name'] = assignee.get('name', assignee.get('username', ''))
-        else:
-            task['assignee_token'] = None
-            task['assignee_name'] = 'Не назначен'
+        assignee_ids = task.get('assignee_ids', [])
+        assignee_names = []
+        assignee_tokens = []
+        
+        for assignee_id in assignee_ids:
+            assignee = user_map.get(assignee_id)
+            if assignee:
+                from app.utils import get_user_token
+                token = get_user_token(assignee_id, project_id)
+                assignee_tokens.append(token)
+                assignee_names.append(assignee.get('name', assignee.get('username', '')))
+        
+        task['assignee_tokens'] = assignee_tokens
+        task['assignee_names'] = ', '.join(assignee_names) if assignee_names else 'Не назначен'
 
     return jsonify(project_tasks)
 
@@ -206,7 +211,7 @@ def update_task(task_id):
     if not can_access_project(project_id):
         return jsonify({'error': 'У вас нет доступа к проекту задачи'}), 403
 
-    new_assignee_id = request.form.get('assignee_id')
+    new_assignee_ids = request.form.getlist('assignee_ids')
     new_title = request.form.get('title')
     new_description = request.form.get('description')
     new_start_date = request.form.get('start_date')
@@ -239,18 +244,22 @@ def update_task(task_id):
     original_task = task.copy()
     users = load_data(app_config.USERS_DB)
 
-    if new_assignee_id and new_assignee_id != task.get('assignee_id'):
-        user = next((u for u in users if u['id'] == new_assignee_id), None)
-        if not user:
-            return jsonify({'error': 'Назначаемый пользователь не найден'}), 404
-
+    if new_assignee_ids and new_assignee_ids != task.get('assignee_ids', []):
+        # Проверяем, что все назначаемые пользователи являются участниками проекта
         projects = load_data(app_config.PROJECTS_DB)
         project = next((p for p in projects if p['id'] == project_id), None)
-        if project and new_assignee_id not in project.get('team', []) and new_assignee_id != project.get('manager_id') and new_assignee_id != project.get('supervisor_id'):
-            return jsonify({'error': 'Назначаемый пользователь не является участником проекта'}), 400
+        
+        if project:
+            team_ids = project.get('team', []) + [project.get('manager_id'), project.get('supervisor_id')]
+            for assignee_id in new_assignee_ids:
+                user = next((u for u in users if u['id'] == assignee_id), None)
+                if not user:
+                    return jsonify({'error': f'Пользователь {assignee_id} не найден'}), 404
+                if assignee_id not in team_ids:
+                    return jsonify({'error': f'Пользователь {user.get("name", "Неизвестный")} не является участником проекта'}), 400
 
-        task['assignee_id'] = new_assignee_id
-        add_task_history(task, f'Изменен ответственный', current_user.id, users)
+        task['assignee_ids'] = new_assignee_ids
+        add_task_history(task, f'Изменены ответственные', current_user.id, users)
 
     if new_title and new_title != task.get('title'):
         task['title'] = new_title.strip()
@@ -313,7 +322,7 @@ def upload_task_file(task_id):
         return jsonify({'error': 'Нельзя загружать файлы к завершенной задаче'}), 400
 
     project_id = task.get('project_id')
-    if current_user.role not in ['admin'] and current_user.id != task.get('assignee_id'):
+    if current_user.role not in ['admin'] and current_user.id not in task.get('assignee_ids', []):
         if not can_access_project(project_id) and current_user.role not in ['manager', 'supervisor']:
             return jsonify({'error': 'У вас нет прав для загрузки файлов к этой задаче'}), 403
 
@@ -389,8 +398,8 @@ def report_task(task_id):
     if not task:
         return jsonify({'error': 'Задача не найдена'}), 404
 
-    # Check if current user is the assignee of the task
-    if current_user.id != task.get('assignee_id') and current_user.role not in ['admin', 'manager', 'supervisor']:
+    # Check if current user is one of the assignees of the task
+    if current_user.id not in task.get('assignee_ids', []) and current_user.role not in ['admin', 'manager', 'supervisor']:
         return jsonify({'error': 'Только исполнитель задачи может отправить отчет'}), 403
 
     comment = request.form.get('comment', '').strip()
@@ -512,15 +521,20 @@ def api_task_detail(task_id):
     if not task:
         return jsonify({'error': 'Задача не найдена'}), 404
 
-    assignee = next((u for u in users if u['id'] == task.get('assignee_id')), None) if task.get('assignee_id') else None
-    if assignee:
-        from app.utils import get_user_token
-        token = get_user_token(task.get('assignee_id'), task.get('project_id'))
-        task['assignee_token'] = token
-        task['assignee_name'] = assignee.get('name', assignee.get('username', ''))
-    else:
-        task['assignee_token'] = None
-        task['assignee_name'] = 'Не назначен'
+    assignee_ids = task.get('assignee_ids', [])
+    assignee_names = []
+    assignee_tokens = []
+    
+    for assignee_id in assignee_ids:
+        assignee = next((u for u in users if u['id'] == assignee_id), None)
+        if assignee:
+            from app.utils import get_user_token
+            token = get_user_token(assignee_id, task.get('project_id'))
+            assignee_tokens.append(token)
+            assignee_names.append(assignee.get('name', assignee.get('username', '')))
+    
+    task['assignee_tokens'] = assignee_tokens
+    task['assignee_names'] = ', '.join(assignee_names) if assignee_names else 'Не назначен'
 
     creator = next((u for u in users if u['id'] == task.get('created_by')), None) if task.get('created_by') else None
     if creator:
@@ -653,6 +667,7 @@ def create_subtask(task_id):
         subtask = {
             'id': str(uuid.uuid4())[:8],
             'title': subtask_title,
+            'assignee_ids': request.form.getlist('assignee_ids'),  # ← ДОБАВЛЕНО
             'completed': False,
             'planned_date': planned_date,
             'completed_date': '',
@@ -731,7 +746,11 @@ def update_subtask(task_id, subtask_id):
                 subtask['planned_date'] = planned_dt.strftime("%d.%m.%Y")
             except:
                 return jsonify({'error': 'Некорректный формат даты'}), 400
-    
+
+    # Обновляем исполнителей подзадачи
+    if 'assignee_ids' in request.form:
+        subtask['assignee_ids'] = request.form.getlist('assignee_ids')
+
     # Обновляем подзадачу в базе
     for i, t in enumerate(tasks):
         if t.get('id') == task_id:
@@ -763,7 +782,7 @@ def upload_subtask_file(task_id, subtask_id):
         return jsonify({'error': 'Подзадача не найдена'}), 404
     
     # Проверяем права на загрузку файла
-    if current_user.role not in ['admin', 'manager', 'supervisor'] and current_user.id != task.get('assignee_id'):
+    if current_user.role not in ['admin', 'manager', 'supervisor'] and current_user.id not in task.get('assignee_ids', []):
         return jsonify({'error': 'У вас нет прав на загрузку файла'}), 403
     
     # Обновляем отчет, если он есть
@@ -859,3 +878,38 @@ def delete_subtask(task_id, subtask_id):
     save_data(app_config.TASKS_DB, tasks)
     
     return jsonify({'success': True, 'message': 'Подзадача успешно удалена'})
+
+@tasks_bp.route('/project/<project_id>/team', methods=['GET'])
+@login_required
+def get_project_team(project_id):
+    """Получить список участников команды проекта для выбора исполнителей"""
+    if not can_access_project(project_id):
+        return jsonify({'error': 'У вас нет доступа к этому проекту'}), 403
+    
+    projects = load_data(app_config.PROJECTS_DB)
+    project = next((p for p in projects if p.get('id') == project_id), None)
+    
+    if not project:
+        return jsonify({'error': 'Проект не найден'}), 404
+    
+    users = load_data(app_config.USERS_DB)
+    team_members = []
+    
+    # Собираем всех участников команды проекта
+    team_ids = set(project.get('team', []))
+    
+    # Добавляем руководителя и куратора
+    if project.get('manager_id'):
+        team_ids.add(project.get('manager_id'))
+    if project.get('supervisor_id'):
+        team_ids.add(project.get('supervisor_id'))
+    
+    # Формируем список пользователей
+    for user in users:
+        if user.get('id') in team_ids:
+            team_members.append({
+                'id': user.get('id'),
+                'name': user.get('name', user.get('username', 'Без имени'))
+            })
+    
+    return jsonify(team_members)
